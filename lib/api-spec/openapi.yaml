@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for AI Fashion Stylist
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: wardrobe
+    description: Wardrobe item management
+  - name: profile
+    description: User style profile management
+  - name: stylist
+    description: AI stylist outfit generation
 paths:
   /healthz:
     get:
@@ -24,6 +30,158 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /wardrobe:
+    get:
+      operationId: listWardrobeItems
+      tags: [wardrobe]
+      summary: List all wardrobe items
+      responses:
+        "200":
+          description: List of wardrobe items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WardrobeItem"
+    post:
+      operationId: createWardrobeItem
+      tags: [wardrobe]
+      summary: Add a wardrobe item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWardrobeItemBody"
+      responses:
+        "201":
+          description: Created wardrobe item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+
+  /wardrobe/{id}:
+    patch:
+      operationId: updateWardrobeItem
+      tags: [wardrobe]
+      summary: Update a wardrobe item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWardrobeItemBody"
+      responses:
+        "200":
+          description: Updated wardrobe item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeItem"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteWardrobeItem
+      tags: [wardrobe]
+      summary: Delete a wardrobe item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /wardrobe/stats:
+    get:
+      operationId: getWardrobeStats
+      tags: [wardrobe]
+      summary: Get wardrobe statistics (counts by category, season)
+      responses:
+        "200":
+          description: Wardrobe statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WardrobeStats"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get style profile
+      responses:
+        "200":
+          description: Style profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StyleProfile"
+        "404":
+          description: Not found
+    put:
+      operationId: upsertProfile
+      tags: [profile]
+      summary: Create or update style profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertProfileBody"
+      responses:
+        "200":
+          description: Updated style profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StyleProfile"
+
+  /stylist/generate:
+    post:
+      operationId: generateOutfits
+      tags: [stylist]
+      summary: Generate outfit suggestions from AI stylist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateOutfitsBody"
+      responses:
+        "200":
+          description: Generated outfit suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutfitSuggestions"
+
+  /stylist/history:
+    get:
+      operationId: getStylistHistory
+      tags: [stylist]
+      summary: Get past outfit generation sessions
+      responses:
+        "200":
+          description: List of past stylist sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StylistSession"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +192,233 @@ components:
       required:
         - status
 
+    WardrobeItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        colour:
+          type: string
+        season:
+          type: string
+        brand:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - category
+        - colour
+        - season
+        - createdAt
+
+    CreateWardrobeItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        colour:
+          type: string
+        season:
+          type: string
+        brand:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - category
+        - colour
+        - season
+
+    UpdateWardrobeItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        colour:
+          type: string
+        season:
+          type: string
+        brand:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    WardrobeStats:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+        byCategory:
+          type: object
+          additionalProperties:
+            type: integer
+        bySeason:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+        - totalItems
+        - byCategory
+        - bySeason
+
+    StyleProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        gender:
+          type: string
+        height:
+          type: string
+        topSize:
+          type: string
+        bottomSize:
+          type: string
+        shoeSize:
+          type: string
+        preferredFabrics:
+          type: string
+        avoidItems:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - gender
+        - height
+        - topSize
+        - bottomSize
+        - shoeSize
+        - updatedAt
+
+    UpsertProfileBody:
+      type: object
+      properties:
+        gender:
+          type: string
+        height:
+          type: string
+        topSize:
+          type: string
+        bottomSize:
+          type: string
+        shoeSize:
+          type: string
+        preferredFabrics:
+          type: string
+        avoidItems:
+          type: string
+      required:
+        - gender
+        - height
+        - topSize
+        - bottomSize
+        - shoeSize
+
+    GenerateOutfitsBody:
+      type: object
+      properties:
+        occasion:
+          type: string
+        season:
+          type: string
+        location:
+          type: string
+        trendingStyles:
+          type: string
+        colourPalette:
+          type: string
+      required:
+        - occasion
+        - season
+        - location
+
+    OutfitSuggestions:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+        outfits:
+          type: array
+          items:
+            $ref: "#/components/schemas/Outfit"
+        stylistsPick:
+          type: string
+        occasion:
+          type: string
+        season:
+          type: string
+        location:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+      required:
+        - sessionId
+        - outfits
+        - stylistsPick
+        - occasion
+        - season
+        - location
+        - generatedAt
+
+    Outfit:
+      type: object
+      properties:
+        name:
+          type: string
+        items:
+          type: object
+          additionalProperties:
+            type: string
+        description:
+          type: string
+        whyThisWorks:
+          type: string
+      required:
+        - name
+        - items
+        - description
+        - whyThisWorks
+
+    StylistSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        occasion:
+          type: string
+        season:
+          type: string
+        location:
+          type: string
+        outfitsJson:
+          type: string
+        stylistsPick:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - occasion
+        - season
+        - location
+        - outfitsJson
+        - stylistsPick
+        - createdAt
