@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
+import Shop from "./pages/Shop"
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -30,7 +31,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/stylist" element={<Stylist />} />
           <Route path="/wardrobe" element={<Wardrobe />} />
-          <Route path="/shop" element={<PlaceholderPage title="Shop" />} />
+          <Route path="/shop" element={<Shop />} />
           <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
         </Routes>
       </BrowserRouter>
