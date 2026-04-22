@@ -4,15 +4,8 @@ import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
 import Shop from "./pages/Shop"
+import Profile from "./pages/Profile"
 
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="mx-auto min-h-screen w-full max-w-[430px] bg-[#0F1115] px-6 pt-10 text-[#F6F3EE]">
-      <h1 className="text-3xl font-semibold">{title}</h1>
-      <p className="mt-3 text-[#A8AFBE]">Coming soon</p>
-    </div>
-  )
-}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,7 +25,7 @@ export default function App() {
           <Route path="/stylist" element={<Stylist />} />
           <Route path="/wardrobe" element={<Wardrobe />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
