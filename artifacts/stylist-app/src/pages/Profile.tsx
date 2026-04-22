@@ -1,4 +1,4 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Clock3 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
