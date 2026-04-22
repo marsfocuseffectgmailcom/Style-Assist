@@ -1,5 +1,7 @@
 import { ArrowLeft, SendHorizonal, CheckCircle2 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
+import { Card } from "../components/Card"
+import { OutfitCard } from "../components/OutfitCard"
 import { outfitCards } from "../lib/mockData"
 
 export default function Stylist() {
@@ -25,35 +27,17 @@ export default function Stylist() {
 
       <section className="mb-5 flex gap-3 overflow-x-auto pb-1">
         {outfitCards.map((outfit) => (
-          <div
+          <OutfitCard
             key={outfit.id}
-            className={`min-w-[128px] rounded-[20px] p-[1px] ${
-              outfit.selected
-                ? "bg-gradient-to-br from-[#FF4D8D] via-[#C8A96A] to-[#FF7A5C] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_24px_rgba(255,92,130,0.18)]"
-                : "bg-transparent"
-            }`}
-          >
-            <div className="h-full rounded-[20px] border border-white/8 bg-[#171C25] p-2">
-              <div className="mb-2 h-[120px] overflow-hidden rounded-[16px] bg-[#11151C]">
-                <img
-                  src={outfit.image}
-                  alt={outfit.title}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold text-[#F6F3EE]">
-                  {outfit.title}
-                </h3>
-                <p className="text-xs text-[#A8AFBE]">{outfit.subtitle}</p>
-              </div>
-            </div>
-          </div>
+            title={outfit.title}
+            subtitle={outfit.subtitle}
+            image={outfit.image}
+            selected={outfit.selected}
+          />
         ))}
       </section>
 
-      <section className="rounded-[24px] border border-white/10 bg-[#151922] p-4">
+      <Card>
         <h2 className="text-[18px] font-semibold">
           Why Outfit 2 is the best choice
         </h2>
@@ -80,16 +64,16 @@ export default function Stylist() {
             ),
           )}
         </div>
-      </section>
+      </Card>
 
-      <section className="mt-5 rounded-[24px] border border-white/10 bg-[#151922] p-4">
+      <Card className="mt-5">
         <h3 className="text-[16px] font-semibold">Stylist&apos;s Pick</h3>
         <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
           Outfit 2 wins because it feels the most intentional for a lunch
           meeting. It balances polish and softness, which makes it more flexible
           and more persuasive than the other two options
         </p>
-      </section>
+      </Card>
 
       <div className="mt-5 flex items-center gap-3 rounded-[18px] border border-white/10 bg-[#151922] px-4 py-3">
         <input
