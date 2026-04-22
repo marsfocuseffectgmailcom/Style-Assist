@@ -1,4 +1,5 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
@@ -9,22 +10,34 @@ const profileSections = [
     icon: <Ruler size={18} className="text-[#C8A96A]" />,
     title: "Body Profile",
     subtitle: "Height, sizing, and fit preferences",
+    href: undefined,
   },
   {
     id: 2,
     icon: <Shirt size={18} className="text-[#C8A96A]" />,
     title: "Style Preferences",
     subtitle: "Colours, fabrics, and styling direction",
+    href: undefined,
   },
   {
     id: 3,
     icon: <CreditCard size={18} className="text-[#C8A96A]" />,
     title: "Subscription",
     subtitle: "Manage Drape Pro and billing",
+    href: undefined,
+  },
+  {
+    id: 4,
+    icon: <Heart size={18} className="text-[#C8A96A]" />,
+    title: "Saved Products",
+    subtitle: "View your wishlist and shopping picks",
+    href: "/saved-products",
   },
 ]
 
 export default function Profile() {
+  const navigate = useNavigate()
+
   return (
     <AppShell>
       <header className="mb-5 pt-4">
@@ -61,6 +74,7 @@ export default function Profile() {
         {profileSections.map((section) => (
           <button
             key={section.id}
+            onClick={() => section.href && navigate(section.href)}
             className="flex w-full items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-4 text-left transition hover:border-white/15"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5">
