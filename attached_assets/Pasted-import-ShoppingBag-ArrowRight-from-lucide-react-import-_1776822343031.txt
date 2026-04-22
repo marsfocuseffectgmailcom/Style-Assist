@@ -1,0 +1,116 @@
+import { ShoppingBag, ArrowRight } from "lucide-react"
+import { AppShell } from "../components/AppShell"
+import { PrimaryButton } from "../components/PrimaryButton"
+
+const recommendedProducts = [
+  {
+    id: 1,
+    name: "Classic Trench Coat",
+    brand: "ZARA",
+    price: "$129.00",
+    image:
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 2,
+    name: "Leather Loafers",
+    brand: "COS",
+    price: "$190.00",
+    image:
+      "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 3,
+    name: "Minimal Watch",
+    brand: "MVMT",
+    price: "$135.00",
+    image:
+      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=800&q=80",
+  },
+]
+
+export default function Shop() {
+  return (
+    <AppShell>
+      <header className="mb-5 pt-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/5">
+            <ShoppingBag size={20} className="text-[#C8A96A]" />
+          </div>
+          <div>
+            <h1 className="text-[28px] font-semibold tracking-[-0.3px]">Shop</h1>
+            <p className="text-sm text-[#A8AFBE]">
+              Fill wardrobe gaps with smarter picks
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <section className="rounded-[24px] border border-white/10 bg-gradient-to-br from-[#3A2922] via-[#241A18] to-[#151922] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+        <h2 className="text-[18px] font-semibold">Wardrobe Gaps</h2>
+        <p className="mt-2 text-sm leading-6 text-[#D6D0C8]">
+          You&apos;re missing a few key pieces to create more outfits from what
+          you already own. Add versatile essentials first for the biggest impact
+        </p>
+
+        <div className="mt-4">
+          <PrimaryButton fullWidth={false} className="px-4">
+            View Recommendations
+          </PrimaryButton>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-[18px] font-semibold">Recommended For You</h3>
+          <button className="flex items-center gap-1 text-sm text-[#A8AFBE]">
+            See all <ArrowRight size={15} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {recommendedProducts.map((product) => (
+            <article
+              key={product.id}
+              className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-3"
+            >
+              <div className="h-16 w-16 overflow-hidden rounded-[16px] bg-[#11151C]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-semibold text-[#F6F3EE]">
+                  {product.name}
+                </h4>
+                <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#6F7788]">
+                  {product.brand}
+                </p>
+                <p className="mt-2 text-sm text-[#F6F3EE]">{product.price}</p>
+              </div>
+
+              <button className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE]">
+                View
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-[24px] border border-white/10 bg-[#151922] p-4">
+        <h3 className="text-[16px] font-semibold">Pro unlock</h3>
+        <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
+          Unlock gap analysis, smart shopping links, and more tailored wardrobe
+          recommendations with Drape Pro
+        </p>
+
+        <div className="mt-4">
+          <PrimaryButton>Start 7-Day Free Trial</PrimaryButton>
+        </div>
+      </section>
+    </AppShell>
+  )
+}
