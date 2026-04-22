@@ -1,6 +1,8 @@
 import type { HTMLAttributes } from "react"
+import { Bookmark } from "lucide-react"
 import type { RecommendedProduct } from "../lib/types"
 import { useAffiliateClickTracking } from "../hooks/useAffiliateClickTracking"
+import { useSavedProducts } from "../hooks/useSavedProducts"
 
 type ProductCardProps = HTMLAttributes<HTMLDivElement> & {
   product: RecommendedProduct
@@ -18,6 +20,9 @@ export function ProductCard({
   ...props
 }: ProductCardProps) {
   const { trackClick } = useAffiliateClickTracking({ sourceScreen })
+  const { isSaved, toggleSavedProduct } = useSavedProducts()
+
+  const saved = isSaved(product.id)
 
   return (
     <article
@@ -52,12 +57,25 @@ export function ProductCard({
         ) : null}
       </div>
 
-      <button
-        onClick={() => onClick ? onClick(product) : trackClick(product)}
-        className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE] transition hover:bg-white/10"
-      >
-        {buttonLabel}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => toggleSavedProduct(product)}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:bg-white/10"
+          aria-label={saved ? "Unsave product" : "Save product"}
+        >
+          <Bookmark
+            size={14}
+            className={saved ? "fill-[#C8A96A] text-[#C8A96A]" : "text-[#6F7788]"}
+          />
+        </button>
+
+        <button
+          onClick={() => onClick ? onClick(product) : trackClick(product)}
+          className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE] transition hover:bg-white/10"
+        >
+          {buttonLabel}
+        </button>
+      </div>
     </article>
   )
 }
