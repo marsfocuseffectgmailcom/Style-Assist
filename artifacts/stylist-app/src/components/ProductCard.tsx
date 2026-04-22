@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react"
 import type { RecommendedProduct } from "../lib/types"
-import { openAffiliateProduct } from "../lib/affiliate"
+import { useAffiliateClickTracking } from "../hooks/useAffiliateClickTracking"
 
 type ProductCardProps = HTMLAttributes<HTMLDivElement> & {
   product: RecommendedProduct
@@ -15,6 +15,8 @@ export function ProductCard({
   className = "",
   ...props
 }: ProductCardProps) {
+  const { trackClick } = useAffiliateClickTracking({ sourceScreen })
+
   return (
     <article
       className={`flex items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-3 ${className}`}
@@ -49,7 +51,7 @@ export function ProductCard({
       </div>
 
       <button
-        onClick={() => openAffiliateProduct(product, sourceScreen)}
+        onClick={() => trackClick(product)}
         className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE] transition hover:bg-white/10"
       >
         {buttonLabel}
