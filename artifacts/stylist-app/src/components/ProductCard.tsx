@@ -9,6 +9,8 @@ type ProductCardProps = HTMLAttributes<HTMLDivElement> & {
   sourceScreen?: "shop" | "stylist" | "gap-analysis" | "home"
   buttonLabel?: string
   onClick?: (product: RecommendedProduct) => void
+  onToggleSave?: (product: RecommendedProduct) => void
+  isSaved?: boolean
 }
 
 export function ProductCard({
@@ -16,13 +18,16 @@ export function ProductCard({
   sourceScreen = "shop",
   buttonLabel = "View",
   onClick,
+  onToggleSave,
+  isSaved: isSavedProp,
   className = "",
   ...props
 }: ProductCardProps) {
   const { trackClick } = useAffiliateClickTracking({ sourceScreen })
-  const { isSaved, toggleSavedProduct } = useSavedProducts()
+  const { isSaved: isSavedInternal, toggleSavedProduct } = useSavedProducts()
 
-  const saved = isSaved(product.id)
+  const saved = isSavedProp !== undefined ? isSavedProp : isSavedInternal(product.id)
+  const handleToggleSave = onToggleSave ?? toggleSavedProduct
 
   return (
     <article
@@ -59,7 +64,7 @@ export function ProductCard({
 
       <div className="flex items-center gap-2">
         <button
-          onClick={() => toggleSavedProduct(product)}
+          onClick={() => handleToggleSave(product)}
           className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:bg-white/10"
           aria-label={saved ? "Unsave product" : "Save product"}
         >
