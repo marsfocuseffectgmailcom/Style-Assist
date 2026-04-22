@@ -5,6 +5,7 @@ import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
 import Shop from "./pages/Shop"
 import Profile from "./pages/Profile"
+import SavedProducts from "./pages/SavedProducts"
 
 
 const queryClient = new QueryClient({
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/wardrobe" element={<Wardrobe />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/saved" element={<SavedProducts />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
