@@ -1,7 +1,7 @@
 import { Search, Plus } from "lucide-react"
 import { useMemo, useState } from "react"
 import { AppShell } from "../components/AppShell"
-import { wardrobeItems } from "../lib/data"
+import { wardrobeItems } from "../lib/mockData"
 
 const categories = ["All", "Tops", "Bottoms", "Shoes", "Outerwear"] as const
 type Category = (typeof categories)[number]

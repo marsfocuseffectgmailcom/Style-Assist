@@ -1,6 +1,6 @@
 import { ArrowLeft, SendHorizonal, CheckCircle2 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
-import { outfitCards } from "../lib/data"
+import { outfitCards } from "../lib/mockData"
 
 export default function Stylist() {
   return (

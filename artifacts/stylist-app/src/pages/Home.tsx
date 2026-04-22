@@ -1,7 +1,7 @@
 import { Bell, ChevronRight, Sparkles, Briefcase, Heart, CalendarDays } from "lucide-react"
 import { motion } from "framer-motion"
 import { AppShell } from "../components/AppShell"
-import { quickActions } from "../lib/data"
+import { quickActions } from "../lib/mockData"
 
 const iconMap: Record<string, JSX.Element> = {
   Work: <Briefcase size={18} />,

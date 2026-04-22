@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import Home from "./pages/home"
-import Stylist from "./pages/stylist"
-import Wardrobe from "./pages/wardrobe"
+import Home from "./pages/Home"
+import Stylist from "./pages/Stylist"
+import Wardrobe from "./pages/Wardrobe"
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
