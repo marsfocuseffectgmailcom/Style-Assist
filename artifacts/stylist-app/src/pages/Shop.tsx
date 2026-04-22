@@ -1,6 +1,9 @@
-import { ShoppingBag, ArrowRight } from "lucide-react"
+import { ShoppingBag } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
+import { Card } from "../components/Card"
+import { SectionHeader } from "../components/SectionHeader"
+import { ProductCard } from "../components/ProductCard"
 
 const recommendedProducts = [
   {
@@ -46,7 +49,10 @@ export default function Shop() {
         </div>
       </header>
 
-      <section className="rounded-[24px] border border-white/10 bg-gradient-to-br from-[#3A2922] via-[#241A18] to-[#151922] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+      <Card
+        elevated
+        className="bg-gradient-to-br from-[#3A2922] via-[#241A18] to-[#151922]"
+      >
         <h2 className="text-[18px] font-semibold">Wardrobe Gaps</h2>
         <p className="mt-2 text-sm leading-6 text-[#D6D0C8]">
           You&apos;re missing a few key pieces to create more outfits from what
@@ -58,49 +64,25 @@ export default function Shop() {
             View Recommendations
           </PrimaryButton>
         </div>
-      </section>
+      </Card>
 
       <section className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-[18px] font-semibold">Recommended For You</h3>
-          <button className="flex items-center gap-1 text-sm text-[#A8AFBE]">
-            See all <ArrowRight size={15} />
-          </button>
-        </div>
+        <SectionHeader title="Recommended For You" actionLabel="See all" />
 
         <div className="space-y-3">
           {recommendedProducts.map((product) => (
-            <article
+            <ProductCard
               key={product.id}
-              className="flex items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-3"
-            >
-              <div className="h-16 w-16 overflow-hidden rounded-[16px] bg-[#11151C]">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h4 className="truncate text-sm font-semibold text-[#F6F3EE]">
-                  {product.name}
-                </h4>
-                <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#6F7788]">
-                  {product.brand}
-                </p>
-                <p className="mt-2 text-sm text-[#F6F3EE]">{product.price}</p>
-              </div>
-
-              <button className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE]">
-                View
-              </button>
-            </article>
+              name={product.name}
+              brand={product.brand}
+              price={product.price}
+              image={product.image}
+            />
           ))}
         </div>
       </section>
 
-      <section className="mt-6 rounded-[24px] border border-white/10 bg-[#151922] p-4">
+      <Card className="mt-6">
         <h3 className="text-[16px] font-semibold">Pro unlock</h3>
         <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
           Unlock gap analysis, smart shopping links, and more tailored wardrobe
@@ -110,7 +92,7 @@ export default function Shop() {
         <div className="mt-4">
           <PrimaryButton>Start 7-Day Free Trial</PrimaryButton>
         </div>
-      </section>
+      </Card>
     </AppShell>
   )
 }
