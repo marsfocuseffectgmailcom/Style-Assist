@@ -1,16 +1,4 @@
-export type RecommendedProduct = {
-  id: string
-  name: string
-  brand: string
-  price: string
-  image: string
-  merchant: "Amazon" | "SHEIN" | "Temu" | "ASOS" | "Zara"
-  productUrl: string
-  affiliateUrl: string
-  commissionEligible: boolean
-  category: string
-  matchedWardrobeGap?: string
-}
+export type { RecommendedProduct, WardrobeGap, Merchant, GenderProfile, WardrobeGapPriority, AffiliateClickEvent, ShoppingRecommendationResponse } from "./types"
 
 export type OutfitCard = {
   id: number
