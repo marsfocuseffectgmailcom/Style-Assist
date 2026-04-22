@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+.font-editorial {
+  font-family: 'Playfair Display', serif;
+}
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+.bg-navy { background-color: #0f172a; }
+.text-navy { color: #0f172a; }
+.bg-ivory { background-color: #faf7f2; }
+.text-ivory { color: #faf7f2; }
+.bg-terracotta { background-color: #c85a3a; }
+.text-terracotta { color: #c85a3a; }
+.border-navy { border-color: #0f172a; }
+.border-terracotta { border-color: #c85a3a; }
+.border-ivory { border-color: #faf7f2; }
+
+/* Global overrides for this mockup */
+.mockup-container {
+  width: 390px;
+  height: 844px; /* iPhone 14 size roughly */
+  overflow-y: auto;
+  position: relative;
+  background-color: #faf7f2;
+  color: #0f172a;
+  font-family: 'Inter', sans-serif;
+}
+.mockup-container * {
+  border-radius: 0 !important; /* No rounded corners */
+}
+
+/* Hide scrollbar for clean mockups */
+.mockup-container::-webkit-scrollbar {
+  display: none;
+}
+.mockup-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.texture-bg {
+  background-color: #faf7f2;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+}
