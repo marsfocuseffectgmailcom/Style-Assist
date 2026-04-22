@@ -7,7 +7,7 @@ import { SectionHeader } from "../components/SectionHeader"
 import { ProductCard } from "../components/ProductCard"
 import { WardrobeGapCard } from "../components/WardrobeGapCard"
 import { fetchShoppingRecommendations, fetchRecommendedProducts } from "../lib/shopService"
-import type { Merchant, RecommendedProduct, WardrobeGap } from "../lib/types"
+import type { Merchant, RecommendedProduct, WardrobeGap } from "../types/shop"
 import { CategoryPill } from "../components/CategoryPill"
 
 const merchantFilters: Array<Merchant | "All"> = ["All", "Amazon", "SHEIN", "Temu", "ASOS"]
@@ -34,7 +34,6 @@ export default function Shop() {
   useEffect(() => {
     async function reloadProducts() {
       const nextProducts = await fetchRecommendedProducts({
-        query: "",
         merchant,
       })
       setProducts(nextProducts)
