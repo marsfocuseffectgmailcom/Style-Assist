@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import AppShell from "@/components/AppShell";
+import { AppShell } from "@/components/AppShell";
 
 import Home from "@/pages/home";
 import Wardrobe from "@/pages/wardrobe";
