@@ -3,12 +3,6 @@ export type Merchant =
   | "SHEIN"
   | "Temu"
   | "ASOS"
-  | "Zara"
-  | "H&M"
-  | "AffiliateNetwork"
-  | "Direct"
-
-export type GenderProfile = "women" | "men" | "unisex"
 
 export type WardrobeGapPriority = "high" | "medium" | "low"
 
@@ -30,6 +24,25 @@ export type WardrobeGap = {
   styleTags: string[]
   colorPreferences?: string[]
   occasion?: string
+}
+
+export type RawMerchantProduct = {
+  id: string
+  merchant: Merchant
+  title: string
+  brand?: string
+  price?: number | string
+  currency?: string
+  imageUrl?: string
+  productUrl?: string
+  affiliateUrl?: string
+  category?: string
+  colors?: string[]
+  sizes?: string[]
+  inStock?: boolean
+  rating?: number
+  reviewCount?: number
+  metadata?: Record<string, unknown>
 }
 
 export type RecommendedProduct = {
@@ -54,7 +67,27 @@ export type RecommendedProduct = {
   inStock?: boolean
 }
 
-export type ShoppingRecommendationResponse = {
-  wardrobeGaps: WardrobeGap[]
-  recommendedProducts: RecommendedProduct[]
+export type MerchantSearchParams = {
+  query: string
+  category?: string
+  colorPreferences?: string[]
+  styleTags?: string[]
+  limit?: number
+}
+
+export type MerchantAdapter = {
+  merchant: Merchant
+  enabled: boolean
+  searchProducts(params: MerchantSearchParams): Promise<RawMerchantProduct[]>
+}
+
+export type SearchProductsRequest = {
+  query: string
+  merchants?: Merchant[]
+  category?: string
+  colorPreferences?: string[]
+  styleTags?: string[]
+  matchedWardrobeGapId?: string
+  matchedWardrobeGapTitle?: string
+  limitPerMerchant?: number
 }
