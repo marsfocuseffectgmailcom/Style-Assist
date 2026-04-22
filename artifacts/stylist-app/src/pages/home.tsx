@@ -1,143 +1,121 @@
-import { useGetWardrobeStats, useGetStylistHistory } from "@workspace/api-client-react";
-import { Link } from "wouter";
-import { ArrowRight, Sparkles, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Bell, ChevronRight, Sparkles, Briefcase, Heart, CalendarDays } from "lucide-react"
+import { motion } from "framer-motion"
+import { AppShell } from "../components/AppShell"
+import { quickActions } from "../lib/data"
+
+const iconMap: Record<string, JSX.Element> = {
+  Work: <Briefcase size={18} />,
+  "Date Night": <Heart size={18} />,
+  Weekend: <Sparkles size={18} />,
+  Event: <CalendarDays size={18} />,
+}
 
 export default function Home() {
-  const { data: stats, isLoading: statsLoading, error: statsError } = useGetWardrobeStats();
-  const { data: history, isLoading: historyLoading } = useGetStylistHistory();
-
-  const recentSession = history?.[0];
-
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="space-y-4">
-        <h1 className="text-4xl md:text-5xl text-foreground">Welcome to The Stylist</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl font-serif italic">
-          Your personal wardrobe strategist. Precision meets personal expression.
-        </p>
-      </header>
-
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-serif">Wardrobe Intelligence</h2>
-            <Link href="/wardrobe" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors" data-testid="link-home-wardrobe">
-              Manage Wardrobe <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          {statsLoading ? (
-            <div className="grid grid-cols-2 gap-4">
-              <Skeleton className="h-32 rounded-none" />
-              <Skeleton className="h-32 rounded-none" />
-            </div>
-          ) : statsError ? (
-            <Alert variant="destructive" className="rounded-none border-destructive/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>Could not load wardrobe statistics.</AlertDescription>
-            </Alert>
-          ) : stats ? (
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="rounded-none border-border bg-card/50 shadow-none">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-4xl font-serif">{stats.totalItems}</CardTitle>
-                  <CardDescription className="text-sm uppercase tracking-wider text-muted-foreground">Total Pieces</CardDescription>
-                </CardHeader>
-              </Card>
-              
-              <Card className="rounded-none border-border bg-card/50 shadow-none">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-4xl font-serif">{Object.keys(stats.byCategory || {}).length}</CardTitle>
-                  <CardDescription className="text-sm uppercase tracking-wider text-muted-foreground">Categories</CardDescription>
-                </CardHeader>
-              </Card>
-              
-              {/* Could show top categories here */}
-            </div>
-          ) : null}
+    <AppShell>
+      <header className="mb-6 flex items-start justify-between pt-4">
+        <div>
+          <p className="text-base text-[#A8AFBE]">Good morning,</p>
+          <h1 className="text-[34px] font-bold leading-none tracking-[-0.5px]">
+            Alex
+          </h1>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-serif">Studio</h2>
-            <Link href="/stylist" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors" data-testid="link-home-stylist">
-              Enter Studio <ArrowRight className="w-4 h-4" />
-            </Link>
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]">
+          <Bell size={18} />
+        </button>
+      </header>
+
+      <section className="rounded-[28px] border border-white/10 bg-gradient-to-b from-[#1A1F2B] to-[#12161F] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.28)]">
+        <div className="mb-3 flex items-start justify-between">
+          <div>
+            <h2 className="text-[18px] font-semibold">Today&apos;s Look</h2>
+            <p className="text-sm text-[#A8AFBE]">Smart casual</p>
           </div>
-          
-          <Card className="rounded-none border-border bg-primary text-primary-foreground shadow-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary-foreground">
-                <Sparkles className="w-5 h-5" /> Consult the Stylist
-              </CardTitle>
-              <CardDescription className="text-primary-foreground/80">
-                Generate bespoke editorial looks based on your profile and occasions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/stylist" className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-background text-foreground hover:bg-background/90 h-10 px-8 rounded-none w-full sm:w-auto" data-testid="btn-home-consult">
-                Start Session
-              </Link>
-            </CardContent>
-          </Card>
+
+          <div className="rounded-full bg-white/5 px-3 py-1 text-xs text-[#A8AFBE]">
+            23°C
+          </div>
+        </div>
+
+        <motion.div
+          animate={{ y: [0, -3, 0] }}
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          className="mb-4 flex h-[170px] items-center justify-center overflow-hidden rounded-[20px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.12),transparent_60%)]"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+            alt="Featured outfit"
+            className="h-full w-full object-cover opacity-95"
+          />
+        </motion.div>
+
+        <div className="space-y-2">
+          <button className="h-12 w-full rounded-[18px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] font-medium text-white shadow-[0_8px_24px_rgba(255,92,130,0.28)] transition active:scale-[0.98]">
+            View Look
+          </button>
+
+          <button className="h-11 w-full rounded-[18px] border border-white/10 bg-white/5 text-sm text-[#F6F3EE] transition active:scale-[0.98]">
+            Regenerate
+          </button>
         </div>
       </section>
 
-      {historyLoading ? (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-serif">Recent Session</h2>
-          <Skeleton className="h-64 rounded-none" />
+      <section className="mt-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-[18px] font-semibold">Quick Actions</h3>
+          <button className="flex items-center gap-1 text-sm text-[#A8AFBE]">
+            See all <ChevronRight size={16} />
+          </button>
         </div>
-      ) : recentSession ? (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-serif">Recent Session</h2>
-            <Link href="/history" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors" data-testid="link-home-history">
-              View Archive <ArrowRight className="w-4 h-4" />
-            </Link>
+
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {quickActions.map((action) => (
+            <button
+              key={action.id}
+              className="flex h-[76px] min-w-[76px] flex-col items-center justify-center gap-2 rounded-[22px] border border-white/8 bg-[#151922] text-[#F6F3EE]"
+            >
+              <span className="text-[#C8A96A]">{iconMap[action.label]}</span>
+              <span className="text-[12px]">{action.label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-5 rounded-[24px] border border-white/10 bg-[#151922] p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-[16px] font-semibold">
+              You haven&apos;t worn 6 items in 90 days
+            </h3>
+            <p className="mt-1 text-sm text-[#A8AFBE]">
+              Rediscover pieces already in your wardrobe
+            </p>
           </div>
-          
-          <Card className="rounded-none border-border shadow-none bg-secondary/30">
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-1 space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-sm uppercase tracking-wider text-muted-foreground">Occasion</p>
-                    <p className="font-serif text-lg">{recentSession.occasion}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm uppercase tracking-wider text-muted-foreground">Location</p>
-                    <p className="font-serif text-lg">{recentSession.location}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm uppercase tracking-wider text-muted-foreground">Season</p>
-                    <p className="font-serif text-lg">{recentSession.season}</p>
-                  </div>
-                  <div className="pt-4">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(recentSession.createdAt).toLocaleDateString(undefined, {
-                        year: 'numeric', month: 'long', day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="md:col-span-2 border-t md:border-t-0 md:border-l border-border/50 pt-8 md:pt-0 md:pl-8 flex flex-col justify-center">
-                  <h3 className="font-serif text-xl mb-4">The Stylist's Pick</h3>
-                  <p className="text-muted-foreground italic leading-relaxed">
-                    "{recentSession.stylistsPick}"
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      ) : null}
-    </div>
-  );
+
+          <button className="rounded-full bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] px-3 py-2 text-xs font-semibold text-white">
+            Style Them
+          </button>
+        </div>
+      </section>
+
+      <section className="mt-5 rounded-[24px] border border-white/10 bg-[#151922] p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-[16px] font-semibold">
+              Daily Styling Insight
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
+              Try tonal dressing today — layering similar shades creates a
+              cleaner silhouette and makes the whole look feel more intentional
+            </p>
+          </div>
+
+          <div className="mt-1 text-[#C8A96A]">
+            <Sparkles size={18} />
+          </div>
+        </div>
+      </section>
+    </AppShell>
+  )
 }
