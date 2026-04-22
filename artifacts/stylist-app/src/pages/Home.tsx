@@ -9,7 +9,8 @@ import { motion } from "framer-motion"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
-import { quickActions } from "../lib/mockData"
+import { OutfitCard } from "../components/OutfitCard"
+import { quickActions, outfitCards } from "../lib/mockData"
 import { PrimaryButton } from "../components/PrimaryButton"
 
 const iconMap: Record<string, JSX.Element> = {
@@ -80,6 +81,21 @@ export default function Home() {
               <span className="text-[#C8A96A]">{iconMap[action.label]}</span>
               <span className="text-[12px]">{action.label}</span>
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <SectionHeader title="Recent Looks" actionLabel="See all" />
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {outfitCards.map((outfit) => (
+            <OutfitCard
+              key={outfit.id}
+              title={outfit.title}
+              subtitle={outfit.subtitle}
+              image={outfit.image}
+              compact
+            />
           ))}
         </div>
       </section>
