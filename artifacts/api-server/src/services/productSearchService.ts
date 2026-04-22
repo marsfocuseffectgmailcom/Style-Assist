@@ -1,9 +1,32 @@
-import { getAllAdapters } from "../adapters/registry"
-import type { RecommendedProduct, WardrobeGap } from "../types/shop"
+import { getMerchantAdapters } from "../adapters/registry"
+import { normaliseProducts } from "../adapters/normaliseProduct"
+import type {
+  RecommendedProduct,
+  SearchProductsRequest,
+} from "../types/shop"
 
-export async function searchProductsForGap(gap: WardrobeGap): Promise<RecommendedProduct[]> {
-  const adapters = getAllAdapters()
-  const results = await Promise.allSettled(adapters.map((a) => a.search(gap)))
+export async function searchProductsAcrossMerchants(
+  request: SearchProductsRequest,
+): Promise<RecommendedProduct[]> {
+  const adapters = getMerchantAdapters(request.merchants)
 
-  return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []))
+  const results = await Promise.all(
+    adapters.map(async (adapter) => {
+      const rawProducts = await adapter.searchProducts({
+        query: request.query,
+        category: request.category,
+        colorPreferences: request.colorPreferences,
+        styleTags: request.styleTags,
+        limit: request.limitPerMerchant,
+      })
+
+      return normaliseProducts(rawProducts, {
+        styleTags: request.styleTags,
+        matchedWardrobeGapId: request.matchedWardrobeGapId,
+        matchedWardrobeGapTitle: request.matchedWardrobeGapTitle,
+      })
+    }),
+  )
+
+  return results.flat()
 }
