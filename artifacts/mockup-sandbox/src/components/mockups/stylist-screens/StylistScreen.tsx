@@ -2,103 +2,123 @@ import React from 'react';
 import './_group.css';
 import { BottomNav } from './BottomNav';
 
+const outfits = [
+  {
+    name: 'Riviera\nDusk',
+    items: [['Outerwear', 'Navy Linen Blazer'], ['Top', 'White Oxford Shirt'], ['Bottom', 'Ivory Trousers'], ['Shoes', 'Tan Leather Loafers']],
+    teaser: 'Seamless transition from day to evening elegance.',
+    selected: true,
+  },
+  {
+    name: 'Parisian\nEase',
+    items: [['Outerwear', 'Camel Wool Coat'], ['Top', 'Black Turtleneck'], ['Bottom', 'Olive Chinos'], ['Shoes', 'Chelsea Boots']],
+    teaser: 'Understated monochrome with a dramatic silhouette.',
+    selected: false,
+  },
+  {
+    name: 'Midnight\nAccord',
+    items: [['Top', 'Grey Cashmere Sweater'], ['Bottom', 'Black Slim Jeans'], ['Shoes', 'Dark Brown Chelsea Boots']],
+    teaser: 'Tonal harmony anchored by rich texture contrast.',
+    selected: false,
+  },
+];
+
 export default function StylistScreen() {
   return (
-    <div className="mockup-container pb-24 bg-ivory">
+    <div className="mockup-container pb-28" style={{ background: 'var(--bg-base)' }}>
+      <div style={{ height: 44 }} />
+
       {/* Header */}
-      <header className="px-6 pt-14 pb-6 text-center border-b border-navy/10">
-        <h1 className="font-editorial text-2xl tracking-tight text-navy">The Studio</h1>
+      <header style={{ padding: '0 24px 16px', textAlign: 'center' }}>
+        <h1 className="font-editorial" style={{ fontSize: 26, color: 'var(--text-primary)' }}>The Studio</h1>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Dinner in Paris · Spring · Paris, FR</p>
       </header>
 
-      {/* Styled Form Summary */}
-      <div className="px-6 py-4 flex flex-wrap gap-x-6 gap-y-2 border-b border-navy/10 text-xs font-body text-navy uppercase tracking-widest">
-        <div><span className="text-navy/50 mr-2">For</span>Dinner in Paris</div>
-        <div><span className="text-navy/50 mr-2">Season</span>Spring</div>
-        <div><span className="text-navy/50 mr-2">Loc</span>Paris</div>
-      </div>
-
       {/* Outfit Carousel */}
-      <div className="mt-8 mb-8 overflow-x-auto flex gap-4 px-6 snap-x snap-mandatory hide-scrollbar">
-        {/* Card 1 - Selected */}
-        <div className="snap-center shrink-0 w-[85%] border border-navy bg-navy text-ivory p-6 shadow-xl relative">
-          <div className="absolute top-4 right-4 bg-terracotta text-ivory text-[10px] font-bold uppercase tracking-widest px-2 py-1">
-            Selected
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          overflowX: 'auto',
+          padding: '4px 20px 16px',
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {outfits.map((outfit) => (
+          <div
+            key={outfit.name}
+            style={{
+              flexShrink: 0,
+              width: '78%',
+              scrollSnapAlign: 'center',
+              borderRadius: 'var(--radius-xl3)',
+              background: outfit.selected
+                ? 'linear-gradient(155deg, #1e2235 0%, #151922 100%)'
+                : 'var(--bg-card)',
+              border: outfit.selected
+                ? '1px solid rgba(255,77,141,0.35)'
+                : '1px solid rgba(255,255,255,0.06)',
+              padding: 20,
+              boxShadow: outfit.selected ? 'var(--shadow-glow)' : 'var(--shadow-soft)',
+              opacity: outfit.selected ? 1 : 0.55,
+              transition: 'opacity 0.2s',
+              position: 'relative',
+            }}
+          >
+            {outfit.selected && (
+              <div className="gradient-pill" style={{ position: 'absolute', top: 14, right: 14, fontSize: 9, fontWeight: 700, padding: '3px 10px', letterSpacing: '0.06em' }}>
+                PICK
+              </div>
+            )}
+            <h2
+              className="font-editorial"
+              style={{ fontSize: 30, color: 'var(--text-primary)', lineHeight: 1.1, marginBottom: 16, whiteSpace: 'pre-line' }}
+            >
+              {outfit.name}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 16 }}>
+              {outfit.items.map(([role, item]) => (
+                <div key={role} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 9 }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{role}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500, textAlign: 'right', maxWidth: '55%' }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <p
+              className="font-editorial"
+              style={{ fontSize: 12, color: outfit.selected ? 'var(--brand-gold)' : 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}
+            >
+              "{outfit.teaser}"
+            </p>
           </div>
-          <h2 className="font-editorial text-4xl leading-none mb-6 mt-4">Riviera<br/>Dusk</h2>
-          
-          <div className="space-y-4 text-sm font-body text-ivory/90 mb-8">
-            <div className="flex justify-between border-b border-ivory/20 pb-2">
-              <span className="text-ivory/50">Outerwear</span>
-              <span className="text-right">Navy Linen Blazer</span>
-            </div>
-            <div className="flex justify-between border-b border-ivory/20 pb-2">
-              <span className="text-ivory/50">Top</span>
-              <span className="text-right">White Silk Shirt</span>
-            </div>
-            <div className="flex justify-between border-b border-ivory/20 pb-2">
-              <span className="text-ivory/50">Bottom</span>
-              <span className="text-right">Ivory Tailored Trousers</span>
-            </div>
-            <div className="flex justify-between border-b border-ivory/20 pb-2">
-              <span className="text-ivory/50">Shoes</span>
-              <span className="text-right">Black Horsebit Loafers</span>
-            </div>
-          </div>
-          
-          <p className="text-xs italic text-terracotta font-editorial">
-            "A seamless transition from day to evening elegance."
-          </p>
-        </div>
-
-        {/* Card 2 */}
-        <div className="snap-center shrink-0 w-[85%] border border-navy/20 bg-ivory text-navy p-6 opacity-60 transition-opacity">
-          <h2 className="font-editorial text-4xl leading-none mb-6 mt-4">Parisian<br/>Ease</h2>
-          
-          <div className="space-y-4 text-sm font-body text-navy mb-8">
-            <div className="flex justify-between border-b border-navy/10 pb-2">
-              <span className="text-navy/50">Outerwear</span>
-              <span className="text-right">Beige Mac Coat</span>
-            </div>
-            <div className="flex justify-between border-b border-navy/10 pb-2">
-              <span className="text-navy/50">Top</span>
-              <span className="text-right">Black Turtleneck</span>
-            </div>
-            <div className="flex justify-between border-b border-navy/10 pb-2">
-              <span className="text-navy/50">Bottom</span>
-              <span className="text-right">Charcoal Wool Trousers</span>
-            </div>
-            <div className="flex justify-between border-b border-navy/10 pb-2">
-              <span className="text-navy/50">Shoes</span>
-              <span className="text-right">Black Chelsea Boots</span>
-            </div>
-          </div>
-          
-          <p className="text-xs italic text-terracotta font-editorial">
-            "Understated monochrome with a dramatic silhouette."
-          </p>
-        </div>
+        ))}
       </div>
 
-      {/* Why It Works Card */}
-      <div className="px-6 mb-8">
-        <div className="border border-navy/10 p-6 bg-white">
-          <h3 className="font-editorial text-xl mb-4 text-navy">Why This Works</h3>
-          <p className="text-sm font-body text-navy/80 leading-relaxed mb-6">
-            The navy linen blazer provides structure without stiffness, ideal for a Parisian dinner. Pairing it with a silk shirt elevates the texture, while the ivory trousers create a stark, elegant contrast. It respects traditional tailoring but feels effortlessly modern.
+      {/* Carousel dots */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 20 }}>
+        {outfits.map((o, i) => (
+          <div key={i} style={{ width: i === 0 ? 20 : 6, height: 6, borderRadius: 999, background: i === 0 ? 'var(--brand-pink)' : 'rgba(255,255,255,0.15)' }} />
+        ))}
+      </div>
+
+      {/* Why It Works */}
+      <div style={{ margin: '0 20px' }}>
+        <div className="card-dark" style={{ padding: 20 }}>
+          <h3 style={{ fontSize: 13, color: 'var(--brand-pink)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 10 }}>Why This Works</h3>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 16 }}>
+            The navy linen blazer adds structure without weight — perfect for a warm Parisian evening. Pairing it with the ivory trousers creates a stark tonal contrast, while the tan loafers ground the look with warmth.
           </p>
-          
-          <div className="bg-terracotta/10 border-l-2 border-terracotta p-4">
-            <h4 className="text-xs uppercase tracking-widest text-terracotta font-bold mb-1">Stylist's Pick</h4>
-            <p className="text-sm font-editorial italic text-navy">
-              "The stark contrast between navy and ivory is a timeless hallmark of Riviera style."
+          <div style={{ borderRadius: 14, background: 'rgba(200,169,106,0.1)', border: '1px solid rgba(200,169,106,0.25)', padding: '14px 16px' }}>
+            <p style={{ fontSize: 10, color: 'var(--brand-gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Stylist's Verdict</p>
+            <p className="font-editorial" style={{ fontSize: 13, color: 'var(--text-primary)', fontStyle: 'italic', lineHeight: 1.6 }}>
+              "Riviera Dusk wins — it's the only look that holds its own in candlelight and afternoon sun. The other two are good. This one is memorable."
             </p>
           </div>
         </div>
-      </div>
 
-      <div className="px-6">
-        <button className="w-full bg-navy text-ivory py-4 text-sm font-bold uppercase tracking-widest">
-          Save Look & View in 3D
+        <button className="btn-glow" style={{ width: '100%', marginTop: 14, padding: '16px 0', fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', textAlign: 'center' }}>
+          Save Look · View in Preview
         </button>
       </div>
 

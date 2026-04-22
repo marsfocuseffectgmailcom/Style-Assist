@@ -1,84 +1,98 @@
 import React from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Shirt } from 'lucide-react';
 import './_group.css';
 import { BottomNav } from './BottomNav';
 
-export default function WardrobeScreen() {
-  const categories = ['All', 'Tops', 'Bottoms', 'Shoes', 'Outerwear', 'Accessories'];
-  
-  const items = [
-    { id: 1, name: 'White Oxford Shirt', category: 'Tops', color: '#ffffff', brand: 'Drake\'s' },
-    { id: 2, name: 'Striped Breton Top', category: 'Tops', color: '#0f172a', brand: 'Armor Lux' },
-    { id: 3, name: 'Grey Cashmere Sweater', category: 'Tops', color: '#9ca3af', brand: 'John Smedley' },
-    { id: 4, name: 'Black Turtleneck', category: 'Tops', color: '#000000', brand: 'Sunspel' },
-    { id: 5, name: 'Navy Tailored Trousers', category: 'Bottoms', color: '#0f172a', brand: 'Incotex' },
-    { id: 6, name: 'Olive Chinos', category: 'Bottoms', color: '#4b5563', brand: 'Officine Generale' },
-  ];
+const categories = ['All', 'Tops', 'Bottoms', 'Shoes', 'Outerwear'];
 
+const items = [
+  { id: 1, name: 'White Oxford Shirt', category: 'Tops', colour: '#e8e0d5', brand: "Ralph Lauren" },
+  { id: 2, name: 'Striped Breton Top', category: 'Tops', colour: '#1a2a4a', brand: 'Saint James' },
+  { id: 3, name: 'Grey Cashmere Sweater', category: 'Tops', colour: '#9ca3af', brand: 'Sunspel' },
+  { id: 4, name: 'Black Turtleneck', category: 'Tops', colour: '#111', brand: 'Uniqlo' },
+  { id: 5, name: 'Navy Tailored Trousers', category: 'Bottoms', colour: '#1e3a5f', brand: 'Cos' },
+  { id: 6, name: 'Olive Chinos', category: 'Bottoms', colour: '#4a5240', brand: 'Incotex' },
+];
+
+export default function WardrobeScreen() {
   return (
-    <div className="mockup-container pb-24 bg-ivory">
+    <div className="mockup-container pb-28" style={{ background: 'var(--bg-base)' }}>
+      <div style={{ height: 44 }} />
+
       {/* Header */}
-      <header className="flex justify-between items-center px-6 pt-14 pb-4">
-        <h1 className="font-editorial text-2xl tracking-tight text-navy">Wardrobe Archive</h1>
-        <button className="text-navy p-2 border border-navy">
-          <Plus size={18} strokeWidth={2} />
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px 20px' }}>
+        <div>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 3 }}>12 pieces</p>
+          <h1 className="font-editorial" style={{ fontSize: 26, color: 'var(--text-primary)' }}>Wardrobe</h1>
+        </div>
+        <button className="btn-glow" style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, border: 'none', cursor: 'pointer' }}>
+          <Plus size={18} color="#fff" strokeWidth={2.5} />
         </button>
       </header>
 
-      {/* Search Bar */}
-      <div className="px-6 mb-6">
-        <div className="relative">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-navy/50" />
-          <input 
-            type="text" 
-            placeholder="Search your archive..." 
-            className="w-full bg-transparent border border-navy/20 pl-12 pr-4 py-3 text-sm text-navy placeholder:text-navy/40 focus:outline-none focus:border-navy"
+      {/* Search */}
+      <div style={{ padding: '0 20px 16px' }}>
+        <div style={{ position: 'relative' }}>
+          <Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            placeholder="Search archive..."
+            style={{
+              width: '100%',
+              background: 'var(--bg-card)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 'var(--radius-xl2)',
+              padding: '12px 16px 12px 38px',
+              fontSize: 13,
+              color: 'var(--text-secondary)',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
           />
         </div>
       </div>
 
       {/* Category Pills */}
-      <div className="px-6 mb-8 overflow-x-auto hide-scrollbar">
-        <div className="flex gap-2">
-          {categories.map((cat) => (
-            <button 
+      <div style={{ display: 'flex', gap: 8, padding: '0 20px 20px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {categories.map((cat) => {
+          const active = cat === 'Tops';
+          return (
+            <button
               key={cat}
-              className={`px-4 py-2 text-xs uppercase tracking-widest font-semibold whitespace-nowrap transition-colors ${
-                cat === 'Tops' 
-                  ? 'bg-navy text-ivory border border-navy' 
-                  : 'bg-transparent text-navy/60 border border-navy/20 hover:border-navy'
-              }`}
+              style={{
+                flexShrink: 0,
+                padding: '8px 16px',
+                borderRadius: 999,
+                background: active ? 'linear-gradient(135deg, #FF4D8D, #FF7A5C)' : 'var(--bg-card)',
+                border: active ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                fontSize: 12,
+                fontWeight: 600,
+                color: active ? '#fff' : 'var(--text-muted)',
+                cursor: 'pointer',
+                boxShadow: active ? 'var(--shadow-glow)' : 'none',
+                letterSpacing: '0.03em',
+              }}
             >
               {cat}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Wardrobe Grid */}
-      <div className="px-6 grid grid-cols-2 gap-4">
+      {/* Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '0 20px' }}>
         {items.map((item) => (
-          <div key={item.id} className="border border-navy/10 bg-white group cursor-pointer hover:border-navy/30 transition-colors">
-            <div className="aspect-[3/4] bg-navy/5 relative flex items-center justify-center p-4">
-              {/* Placeholder for item image */}
-              <div className="w-16 h-20 border border-navy/10 bg-white shadow-sm flex items-center justify-center">
-                <Shirt size={24} className="text-navy/20" strokeWidth={1} />
-              </div>
-              <div className="absolute top-3 left-3 flex gap-1.5 items-center">
-                <div 
-                  className="w-3 h-3 border border-navy/20" 
-                  style={{ backgroundColor: item.color }}
-                />
-              </div>
-              <div className="absolute top-3 right-3">
-                <span className="text-[9px] uppercase tracking-widest font-bold text-navy/50 bg-white px-1.5 py-0.5 border border-navy/10">
-                  {item.category}
-                </span>
+          <div key={item.id} className="card-dark" style={{ overflow: 'hidden', cursor: 'pointer' }}>
+            {/* Swatch area */}
+            <div style={{ aspectRatio: '4/3', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <div style={{ width: 44, height: 52, background: item.colour, borderRadius: 8, opacity: 0.85, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
+              <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.08)', borderRadius: 6, padding: '3px 7px' }}>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{item.category}</span>
               </div>
             </div>
-            <div className="p-4 border-t border-navy/5">
-              <h3 className="font-editorial text-sm text-navy font-bold leading-tight mb-1 truncate">{item.name}</h3>
-              <p className="text-[10px] text-terracotta uppercase tracking-widest font-semibold">{item.brand}</p>
+            <div style={{ padding: '12px 14px 14px' }}>
+              <p style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 3, lineHeight: 1.3 }}>{item.name}</p>
+              <p style={{ fontSize: 11, color: 'var(--brand-gold)', fontWeight: 500 }}>{item.brand}</p>
             </div>
           </div>
         ))}
@@ -88,6 +102,3 @@ export default function WardrobeScreen() {
     </div>
   );
 }
-
-// Temporary icon import fallback if Shirt isn't right
-import { Shirt } from 'lucide-react';

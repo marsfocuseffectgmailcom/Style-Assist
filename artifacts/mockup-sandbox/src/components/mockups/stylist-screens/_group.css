@@ -1,45 +1,98 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
-.font-editorial {
-  font-family: 'Playfair Display', serif;
+:root {
+  --bg-base:     #0F1115;
+  --bg-elevated: #151922;
+  --bg-card:     #1A1F2B;
+  --brand-pink:  #FF4D8D;
+  --brand-coral: #FF7A5C;
+  --brand-gold:  #C8A96A;
+  --text-primary:   #F6F3EE;
+  --text-secondary: #A8AFBE;
+  --text-muted:     #6F7788;
+  --radius-xl2: 18px;
+  --radius-xl3: 24px;
+  --radius-xl4: 28px;
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.28);
+  --shadow-glow: 0 8px 24px rgba(255,77,141,0.28);
 }
-.font-body {
-  font-family: 'Inter', sans-serif;
-}
-.bg-navy { background-color: #0f172a; }
-.text-navy { color: #0f172a; }
-.bg-ivory { background-color: #faf7f2; }
-.text-ivory { color: #faf7f2; }
-.bg-terracotta { background-color: #c85a3a; }
-.text-terracotta { color: #c85a3a; }
-.border-navy { border-color: #0f172a; }
-.border-terracotta { border-color: #c85a3a; }
-.border-ivory { border-color: #faf7f2; }
 
-/* Global overrides for this mockup */
+.font-editorial { font-family: 'Playfair Display', serif; }
+.font-body      { font-family: 'Inter', sans-serif; }
+
 .mockup-container {
   width: 390px;
-  height: 844px; /* iPhone 14 size roughly */
+  height: 844px;
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
-  background-color: #faf7f2;
-  color: #0f172a;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   font-family: 'Inter', sans-serif;
-}
-.mockup-container * {
-  border-radius: 0 !important; /* No rounded corners */
-}
-
-/* Hide scrollbar for clean mockups */
-.mockup-container::-webkit-scrollbar {
-  display: none;
-}
-.mockup-container {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+.mockup-container::-webkit-scrollbar { display: none; }
 
-.texture-bg {
-  background-color: #faf7f2;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+/* ── Token utilities ── */
+.bg-base     { background-color: var(--bg-base); }
+.bg-elevated { background-color: var(--bg-elevated); }
+.bg-card     { background-color: var(--bg-card); }
+
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted-s   { color: var(--text-muted); }
+
+.text-pink  { color: var(--brand-pink); }
+.text-coral { color: var(--brand-coral); }
+.text-gold  { color: var(--brand-gold); }
+
+.bg-pink    { background-color: var(--brand-pink); }
+.bg-coral   { background-color: var(--brand-coral); }
+.bg-gold    { background-color: var(--brand-gold); }
+
+.border-pink  { border-color: var(--brand-pink); }
+.border-gold  { border-color: var(--brand-gold); }
+.border-card  { border-color: rgba(255,255,255,0.07); }
+
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-glow { box-shadow: var(--shadow-glow); }
+
+.r-xl2 { border-radius: var(--radius-xl2); }
+.r-xl3 { border-radius: var(--radius-xl3); }
+.r-xl4 { border-radius: var(--radius-xl4); }
+
+/* Gradient pill / badge */
+.gradient-pill {
+  background: linear-gradient(135deg, var(--brand-pink), var(--brand-coral));
+  border-radius: 999px;
+  color: #fff;
 }
+
+/* Glow button */
+.btn-glow {
+  background: linear-gradient(135deg, var(--brand-pink), var(--brand-coral));
+  color: #fff;
+  border-radius: var(--radius-xl3);
+  box-shadow: var(--shadow-glow);
+  border: none;
+}
+
+/* Gold outline button */
+.btn-gold-outline {
+  background: transparent;
+  border: 1.5px solid var(--brand-gold);
+  color: var(--brand-gold);
+  border-radius: var(--radius-xl3);
+}
+
+/* Card base */
+.card-dark {
+  background-color: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-xl3);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Divider */
+.divider { border-top: 1px solid rgba(255,255,255,0.07); }

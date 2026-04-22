@@ -2,78 +2,98 @@ import React from 'react';
 import './_group.css';
 import { BottomNav } from './BottomNav';
 
+const fieldStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'var(--bg-elevated)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 12,
+  padding: '12px 14px',
+  fontSize: 13,
+  color: 'var(--text-primary)',
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'Inter, sans-serif',
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  color: 'var(--brand-pink)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  fontWeight: 700,
+  marginBottom: 7,
+  display: 'block',
+};
+
 export default function ProfileScreen() {
   return (
-    <div className="mockup-container pb-24 bg-ivory">
+    <div className="mockup-container pb-28" style={{ background: 'var(--bg-base)' }}>
+      <div style={{ height: 44 }} />
+
       {/* Header */}
-      <header className="px-6 pt-14 pb-8 border-b border-navy/10">
-        <h1 className="font-editorial text-3xl tracking-tight text-navy">Your Profile</h1>
-        <p className="text-xs uppercase tracking-widest text-navy/50 mt-2 font-bold">Measurements & Preferences</p>
+      <header style={{ padding: '0 24px 24px' }}>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 3 }}>Measurements &amp; Preferences</p>
+        <h1 className="font-editorial" style={{ fontSize: 28, color: 'var(--text-primary)' }}>Your Profile</h1>
       </header>
 
-      <form className="px-6 pt-8 space-y-8">
-        {/* Gender & Height */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-terracotta font-bold">Styling For</label>
-            <select className="w-full bg-transparent border-b border-navy/20 py-2 text-sm text-navy font-body font-semibold rounded-none focus:outline-none focus:border-navy appearance-none">
+      <form style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* Styling for / Height */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label style={labelStyle}>Styling For</label>
+            <select defaultValue="Men" style={{ ...fieldStyle, appearance: 'none' }}>
               <option>Men</option>
               <option>Women</option>
-              <option>Other</option>
+              <option>Non-binary</option>
             </select>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest text-terracotta font-bold">Height</label>
-            <input 
-              type="text" 
-              defaultValue="185 cm"
-              className="w-full bg-transparent border-b border-navy/20 py-2 text-sm text-navy font-body font-semibold rounded-none focus:outline-none focus:border-navy"
-            />
+          <div>
+            <label style={labelStyle}>Height</label>
+            <input type="text" defaultValue="185 cm" style={fieldStyle} />
           </div>
         </div>
 
         {/* Sizes */}
-        <div className="space-y-4">
-          <label className="text-[10px] uppercase tracking-widest text-terracotta font-bold">Standard Sizing</label>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="border border-navy/20 p-3 bg-white focus-within:border-navy">
-              <label className="text-[9px] uppercase tracking-widest text-navy/50 block mb-1">Top</label>
-              <input type="text" defaultValue="M / 40" className="w-full bg-transparent text-sm font-semibold text-navy focus:outline-none" />
-            </div>
-            <div className="border border-navy/20 p-3 bg-white focus-within:border-navy">
-              <label className="text-[9px] uppercase tracking-widest text-navy/50 block mb-1">Bottom</label>
-              <input type="text" defaultValue="32 / 32" className="w-full bg-transparent text-sm font-semibold text-navy focus:outline-none" />
-            </div>
-            <div className="border border-navy/20 p-3 bg-white focus-within:border-navy">
-              <label className="text-[9px] uppercase tracking-widest text-navy/50 block mb-1">Shoe</label>
-              <input type="text" defaultValue="UK 10" className="w-full bg-transparent text-sm font-semibold text-navy focus:outline-none" />
-            </div>
+        <div>
+          <label style={labelStyle}>Standard Sizing</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+            {[['Top', 'M / 40'], ['Bottom', '32/32'], ['Shoe', 'UK 10']].map(([lbl, val]) => (
+              <div key={lbl} style={{ background: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '10px 12px' }}>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, display: 'block', marginBottom: 6 }}>{lbl}</span>
+                <input type="text" defaultValue={val} style={{ background: 'transparent', border: 'none', width: '100%', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Textareas */}
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-terracotta font-bold">Preferred Fabrics</label>
-          <textarea 
-            className="w-full bg-white border border-navy/20 p-4 text-sm text-navy font-body h-24 focus:outline-none focus:border-navy resize-none"
-            defaultValue="Linen, heavy cotton, merino wool. Prefer matte textures over anything shiny."
-          ></textarea>
+        {/* Preferred Fabrics */}
+        <div>
+          <label style={labelStyle}>Preferred Fabrics</label>
+          <textarea
+            defaultValue="Linen, heavy cotton, merino wool. Matte textures over anything shiny."
+            rows={3}
+            style={{ ...fieldStyle, resize: 'none', lineHeight: 1.6 }}
+          />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] uppercase tracking-widest text-terracotta font-bold">What to avoid</label>
-          <textarea 
-            className="w-full bg-white border border-navy/20 p-4 text-sm text-navy font-body h-24 focus:outline-none focus:border-navy resize-none"
+        {/* Avoid */}
+        <div>
+          <label style={labelStyle}>What to Avoid</label>
+          <textarea
             defaultValue="Polyester, loud logos, skinny fit jeans. No bright reds or yellows."
-          ></textarea>
+            rows={3}
+            style={{ ...fieldStyle, resize: 'none', lineHeight: 1.6 }}
+          />
         </div>
 
-        {/* Submit */}
-        <div className="pt-4">
-          <button type="button" className="w-full bg-terracotta text-ivory py-4 text-sm font-bold uppercase tracking-widest hover:bg-terracotta/90 transition-colors">
+        {/* Save */}
+        <div>
+          <button type="button" className="btn-glow" style={{ width: '100%', padding: '16px 0', fontSize: 13, fontWeight: 700, letterSpacing: '0.04em' }}>
             Save Profile
           </button>
         </div>
+
       </form>
 
       <BottomNav active="profile" />
