@@ -6,12 +6,14 @@ type ProductCardProps = HTMLAttributes<HTMLDivElement> & {
   product: RecommendedProduct
   sourceScreen?: "shop" | "stylist" | "gap-analysis" | "home"
   buttonLabel?: string
+  onClick?: (product: RecommendedProduct) => void
 }
 
 export function ProductCard({
   product,
   sourceScreen = "shop",
   buttonLabel = "View",
+  onClick,
   className = "",
   ...props
 }: ProductCardProps) {
@@ -51,7 +53,7 @@ export function ProductCard({
       </div>
 
       <button
-        onClick={() => trackClick(product)}
+        onClick={() => onClick ? onClick(product) : trackClick(product)}
         className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F6F3EE] transition hover:bg-white/10"
       >
         {buttonLabel}
