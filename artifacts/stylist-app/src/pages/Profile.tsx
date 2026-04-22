@@ -1,5 +1,5 @@
 import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
@@ -36,8 +36,6 @@ const profileSections = [
 ]
 
 export default function Profile() {
-  const navigate = useNavigate()
-
   return (
     <AppShell>
       <header className="mb-5 pt-4">
@@ -71,26 +69,36 @@ export default function Profile() {
       </Card>
 
       <section className="mt-5 space-y-3">
-        {profileSections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => section.href && navigate(section.href)}
-            className="flex w-full items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-4 text-left transition hover:border-white/15"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5">
-              {section.icon}
-            </div>
+        {profileSections.map((section) => {
+          const inner = (
+            <>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5">
+                {section.icon}
+              </div>
 
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-[#F6F3EE]">
-                {section.title}
-              </h3>
-              <p className="mt-1 text-sm text-[#A8AFBE]">{section.subtitle}</p>
-            </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-[#F6F3EE]">
+                  {section.title}
+                </h3>
+                <p className="mt-1 text-sm text-[#A8AFBE]">{section.subtitle}</p>
+              </div>
 
-            <ChevronRight size={18} className="text-[#6F7788]" />
-          </button>
-        ))}
+              <ChevronRight size={18} className="text-[#6F7788]" />
+            </>
+          )
+
+          const className = "flex w-full items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-4 text-left transition hover:border-white/15"
+
+          return section.href ? (
+            <Link key={section.id} to={section.href} className={className}>
+              {inner}
+            </Link>
+          ) : (
+            <button key={section.id} className={className}>
+              {inner}
+            </button>
+          )
+        })}
       </section>
 
       <Card className="mt-5">
