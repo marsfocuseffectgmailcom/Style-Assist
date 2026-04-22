@@ -1,42 +1,36 @@
-import React from 'react';
-import { Link, useLocation } from 'wouter';
-import { Home, Shirt, Sparkles, Clock, User } from 'lucide-react';
+import { Home, Shirt, Sparkles, ShoppingBag, User } from "lucide-react"
+import { Link, useLocation } from "wouter"
 
-const items = [
-  { href: '/',          icon: Home,     label: 'Home'     },
-  { href: '/wardrobe',  icon: Shirt,    label: 'Wardrobe' },
-  { href: '/stylist',   icon: Sparkles, label: 'Studio'   },
-  { href: '/history',   icon: Clock,    label: 'History'  },
-  { href: '/profile',   icon: User,     label: 'Profile'  },
-];
+const navItems = [
+  { label: "Home", to: "/", icon: Home },
+  { label: "Wardrobe", to: "/wardrobe", icon: Shirt },
+  { label: "Stylist", to: "/stylist", icon: Sparkles },
+  { label: "Shop", to: "/shop", icon: ShoppingBag },
+  { label: "Profile", to: "/profile", icon: User },
+]
 
 export function BottomNav() {
-  const [location] = useLocation();
+  const [location] = useLocation()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
-      <nav className="w-full max-w-[430px] border-t border-white/[0.07] bg-bg-elevated/90 backdrop-blur-xl pb-5 pt-3 px-2 flex justify-around items-center">
-        {items.map(({ href, icon: Icon, label }) => {
-          const active = href === '/' ? location === '/' : location.startsWith(href);
+    <div className="fixed bottom-3 left-1/2 z-50 w-[calc(100%-24px)] max-w-[382px] -translate-x-1/2 rounded-[28px] border border-white/10 bg-[#141820]/90 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+      <div className="flex items-center justify-between">
+        {navItems.map(({ label, to, icon: Icon }) => {
+          const isActive = to === "/" ? location === "/" : location.startsWith(to)
           return (
-            <Link key={href} href={href}>
-              <button className="flex flex-col items-center gap-1 w-14 group">
-                <Icon
-                  size={22}
-                  strokeWidth={active ? 2.5 : 1.5}
-                  className={active ? 'text-brand-pink' : 'text-text-muted group-hover:text-text-secondary transition-colors'}
-                />
-                <span className={`text-[10px] font-semibold tracking-wide ${active ? 'text-brand-pink' : 'text-text-muted group-hover:text-text-secondary transition-colors'}`}>
-                  {label}
-                </span>
-                {active && (
-                  <span className="block h-1 w-1 rounded-full bg-brand-pink shadow-glow" />
-                )}
-              </button>
+            <Link key={label} href={to}>
+              <div
+                className={`flex min-w-[56px] flex-col items-center gap-1 transition cursor-pointer ${
+                  isActive ? "text-[#FF4D8D]" : "text-[#6F7788]"
+                }`}
+              >
+                <Icon size={20} strokeWidth={2.2} />
+                <span className="text-[11px] font-medium">{label}</span>
+              </div>
             </Link>
-          );
+          )
         })}
-      </nav>
+      </div>
     </div>
-  );
+  )
 }
