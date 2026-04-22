@@ -6,6 +6,27 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* ── Design system tokens ── */
+  --color-bg-base:     #0F1115;
+  --color-bg-elevated: #151922;
+  --color-bg-card:     #1A1F2B;
+
+  --color-brand-pink:  #FF4D8D;
+  --color-brand-coral: #FF7A5C;
+  --color-brand-gold:  #C8A96A;
+
+  --color-text-primary:   #F6F3EE;
+  --color-text-secondary: #A8AFBE;
+  --color-text-muted:     #6F7788;
+
+  --radius-xl2: 18px;
+  --radius-xl3: 24px;
+  --radius-xl4: 28px;
+
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.28);
+  --shadow-glow: 0 8px 24px rgba(255,77,141,0.28);
+
+  /* ── Shadcn tokens ── */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-border: hsl(var(--border));
