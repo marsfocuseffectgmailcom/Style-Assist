@@ -1,11 +1,8 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-
-import Home from "@/pages/home";
-import Stylist from "@/pages/stylist";
-import Wardrobe from "@/pages/wardrobe";
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Home from "./pages/home"
+import Stylist from "./pages/stylist"
+import Wardrobe from "./pages/wardrobe"
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -23,27 +20,20 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-});
+})
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/stylist" component={Stylist} />
-            <Route path="/wardrobe" component={Wardrobe} />
-            <Route path="/shop">
-              <PlaceholderPage title="Shop" />
-            </Route>
-            <Route path="/profile">
-              <PlaceholderPage title="Profile" />
-            </Route>
-          </Switch>
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/stylist" element={<Stylist />} />
+          <Route path="/wardrobe" element={<Wardrobe />} />
+          <Route path="/shop" element={<PlaceholderPage title="Shop" />} />
+          <Route path="/profile" element={<PlaceholderPage title="Profile" />} />
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
-  );
+  )
 }
