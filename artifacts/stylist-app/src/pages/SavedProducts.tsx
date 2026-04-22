@@ -1,4 +1,5 @@
 import { Heart, Trash2 } from "lucide-react"
+import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
@@ -94,9 +95,11 @@ export default function SavedProducts() {
             </p>
 
             <div className="mt-5">
-              <PrimaryButton fullWidth={false} className="px-5">
-                Explore Products
-              </PrimaryButton>
+              <Link to="/shop">
+                <PrimaryButton fullWidth={false} className="px-5">
+                  Explore Products
+                </PrimaryButton>
+              </Link>
             </div>
           </Card>
         )}
