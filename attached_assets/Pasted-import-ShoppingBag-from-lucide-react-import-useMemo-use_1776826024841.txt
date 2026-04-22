@@ -9,7 +9,7 @@ import { WardrobeGapCard } from "../components/WardrobeGapCard"
 import { CategoryPill } from "../components/CategoryPill"
 import { useShopRecommendations } from "../hooks/useShopRecommendations"
 import { useProductsByGap } from "../hooks/useProductsByGap"
-import type { Merchant, WardrobeGap } from "../lib/types"
+import type { Merchant, WardrobeGap } from "../types/shop"
 
 const merchantFilters: Array<Merchant | "All"> = [
   "All",
