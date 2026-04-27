@@ -1,0 +1,159 @@
+import { ArrowLeft, SendHorizonal, CheckCircle2 } from "lucide-react"
+import { useState } from "react"
+import { AppShell } from "../components/AppShell"
+import { Card } from "../components/Card"
+import { OutfitCard } from "../components/OutfitCard"
+import { outfitCards as initialOutfitCards } from "../lib/mockData"
+
+export default function Stylist() {
+  const [prompt, setPrompt] = useState("I have a lunch meeting tomorrow")
+  const [currentPrompt, setCurrentPrompt] = useState("I have a lunch meeting tomorrow")
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [outfitCards, setOutfitCards] = useState(initialOutfitCards)
+
+  async function handleGenerate() {
+    const trimmed = prompt.trim()
+
+    if (!trimmed || isGenerating) return
+
+    setIsGenerating(true)
+    setCurrentPrompt(trimmed)
+
+    try {
+      // Temporary simulated generation
+      // Replace this later with your real AI request
+      await new Promise((resolve) => setTimeout(resolve, 900))
+
+      setOutfitCards([
+        {
+          id: 1,
+          title: "Outfit 1",
+          subtitle: "Refined formalwear",
+          image:
+            "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          id: 2,
+          title: "Outfit 2",
+          subtitle: "Elegant dinner look",
+          image:
+            "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80",
+          selected: true,
+        },
+        {
+          id: 3,
+          title: "Outfit 3",
+          subtitle: "Sharp evening option",
+          image:
+            "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=80",
+        },
+      ])
+    } catch (error) {
+      console.error("Failed to generate outfits", error)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleGenerate()
+    }
+  }
+
+  return (
+    <AppShell>
+      <header className="mb-5 flex items-center justify-between pt-4">
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]">
+          <ArrowLeft size={18} />
+        </button>
+
+        <h1 className="text-[18px] font-semibold">AI Stylist</h1>
+
+        <div className="h-10 w-10" />
+      </header>
+
+      <div className="mb-4 inline-flex rounded-[16px] border border-white/10 bg-[#151922] px-4 py-3 text-sm text-[#F6F3EE]">
+        {currentPrompt}
+      </div>
+
+      <p className="mb-4 text-sm text-[#A8AFBE]">
+        {isGenerating ? "Generating new outfit ideas..." : "Here are 3 outfits I&apos;ve picked for you"}
+      </p>
+
+      <section className="mb-5 flex gap-3 overflow-x-auto pb-1">
+        {outfitCards.map((outfit) => (
+          <OutfitCard
+            key={outfit.id}
+            title={outfit.title}
+            subtitle={outfit.subtitle}
+            image={outfit.image}
+            selected={outfit.selected}
+          />
+        ))}
+      </section>
+
+      <Card>
+        <h2 className="text-[18px] font-semibold">
+          Why Outfit 2 is the best choice
+        </h2>
+
+        <p className="mt-3 text-sm leading-6 text-[#A8AFBE]">
+          The tonal combination creates a clean, confident look that feels
+          polished yet approachable. The structured layer adds authority, while
+          the softer base keeps it wearable and balanced for the occasion
+        </p>
+
+        <div className="my-4 h-px bg-white/10" />
+
+        <h3 className="mb-3 text-sm font-semibold text-[#F6F3EE]">
+          Why This Works
+        </h3>
+
+        <div className="space-y-3">
+          {["Tonal dressing", "Proportion balance", "Texture contrast"].map(
+            (item) => (
+              <div key={item} className="flex items-center gap-3">
+                <CheckCircle2 size={16} className="text-[#C8A96A]" />
+                <span className="text-sm text-[#F6F3EE]">{item}</span>
+              </div>
+            ),
+          )}
+        </div>
+      </Card>
+
+      <Card className="mt-5">
+        <h3 className="text-[16px] font-semibold">Stylist&apos;s Pick</h3>
+        <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
+          Outfit 2 wins because it feels the most intentional and polished for
+          the event while still staying wearable and confident
+        </p>
+      </Card>
+
+      <div className="mt-5 flex items-center gap-3 rounded-[18px] border border-white/10 bg-[#151922] px-4 py-3">
+        <input
+          type="text"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask your stylist..."
+          className="flex-1 bg-transparent text-sm text-[#F6F3EE] outline-none placeholder:text-[#6F7788]"
+        />
+
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={isGenerating || !prompt.trim()}
+          className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_8px_24px_rgba(255,92,130,0.28)] transition ${
+            isGenerating || !prompt.trim()
+              ? "cursor-not-allowed bg-white/10 text-white/40 shadow-none"
+              : "bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] active:scale-[0.96]"
+          }`}
+        >
+          <SendHorizonal size={18} />
+        </button>
+      </div>
+    </AppShell>
+  )
+}
