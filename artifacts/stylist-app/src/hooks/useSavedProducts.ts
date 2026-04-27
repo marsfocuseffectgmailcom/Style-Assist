@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { RecommendedProduct } from "../lib/types"
 
-const STORAGE_KEY = "drape_saved_products"
+const STORAGE_KEY = "style-assist-saved-products"
 
 function readSavedProducts(): RecommendedProduct[] {
   try {
@@ -44,7 +44,6 @@ export function useSavedProducts() {
       if (current.some((item) => item.id === product.id)) {
         return current
       }
-
       const next = [product, ...current]
       writeSavedProducts(next)
       return next
@@ -62,11 +61,9 @@ export function useSavedProducts() {
   const toggleSavedProduct = useCallback((product: RecommendedProduct) => {
     setSavedProducts((current) => {
       const exists = current.some((item) => item.id === product.id)
-
       const next = exists
         ? current.filter((item) => item.id !== product.id)
         : [product, ...current]
-
       writeSavedProducts(next)
       return next
     })
@@ -79,11 +76,13 @@ export function useSavedProducts() {
 
   return {
     savedProducts,
+    saved: savedProducts,
     savedCount: savedProducts.length,
     isSaved,
     saveProduct,
     unsaveProduct,
     toggleSavedProduct,
+    toggleSave: toggleSavedProduct,
     clearSavedProducts,
   }
 }
