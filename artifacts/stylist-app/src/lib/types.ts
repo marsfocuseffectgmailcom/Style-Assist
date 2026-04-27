@@ -1,3 +1,10 @@
+export type WardrobeItem = {
+  id: string
+  name: string
+  category: "top" | "bottom" | "shoes" | "outerwear"
+  color?: string
+}
+
 export type Merchant =
   | "Amazon"
   | "SHEIN"
