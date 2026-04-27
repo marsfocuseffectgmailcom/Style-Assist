@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Heart, Trash2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
@@ -5,7 +6,9 @@ import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
 import { ProductCard } from "../components/ProductCard"
 import { PrimaryButton } from "../components/PrimaryButton"
+import { ProductDetailsModal } from "../components/ProductDetailsModal"
 import { useSavedProducts } from "../hooks/useSavedProducts"
+import type { RecommendedProduct } from "../lib/types"
 
 export default function SavedProducts() {
   const {
@@ -13,6 +16,8 @@ export default function SavedProducts() {
     savedCount,
     clearSavedProducts,
   } = useSavedProducts()
+
+  const [selectedProduct, setSelectedProduct] = useState<RecommendedProduct | null>(null)
 
   const hasSavedProducts = savedProducts.length > 0
 
@@ -77,6 +82,7 @@ export default function SavedProducts() {
                 sourceScreen="shop"
                 showMerchantBadge
                 badge={product.commissionEligible ? undefined : "Saved"}
+                onProductClick={setSelectedProduct}
               />
             ))}
           </div>
@@ -87,11 +93,11 @@ export default function SavedProducts() {
             </div>
 
             <h3 className="mt-4 text-[18px] font-semibold text-[#F6F3EE]">
-              Nothing saved yet
+              No saved products yet
             </h3>
 
             <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-[#A8AFBE]">
-              Tap the heart on any product card to build your wishlist and come back to it later
+              Save items from your recommendations to build your shortlist.
             </p>
 
             <div className="mt-5">
@@ -104,6 +110,13 @@ export default function SavedProducts() {
           </Card>
         )}
       </section>
+
+      {selectedProduct ? (
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      ) : null}
     </AppShell>
   )
 }
