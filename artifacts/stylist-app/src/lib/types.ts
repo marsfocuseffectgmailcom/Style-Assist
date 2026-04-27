@@ -73,3 +73,11 @@ export type Recommendation = {
   gap: string
   suggestedCategory: "Tops" | "Bottoms" | "Shoes" | "Outerwear"
 }
+
+export type Product = {
+  id: string
+  name: string
+  image: string
+  price: number
+  category: "top" | "bottom" | "shoes" | "outerwear"
+}
