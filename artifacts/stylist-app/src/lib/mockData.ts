@@ -13,6 +13,7 @@ export type WardrobeItem = {
   name: string
   category: "Tops" | "Bottoms" | "Shoes" | "Outerwear"
   image: string
+  color?: string
   wearCount?: number
 }
 
@@ -120,5 +121,21 @@ export const wardrobeItems: WardrobeItem[] = [
     image:
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
     wearCount: 1,
+  },
+  {
+    id: 10,
+    name: "Black T-Shirt",
+    category: "Tops",
+    image:
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=800&q=80",
+    color: "Black",
+  },
+  {
+    id: 11,
+    name: "Blue Jeans",
+    category: "Bottoms",
+    image:
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
+    color: "Blue",
   },
 ]
