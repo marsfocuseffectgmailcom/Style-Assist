@@ -67,3 +67,9 @@ export type ShoppingRecommendationResponse = {
   wardrobeGaps: WardrobeGap[]
   recommendedProducts: RecommendedProduct[]
 }
+
+export type Recommendation = {
+  id: string
+  gap: string
+  suggestedCategory: "Tops" | "Bottoms" | "Shoes" | "Outerwear"
+}
