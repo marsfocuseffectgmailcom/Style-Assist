@@ -1,0 +1,16 @@
+{
+  "name": "Style Assist",
+  "short_name": "Assist",
+  "description": "Smarter outfit decisions powered by your wardrobe",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1115",
+  "theme_color": "#FF4D8D",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ]
+}
