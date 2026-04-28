@@ -1,11 +1,13 @@
-import { Sparkles, Package, CalendarDays, ChevronRight } from "lucide-react"
-import { motion } from "framer-motion"
+import { Sparkles, Package, CalendarDays, ChevronRight, Moon } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { NotificationBell } from "../components/NotificationCenter"
 import { SectionHeader } from "../components/SectionHeader"
 import { OutfitCard } from "../components/OutfitCard"
+import { TonightModeSheet } from "../components/TonightModeSheet"
 import { outfitCards } from "../lib/mockData"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
@@ -14,6 +16,7 @@ import { formatEventDate } from "../lib/deliveryStatus"
 
 export default function Home() {
   const navigate = useNavigate()
+  const [showTonightMode, setShowTonightMode] = useState(false)
   const today = new Date().toISOString().slice(0, 10)
   const { outfits } = useTimelineOutfits()
   const { items: incoming } = useIncomingItems()
@@ -38,6 +41,7 @@ export default function Home() {
   }
 
   return (
+    <>
     <AppShell>
       <header className="mb-6 flex items-start justify-between pt-4">
         <div>
@@ -123,12 +127,21 @@ export default function Home() {
             ))}
           </div>
 
-          <button
-            onClick={() => navigate("/timeline")}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] text-sm font-semibold text-white transition active:scale-[0.97]"
-          >
-            View on Timeline <ChevronRight size={15} />
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/timeline")}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] text-sm font-semibold text-white transition active:scale-[0.97]"
+            >
+              View on Timeline <ChevronRight size={15} />
+            </button>
+            <button
+              onClick={() => setShowTonightMode(true)}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] border border-[#C8A96A]/25 bg-[#C8A96A]/8 text-sm font-semibold text-[#C8A96A] transition active:scale-[0.97]"
+            >
+              <Moon size={14} />
+              Tonight Mode
+            </button>
+          </div>
         </Card>
       ) : (
         <Card elevated gradient className="mb-5 rounded-[28px]">
@@ -159,10 +172,11 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => navigate("/timeline")}
-              className="h-11 w-full rounded-[18px] border border-white/10 bg-white/5 text-sm text-[#F6F3EE] transition active:scale-[0.98]"
+              onClick={() => setShowTonightMode(true)}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] border border-[#C8A96A]/25 bg-[#C8A96A]/8 text-sm font-semibold text-[#C8A96A] transition active:scale-[0.98]"
             >
-              Open Timeline
+              <Moon size={14} />
+              Tonight Mode
             </button>
           </div>
         </Card>
@@ -214,5 +228,12 @@ export default function Home() {
         </div>
       </Card>
     </AppShell>
+
+    <AnimatePresence>
+      {showTonightMode && (
+        <TonightModeSheet onClose={() => setShowTonightMode(false)} />
+      )}
+    </AnimatePresence>
+  </>
   )
 }

@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { CalendarDays, Sparkles, X, Copy, MoveRight, Trash2, Package, ChevronRight } from "lucide-react"
+import { CalendarDays, Sparkles, X, Copy, MoveRight, Trash2, Package, ChevronRight, Moon } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { NotificationBell } from "../components/NotificationCenter"
 import { FirstExperienceFlow } from "./FirstExperienceFlow"
+import { TonightModeSheet } from "../components/TonightModeSheet"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { usePlannedEvents } from "../hooks/usePlannedEvents"
@@ -235,6 +236,7 @@ export default function Timeline() {
   const [planDone, setPlanDone] = useState(false)
   const [sheetMode, setSheetMode] = useState<{ type: "move" | "duplicate"; date: string } | null>(null)
   const [showFTE, setShowFTE] = useState(() => localStorage.getItem(FTE_KEY) !== "true")
+  const [showTonightMode, setShowTonightMode] = useState(false)
 
   const { outfits, saveOutfit, removeOutfit, moveOutfit, duplicateOutfit, bulkFill } =
     useTimelineOutfits()
@@ -412,6 +414,25 @@ export default function Timeline() {
         )}
       </AnimatePresence>
     </AppShell>
+
+    {/* Tonight Mode floating button */}
+    <motion.button
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+      onClick={() => setShowTonightMode(true)}
+      className="fixed bottom-[88px] right-4 z-40 flex items-center gap-2 rounded-full bg-[#1A1F2B] px-4 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-[#C8A96A]/25 text-[#F6F3EE] transition active:scale-[0.96] hover:border-[#C8A96A]/50"
+      aria-label="Tonight Mode"
+    >
+      <Moon size={15} className="text-[#C8A96A]" />
+      <span className="text-[13px] font-semibold">Tonight</span>
+    </motion.button>
+
+    <AnimatePresence>
+      {showTonightMode && (
+        <TonightModeSheet onClose={() => setShowTonightMode(false)} />
+      )}
+    </AnimatePresence>
 
     {showFTE && (
       <FirstExperienceFlow

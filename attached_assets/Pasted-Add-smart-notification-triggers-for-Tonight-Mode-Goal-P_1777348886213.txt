@@ -1,0 +1,87 @@
+Add smart notification triggers for Tonight Mode
+
+Goal:
+Prompt the user at the perfect moment when they may need an outfit soon
+
+Feature name:
+Smart Tonight Prompts
+
+Core rule:
+Notifications must feel helpful, not annoying
+
+Trigger logic:
+
+1. Evening trigger
+If user has no outfit saved for today
+AND local time is between 4:30pm and 6:30pm
+THEN send:
+“Need an outfit tonight?”
+
+Tap opens Tonight Mode directly
+
+2. Event trigger
+If user has an event today
+AND no outfit is saved for that event
+AND event starts within 3 hours
+THEN send:
+“Your outfit for tonight isn’t set yet”
+
+Tap opens Tonight Mode with event type preselected
+
+3. Weather/season trigger placeholder
+Add structure for future weather support:
+If weather changes significantly
+AND outfit may be unsuitable
+THEN send:
+“Want to adjust tonight’s outfit?”
+
+Do not activate this until weather data exists
+
+4. Delivery trigger
+If an incoming item delivery date is today
+AND item is available for tonight outfits
+THEN send:
+“Your new item unlocks tonight’s outfits”
+
+Tap opens Tonight Mode using that item as a suggested option
+
+5. Weekly behaviour learning
+Track when the user usually opens Tonight Mode
+If user often opens it around a certain time
+THEN shift prompt timing closer to that habit
+
+Notification settings:
+Create a settings area:
+- Tonight reminders on/off
+- Event outfit reminders on/off
+- Delivery outfit reminders on/off
+- Quiet hours
+
+Default:
+- Tonight reminders on
+- Event reminders on
+- Delivery reminders on
+- Quiet hours: 9:00pm to 8:00am
+
+UX rules:
+- Never send more than 1 Tonight Mode notification per day
+- Never notify if outfit is already saved
+- Never notify during quiet hours
+- Notifications must open directly into the relevant screen
+- User must be able to turn reminders off easily
+
+Notification copy examples:
+- “Need an outfit tonight?”
+- “You’re going out soon — want a look ready?”
+- “Your outfit for tonight isn’t set yet”
+- “Your new delivery unlocks tonight’s outfits”
+- “Tonight’s look is ready”
+
+Tone:
+- calm
+- useful
+- not pushy
+- not salesy
+
+Goal:
+Make Style Assist feel like it gently anticipates the user’s life
