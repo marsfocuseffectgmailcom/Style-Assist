@@ -43,6 +43,7 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - Shop screen — affiliate-ready product recommendations
   - Notifications — context-aware via `NotificationsContext.tsx`
   - First Experience Flow — 6-step onboarding overlay (`FirstExperienceFlow.tsx`)
+  - **Wardrobe Capture** — 4-step add-item flow (`AddItemFlow.tsx`) with photo tips, front/back/tag camera capture, simulated AI detection (category/colour/pattern/style/material/season/occasion), editable AI fields, manual fields (name, brand, size, fit, material, weather, status), image compression, persisted to localStorage via `useWardrobeCapture` hook
   - Preference tracking — `useStylePreferences` hook signals like/skip on save; seeds future scoring
 - **Key lib files**:
   - `src/lib/stylingEngine.ts` — scoring engine + tip/upgrade/reason builders

@@ -11,6 +11,7 @@ import Timeline from "./pages/Timeline"
 import GenerateOutfitScreen from "./pages/GenerateOutfitScreen"
 import IncomingItemsScreen from "./pages/IncomingItemsScreen"
 import OnboardingFlow from "./pages/OnboardingFlow"
+import AddItemFlow from "./pages/AddItemFlow"
 import PlanAheadScreen from "./pages/plan-ahead/PlanAheadScreen"
 import EventSetupScreen from "./pages/plan-ahead/EventSetupScreen"
 import OutfitTimelineScreen from "./pages/plan-ahead/OutfitTimelineScreen"
@@ -39,6 +40,7 @@ function AppContent() {
       <Route path="/" element={<Home />} />
       <Route path="/stylist" element={<Stylist />} />
       <Route path="/wardrobe" element={<Wardrobe />} />
+      <Route path="/wardrobe/add" element={<AddItemFlow />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/saved-products" element={<SavedProducts />} />
