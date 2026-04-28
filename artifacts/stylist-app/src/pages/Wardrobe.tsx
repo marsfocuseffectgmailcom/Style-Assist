@@ -5,9 +5,12 @@ import { AppShell } from "../components/AppShell"
 import { SearchInput } from "../components/SearchInput"
 import { CategoryPill } from "../components/CategoryPill"
 import { SectionHeader } from "../components/SectionHeader"
+import { ItemPreferenceSheet } from "../components/ItemPreferenceSheet"
+import type { SheetItem } from "../components/ItemPreferenceSheet"
 import { wardrobeItems } from "../lib/mockData"
 import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import type { CapturedItem } from "../hooks/useWardrobeCapture"
+import { useItemPreferences, REACH_COLOR } from "../hooks/useItemPreferences"
 
 const categories = ["All", "Tops", "Bottoms", "Shoes", "Outerwear"] as const
 type Category = (typeof categories)[number]
@@ -39,7 +42,10 @@ export default function Wardrobe() {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState<Category>("All")
   const [query, setQuery] = useState("")
+  const [activeSheet, setActiveSheet] = useState<SheetItem | null>(null)
+
   const { items: capturedItems } = useWardrobeCapture()
+  const { getPref } = useItemPreferences()
 
   // Merge static + captured into a single display list
   const allItems = useMemo<DisplayItem[]>(() => {
@@ -87,7 +93,6 @@ export default function Wardrobe() {
               )}
             </p>
           </div>
-          {/* Camera quick-add icon in header */}
           <button
             onClick={() => navigate("/wardrobe/add")}
             className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
@@ -126,12 +131,24 @@ export default function Wardrobe() {
         ) : (
           <div className="grid grid-cols-3 gap-3">
             {filteredItems.map((item) => {
-              const dot = item.isCapture ? statusDot(item.status) : null
+              const dot  = item.isCapture ? statusDot(item.status) : null
+              const pref = getPref(item.id)
+              const reachColor = pref.reach ? REACH_COLOR[pref.reach] : null
+
               return (
-                <div
+                <button
                   key={item.id}
-                  className="overflow-hidden rounded-[20px] border border-white/8 bg-[#171C25]"
+                  onClick={() =>
+                    setActiveSheet({
+                      id:       item.id,
+                      name:     item.name,
+                      category: item.category,
+                      image:    item.image,
+                    })
+                  }
+                  className="overflow-hidden rounded-[20px] border border-white/8 bg-[#171C25] text-left transition active:scale-[0.97]"
                 >
+                  {/* Image area */}
                   <div className="relative h-[110px] overflow-hidden bg-[#11151C]">
                     {item.image ? (
                       <img
@@ -151,7 +168,6 @@ export default function Wardrobe() {
                       </div>
                     )}
 
-                    {/* "New" badge for user-captured items */}
                     {item.isCapture && (
                       <div className="absolute left-2 top-2 rounded-full bg-[#4ECFA8]/25 px-1.5 py-0.5 text-[9px] font-semibold text-[#4ECFA8]">
                         New
@@ -159,16 +175,29 @@ export default function Wardrobe() {
                     )}
                   </div>
 
+                  {/* Text + indicators */}
                   <div className="p-2">
                     <p className="truncate text-xs font-medium text-[#F6F3EE]">{item.name}</p>
                     <div className="mt-1 flex items-center gap-1">
                       <p className="text-[11px] text-[#6F7788]">{item.category}</p>
                       {dot && (
-                        <span className="text-[10px]" style={{ color: dot.color }}>· {dot.label}</span>
+                        <span className="text-[10px]" style={{ color: dot.color }}>
+                          · {dot.label}
+                        </span>
                       )}
                     </div>
+
+                    {/* Reach preference indicator */}
+                    {reachColor && (
+                      <div className="mt-1.5">
+                        <div
+                          className="h-[2px] w-full rounded-full"
+                          style={{ backgroundColor: reachColor, opacity: 0.55 }}
+                        />
+                      </div>
+                    )}
                   </div>
-                </div>
+                </button>
               )
             })}
           </div>
@@ -184,6 +213,12 @@ export default function Wardrobe() {
       >
         <Plus size={24} />
       </button>
+
+      {/* Item preference sheet */}
+      <ItemPreferenceSheet
+        item={activeSheet}
+        onClose={() => setActiveSheet(null)}
+      />
     </AppShell>
   )
 }

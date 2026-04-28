@@ -1,4 +1,5 @@
 import type { PurchaseStatus } from "./types"
+import type { ItemPreferences } from "../hooks/useItemPreferences"
 
 // ─── Item type the engine works with ────────────────────────────────────────
 
@@ -197,7 +198,8 @@ function buildTips(
   family: string,
   colorProfile: string,
   breakdown: Record<string, number>,
-  eventType: string | undefined
+  eventType: string | undefined,
+  itemPreferences?: ItemPreferences
 ): string[] {
   const tips: string[] = []
   const allColors = items.flatMap((i) => i.colors.map((c) => c.toLowerCase()))
@@ -350,6 +352,24 @@ function buildTips(
     ]))
   }
 
+  // ── 6. Rotation tip — "not-lately" items get a positive re-introduction ──────
+  // Never negative. Always explains why the piece works in this specific outfit.
+  if (itemPreferences) {
+    const rotationItems = items.filter((i) => itemPreferences[i.id]?.reach === "not-lately")
+    if (rotationItems.length > 0) {
+      const ri = rotationItems[0]
+      const riColors = ri.colors.filter((c) => !isNeutral(c))
+      const colorNote = riColors.length > 0
+        ? `the ${riColors[0]} grounds the palette and adds depth`
+        : `the neutral tone anchors the palette without competing`
+      tips.push(pick([
+        `Bringing this back into rotation works here because ${colorNote} — it gives the look more shape.`,
+        `This piece earns its place — ${colorNote} and the silhouette fits cleanly into the outfit structure.`,
+        `A considered return for this piece. ${colorNote.charAt(0).toUpperCase() + colorNote.slice(1)}, and the proportions sit well with everything else.`,
+      ]))
+    }
+  }
+
   // Return 2–4 tips, always at least 2
   const result = [...new Set(tips)].slice(0, 4)
   return result.length >= 2
@@ -462,11 +482,12 @@ export function scoreOutfit(
     preferences?: StylePreferences
     usedItemIds?: Set<string>
     dateStr?: string
+    itemPreferences?: ItemPreferences
   }
 ): { total: number; breakdown: Record<string, number>; dominantFamily: string; colorProfile: string } | null {
   if (!isComplete(items)) return null
 
-  const { eventType, preferences = DEFAULT_PREFERENCES, usedItemIds = new Set(), dateStr } = opts
+  const { eventType, preferences = DEFAULT_PREFERENCES, usedItemIds = new Set(), dateStr, itemPreferences } = opts
 
   // 2. Event match — 30 pts
   let eventMatch = 15
@@ -579,6 +600,18 @@ export function scoreOutfit(
     freshness = Math.round((freshItems / items.length) * 5)
   }
 
+  // 8. Item-reach preference boost — rewards items the user actively reaches for
+  // "go-to" items each contribute +3 (capped per outfit, max +6 total)
+  // "not-lately" items are not penalised — they contribute naturally to discovery
+  let reachBoost = 0
+  if (itemPreferences) {
+    for (const item of items) {
+      const pref = itemPreferences[item.id]
+      if (pref?.reach === "go-to") reachBoost += 3
+    }
+    reachBoost = Math.min(reachBoost, 6)
+  }
+
   const total = Math.max(
     0,
     Math.min(
@@ -586,6 +619,7 @@ export function scoreOutfit(
       eventMatch + colourHarmony + styleConsistency
       + clashPenalty + multiStatementPenalty + elevationBonus
       + seasonSuitability + userPreference + freshness
+      + reachBoost
     )
   )
 
@@ -677,6 +711,7 @@ export function rankOutfits(
     usedOutfitNames?: Set<string>
     dateStr?: string
     maxResults?: number
+    itemPreferences?: ItemPreferences
   }
 ): RankedOutfit[] {
   const combos = buildCombinations(pool)
@@ -734,7 +769,7 @@ export function rankOutfits(
   const final: RankedOutfit[] = deduplicated.map((outfit) => {
     const name = generateOutfitName(outfit.dominantFamily, usedNames)
     usedNames.add(name)
-    const tips = buildTips(outfit.items, outfit.dominantFamily, outfit.colorProfile, outfit.breakdown, opts.eventType)
+    const tips = buildTips(outfit.items, outfit.dominantFamily, outfit.colorProfile, outfit.breakdown, opts.eventType, opts.itemPreferences)
     const upgrade = buildUpgrade(outfit.items, outfit.dominantFamily, outfit.score)
     const { _key, dominantFamily: _df, colorProfile: _cp, ...rest } = outfit
     return { ...rest, name, tips, upgrade }

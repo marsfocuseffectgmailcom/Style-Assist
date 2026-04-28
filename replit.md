@@ -44,6 +44,7 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - Notifications — context-aware via `NotificationsContext.tsx`
   - First Experience Flow — 6-step onboarding overlay (`FirstExperienceFlow.tsx`)
   - **Wardrobe Capture** — 4-step add-item flow (`AddItemFlow.tsx`) with photo tips, front/back/tag camera capture, simulated AI detection (category/colour/pattern/style/material/season/occasion), editable AI fields, manual fields (name, brand, size, fit, material, weather, status), image compression, persisted to localStorage via `useWardrobeCapture` hook
+  - **Item Preference** — per-item preference sheet (`ItemPreferenceSheet.tsx` + `useItemPreferences.ts`). Two sections: "How often do you reach for this?" (3 options, neutral language only) and "How does this feel on you?" (5 feel options). `aria-pressed` on all buttons, `toggleFeel` uses functional state update to avoid stale closure. Preferences persisted to localStorage key `style-assist-item-prefs`. Scoring engine: go-to items get +3 reach boost (max +6/outfit); not-lately items get a positive rotation tip in outfit explanations. Wardrobe cards show a thin coloured underline (teal/gold/muted) for set preferences.
   - Preference tracking — `useStylePreferences` hook signals like/skip on save; seeds future scoring
 - **Key lib files**:
   - `src/lib/stylingEngine.ts` — scoring engine + tip/upgrade/reason builders

@@ -1,0 +1,125 @@
+Do not redesign Style Assist.
+
+Add a premium outfit result screen using the existing visual system only.
+
+Screen purpose:
+After AI creates an outfit, show the full recommendation clearly, calmly, and confidently.
+
+Outfit result screen structure:
+
+1. Header
+Title:
+“Your outfit is ready”
+
+Subtitle:
+“Built from your wardrobe, styled for the moment.”
+
+2. Outfit preview card
+Show selected items as clean wardrobe cards:
+- Top
+- Bottom
+- Shoes
+- Outer layer if used
+- Accessory if used
+
+Each item card should show:
+- item photo
+- item type
+- colour
+- short role label
+
+Example role labels:
+- Anchor piece
+- Balance piece
+- Texture contrast
+- Finishing detail
+- Weather layer
+
+3. Styling explanation section
+
+Title:
+“Why this works”
+
+The AI must explain:
+- colour balance
+- shape / silhouette
+- texture or contrast
+- occasion suitability
+- emotional feel
+
+Example copy:
+“This works because the darker base grounds the outfit while the lighter top keeps it open. The shoes sharpen the look without making it feel too formal. It gives a relaxed, put-together feel.”
+
+4. Fashion tip section
+
+Title:
+“Style tip”
+
+This should give one useful, simple styling note.
+
+Example:
+“Keep the top slightly tucked to give the outfit more shape without making it feel too dressed up.”
+
+5. Rotation intelligence
+
+If an item is marked “Always a go-to”:
+Use wording:
+“This is one of your natural anchor pieces.”
+
+If an item is marked “Wear it sometimes”:
+Use wording:
+“This fits well here because it supports the outfit without taking over.”
+
+If an item is marked “Haven’t worn it in a while”:
+Use wording:
+“This is a good moment to bring this back into rotation.”
+
+Do not use negative wording such as:
+- you don’t wear this
+- you dislike this
+- this was ignored
+- this has been unused
+- this doesn’t suit you
+
+6. Action buttons
+
+Primary button:
+“Save outfit”
+
+Secondary button:
+“Try another look”
+
+Optional third action:
+“Plan for later”
+
+7. Styling personality rules
+
+AI tone must be:
+- calm
+- confident
+- professional
+- encouraging
+- simple
+
+AI tone must not be:
+- robotic
+- overly technical
+- judgmental
+- exaggerated
+- influencer-style hype
+
+8. No visual drift rules
+
+Preserve:
+- current app name Style Assist
+- current typography
+- current colours
+- current cards
+- current buttons
+- current spacing rhythm
+- current navigation
+
+Do not replace existing screens.
+Do not rename existing components unless absolutely necessary.
+Do not introduce a new design system.
+Only add this outfit result screen and connect it to the existing recommendation flow.

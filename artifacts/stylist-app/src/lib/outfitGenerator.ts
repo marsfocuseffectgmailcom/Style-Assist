@@ -4,6 +4,7 @@ import type { StylePreferences } from "./stylingEngine"
 import { rankOutfits, extractColorsFromName } from "./stylingEngine"
 import type { ScoredItem, NormCategory, RankedOutfit } from "./stylingEngine"
 import { loadPreferences, loadRecentItemIds, addRecentItems } from "./stylePreferences"
+import { loadItemPreferences } from "../hooks/useItemPreferences"
 
 // ─── Public result type ───────────────────────────────────────────────────────
 
@@ -127,8 +128,9 @@ export function generateOutfits(
     ...eligibleIncoming.map(incomingToScored),
   ]
 
-  const preferences = options?.preferences ?? loadPreferences()
-  const usedItemIds = options?.usedItemIds ?? loadRecentItemIds()
+  const preferences     = options?.preferences ?? loadPreferences()
+  const usedItemIds     = options?.usedItemIds ?? loadRecentItemIds()
+  const itemPreferences = loadItemPreferences()
 
   const ranked = rankOutfits(pool, {
     eventType,
@@ -137,6 +139,7 @@ export function generateOutfits(
     usedOutfitNames: options?.usedOutfitNames,
     dateStr: date,
     maxResults: 5,
+    itemPreferences,
   })
 
   return ranked.map(rankedToGenerated)
