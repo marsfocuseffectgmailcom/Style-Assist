@@ -1,237 +1,97 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ChevronLeft, ChevronRight, Check, Moon } from "lucide-react"
-import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
+import { X, Moon, ChevronRight } from "lucide-react"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { useStylePreferences } from "../hooks/useStylePreferences"
+import { loadItemPreferences } from "../hooks/useItemPreferences"
 import { wardrobeItems } from "../lib/mockData"
 import { generateOutfits } from "../lib/outfitGenerator"
-import type { GeneratedOutfit } from "../lib/outfitGenerator"
-import type { TimelineOutfit } from "../lib/types"
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// ─── Options ──────────────────────────────────────────────────────────────────
 
-type Vibe = "dinner" | "casual" | "party" | "skip"
+type Occasion = "casual" | "dinner" | "going-out" | "work" | "event"
+type Weather  = "sunny" | "cloudy" | "rainy" | "cold" | "warm"
 
-const VIBES: { id: Vibe; label: string; icon: string; sub: string; eventType?: string }[] = [
-  { id: "dinner",  label: "Dinner",  icon: "🍽",  sub: "Polished, relaxed",  eventType: "dinner"  },
-  { id: "casual",  label: "Casual",  icon: "👕",  sub: "Easy, no effort",    eventType: "casual"  },
-  { id: "party",   label: "Party",   icon: "🎉",  sub: "One statement piece", eventType: "party"   },
-  { id: "skip",    label: "Skip",    icon: "→",   sub: "Just show me looks"                        },
+const OCCASIONS: { id: Occasion; label: string; sub: string; eventType: string }[] = [
+  { id: "casual",    label: "Casual",    sub: "Easy, effortless",       eventType: "casual"  },
+  { id: "dinner",    label: "Dinner",    sub: "Polished and relaxed",    eventType: "dinner"  },
+  { id: "going-out", label: "Going out", sub: "One statement piece",     eventType: "party"   },
+  { id: "work",      label: "Work",      sub: "Clean and professional",  eventType: "work"    },
+  { id: "event",     label: "Event",     sub: "Something to remember",   eventType: "wedding" },
 ]
 
-const confidenceConfig = {
-  high:         { label: "High match", color: "#4ECFA8", bg: "rgba(78,207,168,0.12)",  border: "rgba(78,207,168,0.20)" },
-  safe:         { label: "Safe choice", color: "#C8A96A", bg: "rgba(200,169,106,0.12)", border: "rgba(200,169,106,0.20)" },
-  experimental: { label: "Bold pick",  color: "#FF7A5C", bg: "rgba(255,122,92,0.12)",  border: "rgba(255,122,92,0.20)" },
+const WEATHER_OPTIONS: { id: Weather; label: string }[] = [
+  { id: "sunny",  label: "Sunny"  },
+  { id: "cloudy", label: "Cloudy" },
+  { id: "rainy",  label: "Rainy"  },
+  { id: "cold",   label: "Cold"   },
+  { id: "warm",   label: "Warm"   },
+]
+
+// ─── Design tokens (match app system exactly) ─────────────────────────────────
+
+const T = {
+  elevated: "#151922",
+  card:     "#1A1F2B",
+  pink:     "#FF4D8D",
+  coral:    "#FF7A5C",
+  gold:     "#C8A96A",
+  teal:     "#4ECFA8",
+  text:     "#F6F3EE",
+  sub:      "#A8AFBE",
+  muted:    "#6F7788",
+  border:   "rgba(255,255,255,0.08)",
 }
 
-function greeting(): string {
-  const h = new Date().getHours()
-  if (h < 12) return "Morning — deciding tonight already?"
-  if (h < 17) return "Planning your evening look?"
-  return "What are you wearing tonight?"
-}
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-// ─── Inner: outfit viewer card ────────────────────────────────────────────────
-
-function OutfitViewer({
-  outfits,
-  onWearThis,
-  onSaveToToday,
-  onBack,
-  saved,
-}: {
-  outfits: GeneratedOutfit[]
-  onWearThis: () => void
-  onSaveToToday: (outfit: GeneratedOutfit) => void
-  onBack: () => void
-  saved: boolean
-}) {
-  const [idx, setIdx] = useState(0)
-  const outfit = outfits[idx]
-  if (!outfit) return null
-  const cfg = confidenceConfig[outfit.confidence]
-  const shown = outfit.items.slice(0, 4)
-
-  return (
-    <div className="flex flex-col">
-      {/* Nav row */}
-      <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 text-[13px] text-[#6F7788] transition hover:text-[#A8AFBE]"
-        >
-          <ChevronLeft size={14} />
-          Change vibe
-        </button>
-        <span className="text-[12px] text-[#5A6275]">
-          {idx + 1} of {outfits.length}
-        </span>
-      </div>
-
-      {/* Outfit collage */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={outfit.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.18 }}
-          className="mb-4"
-        >
-          <div className="relative mb-3 h-[220px] w-full overflow-hidden rounded-[24px] bg-[#1A1F2B]">
-            {shown.length === 0 ? (
-              <div className="h-full w-full bg-[#1A1F2B]" />
-            ) : shown.length === 1 ? (
-              <img src={shown[0].image} alt={shown[0].name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="grid h-full w-full grid-cols-2 gap-0.5">
-                {shown.map((item, i) => (
-                  <img key={i} src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                ))}
-              </div>
-            )}
-
-            {/* Confidence badge overlay */}
-            <span
-              className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm"
-              style={{ color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
-            >
-              {cfg.label}
-            </span>
-          </div>
-
-          {/* Name + reason */}
-          <h3 className="mb-1 text-[18px] font-semibold leading-tight tracking-[-0.3px]">
-            {outfit.name}
-          </h3>
-          {outfit.reason && (
-            <p className="mb-3 text-[13px] leading-relaxed text-[#6F7788]">{outfit.reason}</p>
-          )}
-
-          {/* Item chips */}
-          <div className="flex flex-wrap gap-1.5">
-            {outfit.items.map((item) => (
-              <div key={item.id} className="flex items-center gap-1.5 rounded-full border border-white/8 bg-white/5 pl-0.5 pr-2.5 py-0.5">
-                <img src={item.image} alt={item.name} className="h-5 w-5 rounded-full object-cover" />
-                <span className="text-[11px] text-[#A8AFBE]">{item.name}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Prev / Next arrows */}
-      {outfits.length > 1 && (
-        <div className="mb-5 flex items-center justify-center gap-3">
-          <button
-            onClick={() => setIdx((i) => Math.max(0, i - 1))}
-            disabled={idx === 0}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#A8AFBE] transition disabled:opacity-30 hover:bg-white/10"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <div className="flex gap-1.5">
-            {outfits.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIdx(i)}
-                className="h-1.5 rounded-full transition-all"
-                style={{
-                  width: i === idx ? 20 : 6,
-                  backgroundColor: i === idx ? "#FF4D8D" : "rgba(255,255,255,0.18)",
-                }}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setIdx((i) => Math.min(outfits.length - 1, i + 1))}
-            disabled={idx === outfits.length - 1}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#A8AFBE] transition disabled:opacity-30 hover:bg-white/10"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* CTAs */}
-      <button
-        onClick={onWearThis}
-        className="mb-2.5 w-full rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.30)] transition active:scale-[0.97]"
-      >
-        Wear this
-      </button>
-
-      <button
-        onClick={() => onSaveToToday(outfit)}
-        disabled={saved}
-        className="flex w-full items-center justify-center gap-2 rounded-[20px] border border-white/10 bg-white/5 py-3.5 text-[14px] font-semibold text-[#F6F3EE] transition active:scale-[0.97] disabled:opacity-60"
-      >
-        {saved ? (
-          <>
-            <Check size={15} className="text-[#4ECFA8]" />
-            <span className="text-[#4ECFA8]">Saved to today</span>
-          </>
-        ) : (
-          "Save to today"
-        )}
-      </button>
-    </div>
-  )
-}
-
-// ─── Main sheet ───────────────────────────────────────────────────────────────
-
-type Phase = "vibe" | "outfits"
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export type TonightModeSheetProps = {
   onClose: () => void
 }
 
 export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
-  const [phase, setPhase] = useState<Phase>("vibe")
-  const [selectedVibe, setSelectedVibe] = useState<Vibe | null>(null)
-  const [saved, setSaved] = useState(false)
+  const navigate = useNavigate()
 
-  const { items: incomingItems } = useIncomingItems()
+  const [occasion, setOccasion] = useState<Occasion | null>(null)
+  const [weather,  setWeather]  = useState<Weather | null>(null)
+  const [useGoTo,  setUseGoTo]  = useState(false)
+
+  const { items: incomingItems }       = useIncomingItems()
   const { preferences, recentItemIds } = useStylePreferences()
-  const { saveOutfit } = useTimelineOutfits()
 
-  // Generate outfits for selected vibe — instant, synchronous
-  const outfits = useMemo<GeneratedOutfit[]>(() => {
-    if (!selectedVibe) return []
-    const vibe = VIBES.find((v) => v.id === selectedVibe)
-    return generateOutfits(todayStr(), wardrobeItems, incomingItems, vibe?.eventType, {
+  const today = new Date().toISOString().slice(0, 10)
+
+  function handleGetOutfit() {
+    if (!occasion) return
+
+    const occ     = OCCASIONS.find((o) => o.id === occasion)
+    const outfits = generateOutfits(today, wardrobeItems, incomingItems, occ?.eventType, {
       preferences,
       usedItemIds: recentItemIds,
     })
-  }, [selectedVibe, incomingItems, preferences, recentItemIds])
 
-  function handleVibeSelect(vibe: Vibe) {
-    setSelectedVibe(vibe)
-    setSaved(false)
-    setPhase("outfits")
-  }
+    // Tonight mode: prioritise reliable combinations — exclude experimental
+    const reliable = outfits.filter((o) => o.confidence !== "experimental")
+    const pool     = reliable.length > 0 ? reliable : outfits
 
-  function handleSaveToToday(outfit: GeneratedOutfit) {
-    const tl: TimelineOutfit = {
-      id: outfit.id,
-      date: todayStr(),
-      name: outfit.name,
-      items: outfit.items,
-      confidence: outfit.confidence,
-      tags: outfit.tags,
-      score: outfit.score,
-      reason: outfit.reason,
-      createdAt: new Date().toISOString(),
+    let best = pool[0]
+
+    // If go-to toggle is on, prefer an outfit that includes at least one go-to item
+    if (useGoTo && pool.length > 1) {
+      const prefs      = loadItemPreferences()
+      const withGoTo   = pool.find((o) =>
+        o.items.some((item) => prefs[String(item.id)]?.reach === "go-to")
+      )
+      if (withGoTo) best = withGoTo
     }
-    saveOutfit(tl)
-    setSaved(true)
+
+    if (!best) return
+
+    navigate("/timeline/outfit-result", {
+      state: { outfit: best, date: today, mode: "tonight" },
+    })
+    onClose()
   }
 
   return (
@@ -251,87 +111,143 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="relative z-10 rounded-t-[32px] bg-[#151922] px-6 pb-10 pt-3"
+        className="relative z-10 max-h-[88dvh] overflow-y-auto rounded-t-[32px] px-6 pb-10 pt-3"
+        style={{ backgroundColor: T.elevated }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-white/15" />
 
         {/* Header */}
-        <div className="mb-5 flex items-start justify-between">
+        <div className="mb-6 flex items-start justify-between">
           <div>
-            <div className="mb-1 flex items-center gap-2">
-              <Moon size={16} className="text-[#C8A96A]" />
-              <span className="text-[13px] font-semibold uppercase tracking-widest text-[#C8A96A]">
+            <div className="mb-1.5 flex items-center gap-2">
+              <Moon size={15} style={{ color: T.gold }} />
+              <span className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: T.gold }}>
                 Tonight Mode
               </span>
             </div>
-            <h2 className="text-[22px] font-bold leading-tight tracking-[-0.3px]">
-              {phase === "vibe" ? "What's the vibe?" : greeting()}
+            <h2 className="text-[22px] font-bold leading-tight tracking-[-0.3px]" style={{ color: T.text }}>
+              I need an outfit tonight
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-[#6F7788] transition hover:bg-white/12"
+            className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-white/8 transition hover:bg-white/12"
+            style={{ color: T.muted }}
             aria-label="Close"
           >
             <X size={15} />
           </button>
         </div>
 
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          {phase === "vibe" ? (
-            <motion.div
-              key="vibe"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15 }}
-              className="grid grid-cols-2 gap-3"
-            >
-              {VIBES.map((vibe) => (
+        {/* ── Occasion ── */}
+        <div className="mb-5">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest" style={{ color: T.muted }}>
+            Occasion <span style={{ color: T.pink }}>*</span>
+          </p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {OCCASIONS.map((occ) => {
+              const active = occasion === occ.id
+              return (
                 <button
-                  key={vibe.id}
-                  onClick={() => handleVibeSelect(vibe.id)}
-                  className="flex flex-col items-start rounded-[20px] border border-white/8 bg-[#1A1F2B] px-4 py-4 text-left transition active:scale-[0.97] hover:border-[#FF4D8D]/30 hover:bg-[#FF4D8D]/5"
+                  key={occ.id}
+                  onClick={() => setOccasion(occ.id)}
+                  className="flex flex-col items-start rounded-[18px] border px-4 py-3.5 text-left transition active:scale-[0.97]"
+                  style={{
+                    borderColor:     active ? "rgba(255,77,141,0.40)"  : T.border,
+                    backgroundColor: active ? "rgba(255,77,141,0.07)"  : T.card,
+                  }}
                 >
-                  <span className="mb-2 text-[22px] leading-none">{vibe.icon}</span>
-                  <span className="text-[15px] font-semibold text-[#F6F3EE]">{vibe.label}</span>
-                  <span className="mt-0.5 text-[12px] text-[#6F7788]">{vibe.sub}</span>
-                </button>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="outfits"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15 }}
-            >
-              {outfits.length === 0 ? (
-                <div className="py-10 text-center">
-                  <p className="text-sm text-[#6F7788]">Not enough wardrobe items to generate a look.</p>
-                  <button
-                    onClick={() => setPhase("vibe")}
-                    className="mt-4 text-[13px] text-[#FF4D8D]"
+                  <span
+                    className="text-[14px] font-semibold"
+                    style={{ color: active ? T.pink : T.text }}
                   >
-                    Try a different vibe
-                  </button>
-                </div>
-              ) : (
-                <OutfitViewer
-                  outfits={outfits}
-                  onWearThis={onClose}
-                  onSaveToToday={handleSaveToToday}
-                  onBack={() => setPhase("vibe")}
-                  saved={saved}
-                />
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    {occ.label}
+                  </span>
+                  <span className="mt-0.5 text-[11px]" style={{ color: T.muted }}>
+                    {occ.sub}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── Weather ── */}
+        <div className="mb-5">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest" style={{ color: T.muted }}>
+            Weather
+            <span className="ml-2 normal-case font-normal" style={{ color: "#5A6275" }}>optional</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {WEATHER_OPTIONS.map((w) => {
+              const active = weather === w.id
+              return (
+                <button
+                  key={w.id}
+                  onClick={() => setWeather(weather === w.id ? null : w.id)}
+                  className="rounded-full border px-4 py-2 text-[13px] font-medium transition active:scale-[0.97]"
+                  style={{
+                    borderColor:     active ? "rgba(200,169,106,0.40)" : T.border,
+                    backgroundColor: active ? "rgba(200,169,106,0.10)" : "rgba(255,255,255,0.04)",
+                    color:           active ? T.gold : T.sub,
+                  }}
+                >
+                  {w.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── Go-to item toggle ── */}
+        <button
+          onClick={() => setUseGoTo((v) => !v)}
+          className="mb-6 flex w-full items-center justify-between rounded-[18px] border px-4 py-3.5 text-left transition active:scale-[0.97]"
+          style={{
+            borderColor:     useGoTo ? "rgba(78,207,168,0.30)" : T.border,
+            backgroundColor: useGoTo ? "rgba(78,207,168,0.07)" : T.card,
+          }}
+        >
+          <div className="min-w-0 flex-1 pr-4">
+            <p className="text-[14px] font-semibold" style={{ color: T.text }}>
+              Use a go-to item
+            </p>
+            <p className="mt-0.5 text-[11px]" style={{ color: T.muted }}>
+              Anchor the outfit around a piece you reach for often
+            </p>
+          </div>
+
+          {/* Toggle pill */}
+          <div
+            className="flex h-7 w-12 shrink-0 items-center rounded-full transition-colors"
+            style={{
+              backgroundColor: useGoTo ? T.teal : "rgba(255,255,255,0.12)",
+              padding: "2px",
+            }}
+          >
+            <motion.div
+              className="h-5 w-5 rounded-full bg-white shadow"
+              animate={{ x: useGoTo ? 20 : 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}
+            />
+          </div>
+        </button>
+
+        {/* ── CTA ── */}
+        <button
+          onClick={handleGetOutfit}
+          disabled={!occasion}
+          className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-40"
+          style={{
+            background:  `linear-gradient(to right, ${T.pink}, ${T.coral})`,
+            boxShadow:   "0 4px 20px rgba(255,77,141,0.28)",
+          }}
+        >
+          Get my outfit
+          <ChevronRight size={16} />
+        </button>
       </motion.div>
     </div>
   )

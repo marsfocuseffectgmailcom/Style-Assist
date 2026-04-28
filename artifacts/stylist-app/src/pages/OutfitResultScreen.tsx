@@ -130,16 +130,23 @@ const ROTATION_NOTES: Record<string, string> = {
   "not-lately": "This is a good moment to bring this back into rotation.",
 }
 
-function RotationNote({ item }: { item: PlannedOutfitItem }) {
+const ROTATION_NOTES_TONIGHT: Record<string, string> = {
+  "go-to":      "This is one of your natural anchor pieces.",
+  "sometimes":  "This fits well here without taking over the outfit.",
+  "not-lately": "This is a good moment to bring this back in — it fits naturally here.",
+}
+
+function RotationNote({ item, tonight = false }: { item: PlannedOutfitItem; tonight?: boolean }) {
   const prefs = loadItemPreferences()
   const reach = prefs[String(item.id)]?.reach
   if (!reach) return null
-  const note = ROTATION_NOTES[reach]
+  const notes = tonight ? ROTATION_NOTES_TONIGHT : ROTATION_NOTES
+  const note  = notes[reach]
   if (!note) return null
 
-  const isGoTo    = reach === "go-to"
-  const isBack    = reach === "not-lately"
-  const dotColor  = isGoTo ? T.teal : isBack ? T.gold : T.sub
+  const isGoTo   = reach === "go-to"
+  const isBack   = reach === "not-lately"
+  const dotColor = isGoTo ? T.teal : isBack ? T.gold : T.sub
 
   return (
     <div className="flex items-start gap-3">
@@ -271,6 +278,7 @@ function PlanLaterSheet({
 type LocationState = {
   outfit: GeneratedOutfit
   date:   string
+  mode?:  "tonight"
 }
 
 export default function OutfitResultScreen() {
@@ -289,9 +297,10 @@ export default function OutfitResultScreen() {
     return null
   }
 
-  const { outfit, date } = state
-  const cfg              = confidenceConfig[outfit.confidence]
-  const itemsWithPrefs   = outfit.items.filter(
+  const { outfit, date, mode } = state
+  const isTonight              = mode === "tonight"
+  const cfg                    = confidenceConfig[outfit.confidence]
+  const itemsWithPrefs         = outfit.items.filter(
     (item) => !!loadItemPreferences()[String(item.id)]?.reach
   )
 
@@ -300,11 +309,13 @@ export default function OutfitResultScreen() {
   // "Why this works" — main paragraph from reason + supporting tips
   const mainExplanation = outfit.reason
 
-  // Supporting tips (first 2)
-  const supportingTips  = outfit.tips.slice(0, 2)
+  // Tonight mode: keep explanation concise — max 1 supporting tip
+  const supportingTips  = outfit.tips.slice(0, isTonight ? 1 : 2)
 
-  // "Style tip" — third tip or upgrade
-  const styleTip        = outfit.tips[2] ?? outfit.upgrade
+  // "Style tip" — third tip or upgrade (tonight: skip if explanation already covers it)
+  const styleTip        = isTonight
+    ? (outfit.tips[1] ?? outfit.upgrade)
+    : (outfit.tips[2] ?? outfit.upgrade)
 
   // ── Save handler ────────────────────────────────────────────────────────────
 
@@ -374,10 +385,12 @@ export default function OutfitResultScreen() {
             <p className="mb-0.5 text-[11px]" style={{ color: T.muted }}>{formatDate(date)}</p>
           )}
           <h1 className="text-[22px] font-bold leading-tight tracking-[-0.4px]" style={{ color: T.text }}>
-            Your outfit is ready
+            {isTonight ? "Ready for tonight" : "Your outfit is ready"}
           </h1>
           <p className="mt-0.5 text-[12px]" style={{ color: T.muted }}>
-            Built from your wardrobe, styled for the moment.
+            {isTonight
+              ? "This will work — no overthinking needed."
+              : "Built from your wardrobe, styled for the moment."}
           </p>
         </div>
       </header>
@@ -477,7 +490,7 @@ export default function OutfitResultScreen() {
           </div>
           <div className="space-y-3 px-4 py-4">
             {outfit.items.map((item) => (
-              <RotationNote key={item.id} item={item} />
+              <RotationNote key={item.id} item={item} tonight={isTonight} />
             ))}
           </div>
         </section>
@@ -498,7 +511,7 @@ export default function OutfitResultScreen() {
 
       {/* ── Action buttons ── */}
       <div className="pb-8 pt-2">
-        {/* Primary — Save outfit */}
+        {/* Primary */}
         <button
           onClick={handleSave}
           className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97]"
@@ -508,27 +521,27 @@ export default function OutfitResultScreen() {
           }}
         >
           <Check size={16} />
-          Save outfit
+          {isTonight ? "Wear this" : "Save outfit"}
         </button>
 
-        {/* Secondary — Try another look */}
+        {/* Secondary */}
         <button
           onClick={handleTryAnother}
           className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] border py-4 text-[14px] font-semibold transition active:scale-[0.97]"
           style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.04)", color: T.sub }}
         >
           <RefreshCw size={15} />
-          Try another look
+          {isTonight ? "Try another option" : "Try another look"}
         </button>
 
-        {/* Tertiary — Plan for later */}
+        {/* Tertiary */}
         <button
           onClick={handlePlanLater}
           className="flex w-full items-center justify-center gap-2 py-3 text-[13px] font-medium transition active:opacity-70"
           style={{ color: T.muted }}
         >
           <Calendar size={14} />
-          Plan for later
+          {isTonight ? "Save for later" : "Plan for later"}
         </button>
       </div>
 

@@ -1,0 +1,133 @@
+Do not redesign the app.
+
+Do not change colours, typography, spacing, layout, or component structure.
+
+Do not rename components or screens.
+
+Only add the Tonight Mode feature inside the existing Style Assist system.
+
+---
+
+Goal:
+Create a fast, high-confidence outfit flow for immediate use.
+
+---
+
+FEATURE: Tonight Mode Entry
+
+Add a button on the main/home screen:
+
+Label:
+“I need an outfit tonight”
+
+Placement:
+Use existing button style and spacing system.
+Do not create a new button design.
+
+---
+
+FLOW:
+
+When pressed, skip complex setup.
+
+Show a quick selection (single screen):
+
+1. Occasion (required)
+Options:
+- Casual
+- Dinner
+- Going out
+- Work
+- Event
+
+2. Weather (auto-detect if possible, otherwise optional manual select)
+
+3. Optional:
+“Use a go-to item” (toggle)
+
+No long forms.
+No multi-step onboarding.
+
+---
+
+OUTFIT GENERATION RULES:
+
+- Prioritise speed
+- Use high-confidence combinations
+- Prefer “Always a go-to” items as anchors
+- Avoid experimental combinations
+- Keep outfit clean and reliable
+
+---
+
+RESULT SCREEN (Tonight Mode variant)
+
+Reuse the existing outfit result screen.
+
+Modify behaviour only:
+
+Header:
+“Ready for tonight”
+
+Subtext:
+“This will work — no overthinking needed.”
+
+---
+
+“Why this works” section:
+
+Shorter than normal mode.
+Max 2–3 sentences.
+
+Tone:
+confident, calm, decisive
+
+Example:
+“This works because the colours stay balanced and the silhouette is clean. It’s simple, but sharp enough for the occasion.”
+
+---
+
+Style tip:
+
+Optional, keep short.
+
+---
+
+ROTATION LOGIC:
+
+If using a rarely worn item:
+“This is a good moment to bring this back in — it fits naturally here.”
+
+Do not highlight it as unusual or risky.
+
+---
+
+ACTIONS:
+
+Primary:
+“Wear this”
+
+Secondary:
+“Try another option”
+
+Optional:
+“Save for later”
+
+---
+
+SYSTEM RULES:
+
+- No visual drift
+- No new UI styles
+- Reuse all existing components
+- No layout shifts
+- Keep everything fast and minimal
+
+---
+
+RESULT:
+
+Tonight Mode must feel like a shortcut, not a separate system.
+
+It should feel like:
+tap → choose → done
