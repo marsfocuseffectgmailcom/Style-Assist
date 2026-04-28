@@ -1,6 +1,7 @@
+import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { motion } from "framer-motion"
-import { ArrowLeft, Sparkles, Check, RefreshCw, Calendar } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ArrowLeft, Sparkles, Check, RefreshCw, Calendar, X } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useStylePreferences } from "../hooks/useStylePreferences"
@@ -156,6 +157,115 @@ function RotationNote({ item }: { item: PlannedOutfitItem }) {
   )
 }
 
+// ─── Plan later sheet ──────────────────────────────────────────────────────────
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function PlanLaterSheet({
+  open,
+  value,
+  onChange,
+  onSave,
+  onClose,
+}: {
+  open:     boolean
+  value:    string
+  onChange: (v: string) => void
+  onSave:   () => void
+  onClose:  () => void
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: "rgba(0,0,0,0.60)" }}
+            onClick={onClose}
+          />
+
+          {/* Sheet */}
+          <motion.div
+            key="sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 300 }}
+            className="fixed inset-x-0 bottom-0 z-50 overflow-hidden rounded-t-[28px]"
+            style={{ backgroundColor: T.elevated, borderTop: `1px solid ${T.border}` }}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="h-1 w-10 rounded-full bg-white/15" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pb-4 pt-2">
+              <div>
+                <h2 className="text-[17px] font-bold" style={{ color: T.text }}>Plan for later</h2>
+                <p className="mt-0.5 text-[12px]" style={{ color: T.muted }}>
+                  Choose a date to save this outfit.
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 transition hover:bg-white/12"
+                style={{ color: T.sub }}
+                aria-label="Close"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Date input */}
+            <div className="px-5 pb-4">
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-widest" style={{ color: T.muted }}>
+                Date
+              </label>
+              <input
+                type="date"
+                value={value}
+                min={todayISO()}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full rounded-[16px] border px-4 py-3.5 text-[14px] font-medium outline-none"
+                style={{
+                  backgroundColor: T.card,
+                  borderColor: "rgba(255,255,255,0.10)",
+                  color: T.text,
+                  colorScheme: "dark",
+                }}
+              />
+            </div>
+
+            {/* Save button */}
+            <div className="px-5 pb-8">
+              <button
+                onClick={onSave}
+                disabled={!value}
+                className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
+                style={{
+                  background: `linear-gradient(to right, ${T.pink}, ${T.coral})`,
+                  boxShadow: "0 4px 20px rgba(255,77,141,0.28)",
+                }}
+              >
+                <Check size={16} />
+                Save to this date
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
+
 // ─── Screen ────────────────────────────────────────────────────────────────────
 
 type LocationState = {
@@ -170,6 +280,8 @@ export default function OutfitResultScreen() {
 
   const { saveOutfit }                               = useTimelineOutfits()
   const { signalOutfit, trackItemsUsed }             = useStylePreferences()
+  const [planSheetOpen, setPlanSheetOpen]            = useState(false)
+  const [planDate, setPlanDate]                      = useState(() => todayISO())
 
   // If navigated here without state (direct URL), fall back to timeline
   if (!state?.outfit) {
@@ -220,7 +332,27 @@ export default function OutfitResultScreen() {
   }
 
   function handlePlanLater() {
-    navigate("/plan-ahead")
+    setPlanSheetOpen(true)
+  }
+
+  function handlePlanSave() {
+    if (!planDate) return
+    signalOutfit(outfit.tags, [], "like")
+    trackItemsUsed(outfit.items.map((i) => i.id))
+    const tl: TimelineOutfit = {
+      id:         `${outfit.id}-${planDate}`,
+      date:       planDate,
+      name:       outfit.name,
+      items:      outfit.items,
+      confidence: outfit.confidence,
+      tags:       outfit.tags,
+      score:      outfit.score,
+      reason:     outfit.reason,
+      createdAt:  new Date().toISOString(),
+    }
+    saveOutfit(tl)
+    setPlanSheetOpen(false)
+    navigate("/timeline")
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -399,6 +531,15 @@ export default function OutfitResultScreen() {
           Plan for later
         </button>
       </div>
+
+      {/* ── Plan for later sheet ── */}
+      <PlanLaterSheet
+        open={planSheetOpen}
+        value={planDate}
+        onChange={setPlanDate}
+        onSave={handlePlanSave}
+        onClose={() => setPlanSheetOpen(false)}
+      />
     </AppShell>
   )
 }
