@@ -9,6 +9,7 @@ import Profile from "./pages/Profile"
 import SavedProducts from "./pages/SavedProducts"
 import Timeline from "./pages/Timeline"
 import GenerateOutfitScreen from "./pages/GenerateOutfitScreen"
+import OutfitResultScreen from "./pages/OutfitResultScreen"
 import IncomingItemsScreen from "./pages/IncomingItemsScreen"
 import OnboardingFlow from "./pages/OnboardingFlow"
 import AddItemFlow from "./pages/AddItemFlow"
@@ -46,6 +47,7 @@ function AppContent() {
       <Route path="/saved-products" element={<SavedProducts />} />
       <Route path="/timeline" element={<Timeline />} />
       <Route path="/timeline/generate/:date" element={<GenerateOutfitScreen />} />
+      <Route path="/timeline/outfit-result" element={<OutfitResultScreen />} />
       <Route path="/incoming-items" element={<IncomingItemsScreen />} />
       <Route path="/plan-ahead" element={<PlanAheadScreen />} />
       <Route path="/plan-ahead/new" element={<EventSetupScreen />} />

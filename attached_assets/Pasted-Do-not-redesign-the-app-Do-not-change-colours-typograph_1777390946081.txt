@@ -1,0 +1,217 @@
+Do not redesign the app.
+
+Do not change colours, typography, spacing, layout, or component structure.
+
+Do not rename components or screens.
+
+Do not introduce new design systems or UI patterns.
+
+Only implement the changes listed below inside the existing Style Assist system.
+
+---
+
+Goal:
+Add wardrobe capture, preference system, outfit result screen, and basic outfit planning in one cohesive flow.
+
+Everything must feel native, consistent, and visually identical to the current app.
+
+---
+
+FEATURE 1: Wardrobe Capture Flow
+
+Add an “Add Item” flow:
+
+- Allow user to:
+  - Open device camera
+  - Upload images
+
+- Capture:
+  - Front photo (required)
+  - Back photo (required)
+  - Tag photo (optional)
+
+Add onboarding screen before capture:
+
+Title: “Photo tips”
+
+Instructions:
+- Place clothing flat on a surface
+- Use good lighting
+- Take front and back photos
+- Avoid shadows, hands, hangers, clutter
+- Capture tag for better accuracy
+
+---
+
+FEATURE 2: AI Detection + Editable Fields
+
+After upload:
+
+Auto-detect:
+- item type
+- colour
+- pattern
+- style
+- material (guess only)
+- season
+- occasion
+
+All fields must be editable.
+
+Add manual fields:
+- size
+- brand
+- material (override AI)
+- fit (tight / relaxed / oversized)
+- weather suitability
+- availability (clean / ready)
+
+Material must NOT be required.
+
+---
+
+FEATURE 3: Preference System (No Negative Framing)
+
+Replace any “like/dislike” logic.
+
+Add:
+
+Section:
+“How often do you reach for this?”
+
+Options:
+- Always a go-to
+- Wear it sometimes
+- Haven’t worn it in a while
+
+Add:
+
+Section:
+“How does this feel on you?”
+
+Options:
+- Confident
+- Comfortable
+- Polished
+- Relaxed
+- Still figuring it out
+
+No negative wording anywhere.
+
+---
+
+FEATURE 4: Outfit Result Screen
+
+Create a new screen after outfit generation.
+
+Structure:
+
+Header:
+“Your outfit is ready”
+“Built from your wardrobe, styled for the moment”
+
+Outfit cards:
+- Top
+- Bottom
+- Shoes
+- Outer (if used)
+- Accessory (if used)
+
+Each card shows:
+- image
+- item type
+- colour
+- role label
+
+Role labels:
+- Anchor piece
+- Balance piece
+- Texture contrast
+- Finishing detail
+- Weather layer
+
+---
+
+Add section:
+
+“Why this works”
+
+Must explain:
+- colour balance
+- silhouette
+- texture
+- occasion
+- overall feel
+
+Tone:
+calm, confident, professional
+
+---
+
+Add section:
+
+“Style tip”
+
+Short, practical advice
+
+---
+
+Rotation messaging:
+
+If “Always a go-to”:
+“This is one of your natural anchor pieces.”
+
+If “Wear it sometimes”:
+“This fits well here without taking over the outfit.”
+
+If “Haven’t worn in a while”:
+“This is a good moment to bring this back into rotation.”
+
+Never mention negative behaviour.
+
+---
+
+FEATURE 5: Outfit Planning (Light Version)
+
+Add button:
+“Plan for later”
+
+Allow user to:
+- Save outfit
+- Assign to a date
+
+Add simple calendar association (no redesign of navigation)
+
+---
+
+FEATURE 6: AI Behaviour Rules
+
+Every outfit must:
+- Explain why it works
+- Use calm, confident tone
+- Avoid hype or robotic language
+
+AI must:
+- Prioritise go-to items
+- Mix in “sometimes” items
+- Occasionally reintroduce “not worn” items positively
+
+---
+
+SYSTEM RULES:
+
+- No visual drift
+- Reuse all existing components
+- Maintain spacing and layout exactly
+- No layout jumps
+- No new design styles
+
+---
+
+RESULT:
+
+All features must feel like they were part of the original app from day one.
+
+No UI inconsistencies.
+No visual regressions.
+No redesign side effects.

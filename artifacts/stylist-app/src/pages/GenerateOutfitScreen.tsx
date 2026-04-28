@@ -11,13 +11,11 @@ import {
 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
-import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { useStylePreferences } from "../hooks/useStylePreferences"
 import { wardrobeItems } from "../lib/mockData"
 import { generateOutfits } from "../lib/outfitGenerator"
 import type { GeneratedOutfit } from "../lib/outfitGenerator"
-import type { TimelineOutfit } from "../lib/types"
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
@@ -298,9 +296,8 @@ function OutfitCard({
 export default function GenerateOutfitScreen() {
   const navigate = useNavigate()
   const { date } = useParams<{ date: string }>()
-  const { saveOutfit } = useTimelineOutfits()
   const { items: incomingItems } = useIncomingItems()
-  const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
+  const { preferences, recentItemIds } = useStylePreferences()
 
   const outfits = useMemo(
     () =>
@@ -315,29 +312,10 @@ export default function GenerateOutfitScreen() {
     outfits.length > 0 ? outfits[0].id : null
   )
 
-  function handleSave() {
+  function handleViewResult() {
     const outfit = outfits.find((o) => o.id === selected)
     if (!outfit || !date) return
-
-    signalOutfit(outfit.tags, [], "like")
-    for (const other of outfits.filter((o) => o.id !== selected)) {
-      signalOutfit(other.tags, [], "skip")
-    }
-    trackItemsUsed(outfit.items.map((i) => i.id))
-
-    const tl: TimelineOutfit = {
-      id: outfit.id,
-      date,
-      name: outfit.name,
-      items: outfit.items,
-      confidence: outfit.confidence,
-      tags: outfit.tags,
-      score: outfit.score,
-      reason: outfit.reason,
-      createdAt: new Date().toISOString(),
-    }
-    saveOutfit(tl)
-    navigate("/timeline")
+    navigate("/timeline/outfit-result", { state: { outfit, date } })
   }
 
   const topOutfit = outfits[0]
@@ -402,11 +380,11 @@ export default function GenerateOutfitScreen() {
 
           <div className="sticky bottom-[80px] pb-3">
             <button
-              onClick={handleSave}
+              onClick={handleViewResult}
               disabled={!selected}
               className="w-full rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.28)] transition active:scale-[0.97] disabled:opacity-50"
             >
-              Add to Timeline
+              View outfit →
             </button>
           </div>
         </>
