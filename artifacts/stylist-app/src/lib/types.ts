@@ -131,6 +131,8 @@ export type TimelineOutfit = {
   items: PlannedOutfitItem[]
   confidence: OutfitConfidence
   tags: string[]
+  score?: number
+  reason?: string
   eventId?: string
   createdAt: string
 }

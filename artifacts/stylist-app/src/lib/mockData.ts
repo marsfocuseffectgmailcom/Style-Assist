@@ -14,6 +14,9 @@ export type WardrobeItem = {
   category: "Tops" | "Bottoms" | "Shoes" | "Outerwear"
   image: string
   color?: string
+  colors: string[]
+  styleTags: string[]
+  seasonTags: string[]
   wearCount?: number
 }
 
@@ -56,6 +59,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Outerwear",
     image:
       "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=800&q=80",
+    color: "brown",
+    colors: ["brown", "tan"],
+    styleTags: ["smart casual", "polished", "professional", "tailored"],
+    seasonTags: ["autumn", "winter", "spring"],
     wearCount: 1,
   },
   {
@@ -64,6 +71,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Tops",
     image:
       "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
+    color: "cream",
+    colors: ["cream"],
+    styleTags: ["minimal", "casual", "cozy", "relaxed", "clean"],
+    seasonTags: ["autumn", "winter"],
     wearCount: 3,
   },
   {
@@ -72,6 +83,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Outerwear",
     image:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["clean", "minimal", "elegant", "classic", "polished"],
+    seasonTags: ["winter", "autumn"],
     wearCount: 2,
   },
   {
@@ -80,6 +95,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Bottoms",
     image:
       "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
+    color: "blue",
+    colors: ["blue", "denim"],
+    styleTags: ["casual", "relaxed", "everyday", "weekend"],
+    seasonTags: ["all-season"],
     wearCount: 2,
   },
   {
@@ -88,6 +107,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Bottoms",
     image:
       "https://images.unsplash.com/photo-1506629905607-f0e6a0f5d4f8?auto=format&fit=crop&w=800&q=80",
+    color: "beige",
+    colors: ["beige"],
+    styleTags: ["minimal", "clean", "professional", "polished", "tailored"],
+    seasonTags: ["spring", "summer", "autumn"],
     wearCount: 1,
   },
   {
@@ -96,6 +119,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Bottoms",
     image:
       "https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["professional", "clean", "polished", "tailored", "elegant"],
+    seasonTags: ["all-season"],
     wearCount: 4,
   },
   {
@@ -104,6 +131,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Shoes",
     image:
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80",
+    color: "white",
+    colors: ["white"],
+    styleTags: ["casual", "relaxed", "clean", "minimal", "sporty"],
+    seasonTags: ["spring", "summer"],
     wearCount: 5,
   },
   {
@@ -112,6 +143,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Shoes",
     image:
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["smart casual", "polished", "minimal", "professional", "clean"],
+    seasonTags: ["all-season"],
     wearCount: 2,
   },
   {
@@ -119,7 +154,11 @@ export const wardrobeItems: WardrobeItem[] = [
     name: "Black Heels",
     category: "Shoes",
     image:
-      "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["elegant", "dressy", "polished", "formal", "feminine"],
+    seasonTags: ["all-season"],
     wearCount: 1,
   },
   {
@@ -128,7 +167,10 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Tops",
     image:
       "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=800&q=80",
-    color: "Black",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["minimal", "casual", "clean", "everyday"],
+    seasonTags: ["all-season"],
   },
   {
     id: 11,
@@ -136,6 +178,9 @@ export const wardrobeItems: WardrobeItem[] = [
     category: "Bottoms",
     image:
       "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80",
-    color: "Blue",
+    color: "blue",
+    colors: ["blue", "denim"],
+    styleTags: ["casual", "relaxed", "everyday", "weekend"],
+    seasonTags: ["all-season"],
   },
 ]

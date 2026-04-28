@@ -1,5 +1,11 @@
 import type { WardrobeItem } from "./mockData"
 import type { IncomingItem, PlannedOutfitItem, OutfitConfidence, TimelineOutfit } from "./types"
+import type { StylePreferences } from "./stylingEngine"
+import { rankOutfits, extractColorsFromName } from "./stylingEngine"
+import type { ScoredItem, NormCategory, RankedOutfit } from "./stylingEngine"
+import { loadPreferences, loadRecentItemIds, addRecentItems } from "./stylePreferences"
+
+// ─── Public result type ───────────────────────────────────────────────────────
 
 export type GeneratedOutfit = {
   id: string
@@ -7,14 +13,16 @@ export type GeneratedOutfit = {
   items: PlannedOutfitItem[]
   confidence: OutfitConfidence
   tags: string[]
+  score: number
+  reason: string
+  breakdown?: Record<string, number>
+  gapSuggestion?: string
 }
 
-type NormalisedItem = PlannedOutfitItem & {
-  normCategory: "top" | "bottom" | "dress" | "shoes" | "outerwear" | "accessory"
-}
+// ─── Item normalisation ───────────────────────────────────────────────────────
 
-function wardrobeToNorm(item: WardrobeItem): NormalisedItem {
-  const catMap: Record<string, NormalisedItem["normCategory"]> = {
+function wardrobeToScored(item: WardrobeItem): ScoredItem {
+  const catMap: Record<string, NormCategory> = {
     Tops: "top",
     Bottoms: "bottom",
     Shoes: "shoes",
@@ -25,63 +33,79 @@ function wardrobeToNorm(item: WardrobeItem): NormalisedItem {
     name: item.name,
     image: item.image,
     category: item.category,
+    normCategory: catMap[item.category] ?? "top",
+    styleTags: item.styleTags ?? [],
+    colors: item.colors?.length ? item.colors : extractColorsFromName(item.name),
+    seasonTags: item.seasonTags ?? ["all-season"],
+    wearCount: item.wearCount ?? 0,
     source: "wardrobe",
     purchaseStatus: "arrived",
-    normCategory: catMap[item.category] ?? "top",
   }
 }
 
-function incomingToNorm(item: IncomingItem): NormalisedItem {
+function incomingToScored(item: IncomingItem): ScoredItem {
+  const catMap: Record<string, NormCategory> = {
+    top: "top",
+    bottom: "bottom",
+    dress: "dress",
+    shoes: "shoes",
+    outerwear: "outerwear",
+    accessory: "accessory",
+  }
   return {
     id: item.id,
     name: item.name,
     image: item.image,
     category: item.category,
+    normCategory: catMap[item.category] ?? "top",
+    styleTags: item.styleTags ?? [],
+    colors: item.color
+      ? [item.color, ...extractColorsFromName(item.name)]
+      : extractColorsFromName(item.name),
+    seasonTags: ["all-season"],
+    wearCount: 0,
     source: "suggestion",
     purchaseStatus: "waiting_for_delivery",
-    normCategory: item.category,
   }
 }
 
-const outfitNames = [
-  "Effortless Neutral",
-  "Clean & Classic",
-  "Weekend Edit",
-  "Tonal Moment",
-  "Smart Casual",
-  "Quiet Luxury",
-  "Off-Duty Chic",
-]
-
-const tagsByStyle: Record<string, string[]> = {
-  wedding: ["elegant", "dressy", "feminine"],
-  birthday: ["fun", "bold", "stylish"],
-  dinner: ["chic", "smart casual", "polished"],
-  work: ["professional", "tailored", "clean"],
-  casual: ["relaxed", "everyday", "minimal"],
-  party: ["expressive", "evening", "statement"],
-  holiday: ["seasonal", "comfortable", "festive"],
-  travel: ["practical", "comfortable", "layered"],
-  default: ["minimal", "tonal", "classic"],
+function scoredToPlannedItem(item: ScoredItem): PlannedOutfitItem {
+  return {
+    id: item.id,
+    name: item.name,
+    image: item.image,
+    category: item.category,
+    source: item.source,
+    purchaseStatus: item.purchaseStatus,
+  }
 }
 
-function confidence(
-  hasShoes: boolean,
-  hasTopOrDress: boolean,
-  hasBottomOrDress: boolean,
-  eventMatch: boolean
-): OutfitConfidence {
-  const complete = hasShoes && hasTopOrDress && hasBottomOrDress
-  if (complete && eventMatch) return "high"
-  if (complete) return "safe"
-  return "experimental"
+function rankedToGenerated(r: RankedOutfit): GeneratedOutfit {
+  return {
+    id: r.id,
+    name: r.name,
+    items: r.items.map(scoredToPlannedItem),
+    confidence: r.confidence,
+    tags: r.tags,
+    score: r.score,
+    reason: r.reason,
+    breakdown: r.breakdown,
+    gapSuggestion: r.gapSuggestion,
+  }
 }
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 export function generateOutfits(
   date: string,
   wardrobeItems: WardrobeItem[],
   incomingItems: IncomingItem[],
-  eventType?: string
+  eventType?: string,
+  options?: {
+    preferences?: StylePreferences
+    usedItemIds?: Set<string>
+    usedOutfitNames?: Set<string>
+  }
 ): GeneratedOutfit[] {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -94,73 +118,24 @@ export function generateOutfits(
     return delivery <= selected
   })
 
-  const all: NormalisedItem[] = [
-    ...wardrobeItems.map(wardrobeToNorm),
-    ...eligibleIncoming.map(incomingToNorm),
+  const pool: ScoredItem[] = [
+    ...wardrobeItems.map(wardrobeToScored),
+    ...eligibleIncoming.map(incomingToScored),
   ]
 
-  const tops = all.filter((i) => i.normCategory === "top")
-  const bottoms = all.filter((i) => i.normCategory === "bottom")
-  const dresses = all.filter((i) => i.normCategory === "dress")
-  const shoes = all.filter((i) => i.normCategory === "shoes")
-  const outerwear = all.filter((i) => i.normCategory === "outerwear")
+  const preferences = options?.preferences ?? loadPreferences()
+  const usedItemIds = options?.usedItemIds ?? loadRecentItemIds()
 
-  const styleTags = tagsByStyle[eventType ?? ""] ?? tagsByStyle.default
-  const results: GeneratedOutfit[] = []
+  const ranked = rankOutfits(pool, {
+    eventType,
+    preferences,
+    usedItemIds,
+    usedOutfitNames: options?.usedOutfitNames,
+    dateStr: date,
+    maxResults: 5,
+  })
 
-  function makeItem(n: NormalisedItem): PlannedOutfitItem {
-    return {
-      id: n.id,
-      name: n.name,
-      image: n.image,
-      category: n.category,
-      source: n.source,
-      purchaseStatus: n.purchaseStatus,
-    }
-  }
-
-  let nameIdx = 0
-
-  function addCombo(items: NormalisedItem[], eventMatch: boolean) {
-    if (results.length >= 5) return
-    const hasShoes = items.some((i) => i.normCategory === "shoes")
-    const hasTopOrDress = items.some(
-      (i) => i.normCategory === "top" || i.normCategory === "dress"
-    )
-    const hasBottomOrDress = items.some(
-      (i) => i.normCategory === "bottom" || i.normCategory === "dress"
-    )
-    results.push({
-      id: uid(),
-      name: outfitNames[nameIdx++ % outfitNames.length],
-      items: items.map(makeItem),
-      confidence: confidence(hasShoes, hasTopOrDress, hasBottomOrDress, eventMatch),
-      tags: styleTags,
-    })
-  }
-
-  for (let i = 0; i < Math.min(tops.length, 3); i++) {
-    for (let j = 0; j < Math.min(bottoms.length, 2); j++) {
-      if (results.length >= 3) break
-      const combo: NormalisedItem[] = [tops[i], bottoms[j]]
-      if (shoes[i % shoes.length]) combo.push(shoes[i % shoes.length])
-      if (outerwear[i % outerwear.length]) combo.push(outerwear[i % outerwear.length])
-      addCombo(combo, !!eventType)
-    }
-  }
-
-  for (let i = 0; i < dresses.length && results.length < 5; i++) {
-    const combo: NormalisedItem[] = [dresses[i]]
-    if (shoes[i % shoes.length]) combo.push(shoes[i % shoes.length])
-    if (outerwear[i % outerwear.length]) combo.push(outerwear[i % outerwear.length])
-    addCombo(combo, !!eventType)
-  }
-
-  if (results.length === 0 && all.length > 0) {
-    addCombo(all.slice(0, 3), false)
-  }
-
-  return results
+  return ranked.map(rankedToGenerated)
 }
 
 export function generateMonthPlan(
@@ -168,7 +143,12 @@ export function generateMonthPlan(
   incomingItems: IncomingItem[],
   existingDates: Set<string>
 ): TimelineOutfit[] {
+  const preferences = loadPreferences()
+  const usedItemIds = loadRecentItemIds()
+  const localUsed = new Set(usedItemIds)
+  const usedOutfitNames = new Set<string>()
   const outfits: TimelineOutfit[] = []
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -178,10 +158,22 @@ export function generateMonthPlan(
     const dateStr = d.toISOString().slice(0, 10)
     if (existingDates.has(dateStr)) continue
 
-    const generated = generateOutfits(dateStr, wardrobeItems, incomingItems)
+    const generated = generateOutfits(dateStr, wardrobeItems, incomingItems, undefined, {
+      preferences,
+      usedItemIds: localUsed,
+      usedOutfitNames,
+    })
+
     if (generated.length === 0) continue
 
     const best = generated[0]
+
+    // Track item freshness and name uniqueness across the 28-day plan
+    for (const item of best.items) {
+      localUsed.add(item.id)
+    }
+    usedOutfitNames.add(best.name)
+
     outfits.push({
       id: uid(),
       date: dateStr,
@@ -189,9 +181,14 @@ export function generateMonthPlan(
       items: best.items,
       confidence: best.confidence,
       tags: best.tags,
+      score: best.score,
+      reason: best.reason,
       createdAt: new Date().toISOString(),
     })
   }
+
+  // Persist freshness for future calls
+  addRecentItems(outfits.flatMap((o) => o.items.map((i) => i.id)))
 
   return outfits
 }
