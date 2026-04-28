@@ -1,10 +1,10 @@
-import { Home, Shirt, Sparkles, ShoppingBag, User } from "lucide-react"
+import { Home, Shirt, CalendarDays, ShoppingBag, User } from "lucide-react"
 import { NavLink } from "react-router-dom"
 
 const navItems = [
   { label: "Home", to: "/", icon: Home },
   { label: "Wardrobe", to: "/wardrobe", icon: Shirt },
-  { label: "Stylist", to: "/stylist", icon: Sparkles },
+  { label: "Timeline", to: "/timeline", icon: CalendarDays },
   { label: "Shop", to: "/shop", icon: ShoppingBag },
   { label: "Profile", to: "/profile", icon: User },
 ]

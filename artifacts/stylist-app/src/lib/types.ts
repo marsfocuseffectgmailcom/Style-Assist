@@ -121,3 +121,27 @@ export type PlannedOutfit = {
   notes?: string
   createdAt: string
 }
+
+export type OutfitConfidence = "high" | "safe" | "experimental"
+
+export type TimelineOutfit = {
+  id: string
+  date: string
+  name: string
+  items: PlannedOutfitItem[]
+  confidence: OutfitConfidence
+  tags: string[]
+  eventId?: string
+  createdAt: string
+}
+
+export type IncomingItem = {
+  id: string
+  name: string
+  category: "top" | "bottom" | "dress" | "shoes" | "outerwear" | "accessory"
+  image: string
+  color?: string
+  styleTags: string[]
+  deliveryDate: string
+  storeName: string
+}

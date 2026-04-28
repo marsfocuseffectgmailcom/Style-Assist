@@ -5,6 +5,9 @@ import Wardrobe from "./pages/Wardrobe"
 import Shop from "./pages/Shop"
 import Profile from "./pages/Profile"
 import SavedProducts from "./pages/SavedProducts"
+import Timeline from "./pages/Timeline"
+import GenerateOutfitScreen from "./pages/GenerateOutfitScreen"
+import IncomingItemsScreen from "./pages/IncomingItemsScreen"
 import PlanAheadScreen from "./pages/plan-ahead/PlanAheadScreen"
 import EventSetupScreen from "./pages/plan-ahead/EventSetupScreen"
 import OutfitTimelineScreen from "./pages/plan-ahead/OutfitTimelineScreen"
@@ -22,6 +25,9 @@ export default function App() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/saved-products" element={<SavedProducts />} />
+        <Route path="/timeline" element={<Timeline />} />
+        <Route path="/timeline/generate/:date" element={<GenerateOutfitScreen />} />
+        <Route path="/incoming-items" element={<IncomingItemsScreen />} />
         <Route path="/plan-ahead" element={<PlanAheadScreen />} />
         <Route path="/plan-ahead/new" element={<EventSetupScreen />} />
         <Route path="/plan-ahead/:eventId" element={<OutfitTimelineScreen />} />

@@ -1,0 +1,104 @@
+Build AI Styling Logic so outfit suggestions feel intentional, not random.
+
+Do not randomly combine clothing items.
+
+Every generated outfit must be scored out of 100 using these rules:
+
+1. Outfit completeness
+Valid outfit structures:
+- top + bottom + shoes
+- dress + shoes
+- top + bottom + outerwear + shoes
+- dress + outerwear + shoes
+
+Accessories are optional.
+
+Reject incomplete outfits.
+
+2. Event match: 30 points
+Match outfit tags to event type:
+- wedding: elegant, formal, dressy
+- birthday: stylish, fun, bold
+- dinner: smart casual, polished, elegant
+- work: clean, modest, professional
+- casual: relaxed, simple
+- party: bold, expressive, stylish
+- holiday: seasonal, themed
+- travel: comfortable, practical
+
+3. Colour harmony: 25 points
+Reward:
+- neutral base with one accent colour
+- tonal matching
+- black/white/denim combinations
+- warm colours together
+- cool colours together
+
+Penalise:
+- too many loud colours
+- clashing colours
+- too many statement pieces
+
+4. Style consistency: 20 points
+Reward items with compatible style tags.
+Examples:
+- clean + minimal + professional
+- casual + relaxed + sneaker
+- elegant + dressy + polished
+- bold + party + expressive
+
+Penalise mismatched outfits like:
+- formal blazer with gym shorts
+- party dress with work boots
+- sportswear with elegant formal items
+
+5. Season suitability: 10 points
+Use season_tags.
+Reward outfits that match selected season or current month.
+Penalise outfits that are clearly unsuitable.
+
+6. User preference: 10 points
+Create lightweight preference tracking:
+- saved outfits increase similar score
+- removed outfits reduce similar score
+- skipped outfits slightly reduce similar score
+Track favourite colours, categories, and style tags.
+
+7. Freshness: 5 points
+Reward:
+- items not used recently
+- newly arrived delivery items
+- balanced wardrobe usage
+
+Avoid repeating the same outfit too often.
+
+Confidence labels:
+- 82 to 100 = High confidence
+- 65 to 81 = Safe
+- 50 to 64 = Experimental
+- below 50 = do not show by default
+
+Generated outfit result must include:
+- outfit name
+- item_ids
+- score
+- confidence label
+- tags
+- short reason explaining why it works
+
+Example reason:
+“Clean, polished outfit for dinner with a neutral base and one accent piece.”
+
+Only show the top 3 to 5 scoring outfits.
+
+If not enough good outfits exist:
+- show the best available option
+- suggest what item is missing
+Example:
+“Add neutral shoes to unlock better work outfits.”
+
+Important:
+The app must feel like a stylist, not a random generator.
+Good outfits first.
+Creative outfits second.
+Never overwhelm the user.
