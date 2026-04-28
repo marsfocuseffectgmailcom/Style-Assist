@@ -136,25 +136,253 @@ function generateOutfitName(
   return `${base} ${i}`
 }
 
+function pick(pool: string[], seed?: number): string {
+  if (pool.length === 0) return ""
+  const idx = seed !== undefined ? seed % pool.length : Math.floor(Math.random() * pool.length)
+  return pool[idx]
+}
+
 function buildReason(
   family: string,
   colorProfile: string,
   eventType: string | undefined,
   score: number
 ): string {
-  const eventDesc = eventType ? ` for ${eventType}` : ""
-  const familyDesc: Record<string, string> = {
-    professional: "Clean, polished",
-    elegant: "Refined and elegant",
-    casual: "Effortless, easy-wearing",
-    bold: "Confident and expressive",
-    sporty: "Practical and comfortable",
-    default: "Well-balanced",
+  const eventClause = eventType ? ` for ${eventType}` : ""
+  const reasonsByFamily: Record<string, string[]> = {
+    professional: [
+      `Structured and clean${eventClause} — works with the ${colorProfile}.`,
+      `Sharp pieces with a ${colorProfile} — looks intentional and put together.`,
+      `Polished combination${eventClause} built on a ${colorProfile}.`,
+    ],
+    elegant: [
+      `Refined and elevated${eventClause} — the ${colorProfile} adds quiet sophistication.`,
+      `Clean elegance${eventClause} — the ${colorProfile} keeps it understated.`,
+      `Dressed-up combination${eventClause} grounded in a ${colorProfile}.`,
+    ],
+    casual: [
+      `Easy to wear${eventClause} and effortless — the ${colorProfile} keeps it relaxed.`,
+      `Laid-back and well-balanced${eventClause} with a ${colorProfile}.`,
+      `Low-key${eventClause} but considered — built on a ${colorProfile}.`,
+    ],
+    bold: [
+      `Confident combination${eventClause} — the ${colorProfile} gives it personality.`,
+      `Expressive${eventClause} — the ${colorProfile} sets the tone.`,
+      `Makes a statement${eventClause} with a ${colorProfile} as the base.`,
+    ],
+    sporty: [
+      `Practical and comfortable${eventClause} — ${colorProfile} keeps it cohesive.`,
+      `Easy, active feel${eventClause} with a ${colorProfile}.`,
+    ],
   }
-  const base = familyDesc[family] ?? familyDesc.default
-  const qualityAdj = score >= 82 ? "" : score >= 65 ? "Solid" : "Creative"
-  const prefix = qualityAdj ? `${qualityAdj} — ` : ""
-  return `${prefix}${base} outfit${eventDesc} — ${colorProfile}.`
+  const pool = reasonsByFamily[family] ?? [
+    `Well-balanced combination${eventClause} with a ${colorProfile}.`,
+    `Versatile${eventClause} — the ${colorProfile} does the work.`,
+  ]
+  return pick(pool)
+}
+
+function buildTips(
+  items: ScoredItem[],
+  family: string,
+  colorProfile: string,
+  breakdown: Record<string, number>,
+  eventType: string | undefined
+): string[] {
+  const tips: string[] = []
+  const allColors = items.flatMap((i) => i.colors.map((c) => c.toLowerCase()))
+  const allTags = items.flatMap((i) => i.styleTags)
+  const neutralColors = [...new Set(allColors.filter(isNeutral))]
+  const accentColors = [...new Set(allColors.filter((c) => !isNeutral(c)))]
+  const shoe = items.find((i) => i.normCategory === "shoes")
+  const outerwear = items.find((i) => i.normCategory === "outerwear")
+  const hasDenim = accentColors.includes("denim") || accentColors.includes("blue")
+
+  // ── 1. Colour tip ──────────────────────────────────────────────────────────
+  if (accentColors.length === 0) {
+    if (neutralColors.length >= 3) {
+      tips.push(pick([
+        "Three neutral tones layered together adds depth without any clutter",
+        "A mix of neutrals reads as put-together without trying too hard",
+        "Tonal dressing in different shades of neutral is quietly sophisticated",
+      ]))
+    } else if (neutralColors.length === 2) {
+      tips.push(pick([
+        `${cap(neutralColors[0])} and ${neutralColors[1]} is one of the cleanest pairings there is`,
+        "Two-tone neutral is timeless — works for almost any occasion",
+        "Keeping it to two neutrals keeps the eye focused on the silhouette",
+      ]))
+    } else {
+      tips.push(pick([
+        "Head-to-toe single colour is bold and intentional — commit to it",
+        "Monochromatic dressing creates a strong, streamlined effect",
+        "One colour from top to toe signals real confidence",
+      ]))
+    }
+  } else if (hasDenim) {
+    tips.push(pick([
+      "Denim grounds the look with a relaxed, lived-in feel",
+      "Blue denim next to neutrals is an effortless combination — always works",
+      "Denim adds just enough texture to keep the outfit interesting",
+    ]))
+  } else {
+    tips.push(pick([
+      `The ${accentColors[0]} accent gives the neutral base a lift without overwhelming it`,
+      `One colour accent is enough — the ${accentColors[0]} earns its place here`,
+      `The ${colorProfile} is doing a lot of the work — it looks considered`,
+    ]))
+  }
+
+  // ── 2. Style / family tip ─────────────────────────────────────────────────
+  const familyTips: Record<string, string[]> = {
+    professional: [
+      "Tailored pieces keep the silhouette sharp — minimal effort, strong result",
+      "Structured shapes signal confidence without needing to say a word",
+      "Clean lines are doing the heavy lifting here — that's the point",
+    ],
+    elegant: [
+      "Refined pieces translate well from day into evening without changing",
+      "The elevated base makes this feel dressed without looking overdone",
+      "A polished combination like this is harder to get wrong than it looks",
+    ],
+    casual: [
+      "Relaxed fit keeps this comfortable without losing its shape",
+      "Low-key doesn't mean low-effort — this reads as well considered",
+      "Easy pieces that look good without any overthinking",
+    ],
+    bold: [
+      "This combination has a clear personality — wear it with conviction",
+      "Statement dressing works best when the rest stays simple",
+      "There's intention here — that's what makes bold styling work",
+    ],
+    sporty: [
+      "Practical pieces that still look put-together — best of both",
+      "Comfort and style aren't mutually exclusive — this proves it",
+      "A clean active look works better than most people expect",
+    ],
+  }
+  if (familyTips[family]) {
+    tips.push(pick(familyTips[family]))
+  }
+
+  // ── 3. Footwear tip ───────────────────────────────────────────────────────
+  if (shoe) {
+    const shTags = shoe.styleTags
+    if (shTags.some((t) => ["sporty", "casual"].includes(t))) {
+      if (family === "professional" || family === "elegant") {
+        tips.push(pick([
+          "Casual shoes soften the polish just enough — avoids looking stiff",
+          "Relaxed footwear keeps this from feeling too formal — good balance",
+        ]))
+      } else {
+        tips.push(pick([
+          "Clean sneakers work as a neutral — they don't compete with the outfit",
+          "White sneakers keep it fresh without adding visual noise",
+        ]))
+      }
+    } else if (shTags.some((t) => ["elegant", "dressy", "formal"].includes(t))) {
+      tips.push(pick([
+        "Dress shoes tie the whole look together with a clean, finished feel",
+        "A sleek shoe anchors the outfit and takes it up a level",
+      ]))
+    } else if (shTags.some((t) => ["smart casual", "polished"].includes(t))) {
+      tips.push(pick([
+        "Loafers hit the sweet spot between dressed and relaxed",
+        "Smart shoes elevate the look without making it stiff or formal",
+      ]))
+    }
+  }
+
+  // ── 4. Outerwear or layer tip ─────────────────────────────────────────────
+  if (outerwear) {
+    const owTags = outerwear.styleTags
+    if (owTags.some((t) => ["tailored", "professional", "smart casual"].includes(t))) {
+      tips.push(pick([
+        "A structured outer layer sharpens everything underneath",
+        "The jacket gives the outfit a frame — makes it look purposeful",
+      ]))
+    } else {
+      tips.push(pick([
+        "Layering adds dimension without complicating the palette",
+        "A good outer layer ties everything underneath into one look",
+      ]))
+    }
+  }
+
+  // ── 5. Event-specific tip ─────────────────────────────────────────────────
+  if (eventType && breakdown.eventMatch >= 20) {
+    const eTips: Record<string, string[]> = {
+      work: ["Office-appropriate but not boring — that's the sweet spot"],
+      dinner: ["Smart enough for dinner without feeling overdressed"],
+      wedding: ["Guest-appropriate — polished without stealing focus"],
+      party: ["Stands out without being too much — ideal for a party"],
+      travel: ["Travel-friendly pieces that still look like an actual outfit"],
+    }
+    if (eTips[eventType]) tips.push(pick(eTips[eventType]))
+  }
+
+  // ── 6. Off-season note ───────────────────────────────────────────────────
+  if (breakdown.seasonSuitability < 7) {
+    tips.push(pick([
+      "A couple of pieces skew off-season, but the overall combination still holds",
+      "Not every piece is season-perfect here, but it still comes together",
+    ]))
+  }
+
+  // Return 2–4 tips, always at least 2
+  const result = [...new Set(tips)].slice(0, 4)
+  return result.length >= 2 ? result : [...result, "Works as a base — accessories can take it in any direction"]
+}
+
+function buildUpgrade(
+  items: ScoredItem[],
+  family: string,
+  score: number
+): string | undefined {
+  // Only suggest an upgrade when there's meaningful room to improve
+  if (score >= 80) return undefined
+
+  const shoe = items.find((i) => i.normCategory === "shoes")
+  const bottom = items.find((i) => i.normCategory === "bottom")
+  const hasOuterwear = items.some((i) => i.normCategory === "outerwear")
+  const hasDenim =
+    bottom?.colors.some((c) => ["denim", "blue"].includes(c)) ?? false
+
+  if (shoe?.styleTags.some((t) => ["sporty", "casual"].includes(t))) {
+    if (family === "professional" || family === "elegant") {
+      return pick([
+        "Swap the sneakers for a loafer or ankle boot — it'd take this up a notch",
+        "Try a sleeker shoe here to sharpen the look",
+      ])
+    }
+  }
+
+  if (!hasOuterwear && score < 74 && (family === "professional" || family === "elegant")) {
+    return pick([
+      "Add a blazer or structured jacket — it gives the look more presence",
+      "Throw on a jacket to make this feel more intentional",
+    ])
+  }
+
+  if (hasDenim && (family === "professional" || family === "elegant")) {
+    return pick([
+      "Swap the jeans for tailored trousers and this becomes significantly more polished",
+      "Try trousers instead of denim here — same ease, cleaner result",
+    ])
+  }
+
+  if (score < 66) {
+    return pick([
+      "A tonal shoe choice would tie the look together more neatly",
+      "Try pairing your most structured pieces for a cleaner result",
+    ])
+  }
+
+  return undefined
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 // ─── Completeness check ───────────────────────────────────────────────────────
@@ -345,6 +573,8 @@ export type RankedOutfit = {
   confidence: "high" | "safe" | "experimental"
   tags: string[]
   reason: string
+  tips: string[]
+  upgrade?: string
   gapSuggestion?: string
   breakdown: Record<string, number>
 }
@@ -357,7 +587,10 @@ type ScoredCombo = {
   confidence: RankedOutfit["confidence"]
   tags: string[]
   reason: string
+  tips: string[]
+  upgrade?: string
   dominantFamily: string
+  colorProfile: string
   breakdown: Record<string, number>
   gapSuggestion?: string
 }
@@ -401,7 +634,9 @@ export function rankOutfits(
       confidence,
       tags,
       reason: buildReason(dominantFamily, colorProfile, opts.eventType, total),
+      tips: [],           // built after deduplication for surviving outfits only
       dominantFamily,
+      colorProfile,
       breakdown,
     })
   }
@@ -421,14 +656,15 @@ export function rankOutfits(
     }
   }
 
-  // Assign unique names ONLY to the final surviving outfits
-  // Seed with cross-call names so the month plan never reuses a name
+  // Assign names + build insight content only for surviving outfits
   const usedNames = new Set<string>(opts.usedOutfitNames ?? [])
   const final: RankedOutfit[] = deduplicated.map((outfit) => {
     const name = generateOutfitName(outfit.dominantFamily, usedNames)
     usedNames.add(name)
-    const { _key, dominantFamily: _df, ...rest } = outfit
-    return { ...rest, name }
+    const tips = buildTips(outfit.items, outfit.dominantFamily, outfit.colorProfile, outfit.breakdown, opts.eventType)
+    const upgrade = buildUpgrade(outfit.items, outfit.dominantFamily, outfit.score)
+    const { _key, dominantFamily: _df, colorProfile: _cp, ...rest } = outfit
+    return { ...rest, name, tips, upgrade }
   })
 
   // Gap suggestion when wardrobe is thin
@@ -445,6 +681,7 @@ export function rankOutfits(
           confidence: "experimental",
           tags: ["minimal"],
           reason: "Limited wardrobe — add more pieces for better suggestions.",
+          tips: ["Add more pieces to get full styling insights"],
           gapSuggestion,
           breakdown: {},
         })

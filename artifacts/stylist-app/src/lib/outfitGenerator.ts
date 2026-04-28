@@ -15,6 +15,8 @@ export type GeneratedOutfit = {
   tags: string[]
   score: number
   reason: string
+  tips: string[]
+  upgrade?: string
   breakdown?: Record<string, number>
   gapSuggestion?: string
 }
@@ -89,6 +91,8 @@ function rankedToGenerated(r: RankedOutfit): GeneratedOutfit {
     tags: r.tags,
     score: r.score,
     reason: r.reason,
+    tips: r.tips,
+    upgrade: r.upgrade,
     breakdown: r.breakdown,
     gapSuggestion: r.gapSuggestion,
   }

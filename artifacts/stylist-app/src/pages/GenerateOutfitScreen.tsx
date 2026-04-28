@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Check, Sparkles, ChevronDown, ChevronUp } from "lucide-react"
+import {
+  ArrowLeft,
+  Check,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  ArrowUpRight,
+} from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
@@ -20,37 +27,41 @@ function formatDate(dateStr: string): string {
   })
 }
 
+// ─── Confidence config ────────────────────────────────────────────────────────
+
 const confidenceConfig = {
   high: {
     label: "High match",
     color: "#4ECFA8",
     bg: "rgba(78,207,168,0.10)",
-    border: "rgba(78,207,168,0.20)",
-    scoreColor: "#4ECFA8",
+    border: "rgba(78,207,168,0.22)",
+    ring: "#4ECFA8",
   },
   safe: {
     label: "Safe choice",
     color: "#C8A96A",
     bg: "rgba(200,169,106,0.10)",
-    border: "rgba(200,169,106,0.20)",
-    scoreColor: "#C8A96A",
+    border: "rgba(200,169,106,0.22)",
+    ring: "#C8A96A",
   },
   experimental: {
     label: "Bold pick",
     color: "#FF7A5C",
     bg: "rgba(255,122,92,0.10)",
-    border: "rgba(255,122,92,0.20)",
-    scoreColor: "#FF7A5C",
+    border: "rgba(255,122,92,0.22)",
+    ring: "#FF7A5C",
   },
 }
 
+// ─── Breakdown labels ─────────────────────────────────────────────────────────
+
 const breakdownLabels: Record<string, string> = {
-  eventMatch: "Event match",
-  colourHarmony: "Colour harmony",
-  styleConsistency: "Style consistency",
+  eventMatch:        "Event match",
+  colourHarmony:     "Colour harmony",
+  styleConsistency:  "Style consistency",
   seasonSuitability: "Season fit",
-  userPreference: "Your taste",
-  freshness: "Freshness",
+  userPreference:    "Your taste",
+  freshness:         "Freshness",
 }
 
 const breakdownMax: Record<string, number> = {
@@ -62,32 +73,29 @@ const breakdownMax: Record<string, number> = {
   freshness: 5,
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 function ScoreMeter({ score, color }: { score: number; color: string }) {
   const size = 52
-  const strokeWidth = 4
-  const r = (size - strokeWidth) / 2
+  const sw = 4
+  const r = (size - sw) / 2
   const circ = 2 * Math.PI * r
   const dash = (score / 100) * circ
-
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className="relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={sw} />
         <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
+          cx={size / 2} cy={size / 2} r={r}
+          fill="none" stroke={color}
+          strokeWidth={sw} strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ - dash }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
         />
       </svg>
-      <span className="absolute text-[13px] font-bold" style={{ color }}>
+      <span className="absolute text-[13px] font-bold tabular-nums" style={{ color }}>
         {score}
       </span>
     </div>
@@ -97,17 +105,17 @@ function ScoreMeter({ score, color }: { score: number; color: string }) {
 function BreakdownRow({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = Math.round((value / max) * 100)
   return (
-    <div className="flex items-center gap-2">
-      <span className="w-[120px] shrink-0 text-[11px] text-[#6F7788]">{label}</span>
-      <div className="flex-1 overflow-hidden rounded-full bg-white/8" style={{ height: 4 }}>
+    <div className="flex items-center gap-3">
+      <span className="w-[116px] shrink-0 text-[11px] text-[#6F7788]">{label}</span>
+      <div className="flex-1 overflow-hidden rounded-full bg-white/8" style={{ height: 3 }}>
         <motion.div
+          className="h-full rounded-full bg-[#FF4D8D]/60"
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="h-full rounded-full bg-[#FF4D8D]/70"
         />
       </div>
-      <span className="w-8 text-right text-[11px] font-medium text-[#A8AFBE]">
+      <span className="w-9 text-right text-[11px] font-semibold tabular-nums text-[#A8AFBE]">
         {value}/{max}
       </span>
     </div>
@@ -123,21 +131,22 @@ function OutfitCard({
   selected: boolean
   onSelect: () => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(false)
   const cfg = confidenceConfig[outfit.confidence]
   const shown = outfit.items.slice(0, 4)
 
   return (
     <motion.div
       layout
-      className={`w-full overflow-hidden rounded-[24px] border text-left transition ${
-        selected ? "border-[#FF4D8D]/50 bg-[#FF4D8D]/6" : "border-white/10 bg-[#151922]"
+      className={`w-full overflow-hidden rounded-[24px] border text-left transition-colors ${
+        selected ? "border-[#FF4D8D]/40 bg-[#FF4D8D]/5" : "border-white/8 bg-[#151922]"
       }`}
     >
+      {/* ── Tappable header ── */}
       <button onClick={onSelect} className="w-full p-4 text-left">
         <div className="flex items-start gap-3">
           {/* Collage */}
-          <div className="grid h-[80px] w-[80px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[16px] bg-[#1A1F2B]">
+          <div className="grid h-[78px] w-[78px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[14px] bg-[#1A1F2B]">
             {shown.map((item, i) => (
               <img key={i} src={item.image} alt={item.name} className="h-full w-full object-cover" />
             ))}
@@ -145,27 +154,30 @@ function OutfitCard({
 
           {/* Info */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="flex-1 text-[15px] font-semibold leading-snug text-[#F6F3EE]">
-                {outfit.name}
-              </h3>
-              <ScoreMeter score={outfit.score} color={cfg.scoreColor} />
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-[15px] font-semibold leading-tight text-[#F6F3EE]">
+                  {outfit.name}
+                </h3>
+                <span
+                  className="mt-1.5 inline-block rounded-full px-2.5 py-[3px] text-[10px] font-semibold tracking-wide"
+                  style={{ color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
+                >
+                  {cfg.label}
+                </span>
+              </div>
+              <ScoreMeter score={outfit.score} color={cfg.ring} />
             </div>
 
-            <span
-              className="mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
-              style={{ color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
-            >
-              {cfg.label}
-            </span>
-
+            {/* Reason — always visible */}
             {outfit.reason && (
-              <p className="mt-1.5 text-[12px] leading-relaxed text-[#6F7788]">{outfit.reason}</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-[#6F7788]">{outfit.reason}</p>
             )}
           </div>
 
+          {/* Check */}
           {selected && (
-            <span className="ml-1 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF4D8D]">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF4D8D]">
               <Check size={13} className="text-white" />
             </span>
           )}
@@ -174,7 +186,7 @@ function OutfitCard({
         {/* Tags */}
         {outfit.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {outfit.tags.slice(0, 4).map((tag) => (
+            {outfit.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="rounded-full border border-white/8 bg-white/5 px-2.5 py-0.5 text-[11px] capitalize text-[#A8AFBE]"
@@ -185,7 +197,7 @@ function OutfitCard({
           </div>
         )}
 
-        {/* Items list */}
+        {/* Item list */}
         <div className="mt-3 space-y-1.5">
           {outfit.items.map((item) => (
             <div key={item.id} className="flex items-center gap-2">
@@ -203,45 +215,85 @@ function OutfitCard({
         </div>
       </button>
 
-      {/* Expand breakdown */}
-      {selected && Object.keys(outfit).includes("score") && (
-        <div className="border-t border-white/6 px-4">
-          <button
-            onClick={() => setExpanded((e) => !e)}
-            className="flex w-full items-center justify-between py-2.5 text-[12px] text-[#6F7788]"
+      {/* ── Expanded insight panel (only when selected) ── */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="overflow-hidden"
           >
-            <span>Score breakdown</span>
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+            {/* Stylist notes */}
+            {outfit.tips.length > 0 && (
+              <div className="border-t border-white/6 px-4 pb-4 pt-3">
+                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-[#C8A96A]">
+                  Stylist notes
+                </p>
+                <ul className="space-y-2">
+                  {outfit.tips.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span
+                        className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8A96A]/60"
+                      />
+                      <span className="text-[13px] leading-relaxed text-[#D4C9B8]">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
 
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="space-y-2 overflow-hidden pb-4"
-              >
-                {Object.entries(breakdownLabels).map(([key, label]) => {
-                  const val = outfit.breakdown?.[key]
-                  if (val === undefined) return null
-                  return (
-                    <BreakdownRow key={key} label={label} value={val} max={breakdownMax[key]} />
-                  )
-                })}
-                {outfit.gapSuggestion && (
-                  <p className="mt-2 rounded-[10px] bg-[#C8A96A]/10 px-3 py-2 text-[11px] text-[#C8A96A]">
-                    💡 {outfit.gapSuggestion}
-                  </p>
+                {/* Upgrade suggestion */}
+                {outfit.upgrade && (
+                  <div className="mt-3 flex items-start gap-2.5 rounded-[12px] border border-[#FF4D8D]/15 bg-[#FF4D8D]/6 px-3 py-2.5">
+                    <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-[#FF4D8D]" />
+                    <p className="text-[12px] leading-relaxed text-[#F6A8C4]">{outfit.upgrade}</p>
+                  </div>
                 )}
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
-        </div>
-      )}
+
+            {/* Score breakdown toggle */}
+            {outfit.breakdown && Object.keys(outfit.breakdown).length > 0 && (
+              <div className="border-t border-white/6 px-4">
+                <button
+                  onClick={() => setShowBreakdown((v) => !v)}
+                  className="flex w-full items-center justify-between py-3 text-[12px] text-[#5A6275] transition hover:text-[#A8AFBE]"
+                >
+                  <span>Score breakdown</span>
+                  {showBreakdown ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                </button>
+
+                <AnimatePresence>
+                  {showBreakdown && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="space-y-2 overflow-hidden pb-4"
+                    >
+                      {Object.entries(breakdownLabels).map(([key, label]) => {
+                        const val = outfit.breakdown?.[key]
+                        if (val === undefined) return null
+                        return <BreakdownRow key={key} label={label} value={val} max={breakdownMax[key]} />
+                      })}
+                      {outfit.gapSuggestion && (
+                        <p className="mt-2 rounded-[10px] bg-[#C8A96A]/8 px-3 py-2 text-[11px] leading-relaxed text-[#C8A96A]">
+                          💡 {outfit.gapSuggestion}
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
+
+// ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function GenerateOutfitScreen() {
   const navigate = useNavigate()
@@ -251,7 +303,11 @@ export default function GenerateOutfitScreen() {
   const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
 
   const outfits = useMemo(
-    () => generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, { preferences, usedItemIds: recentItemIds }),
+    () =>
+      generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, {
+        preferences,
+        usedItemIds: recentItemIds,
+      }),
     [date, incomingItems, preferences]
   )
 
@@ -263,13 +319,10 @@ export default function GenerateOutfitScreen() {
     const outfit = outfits.find((o) => o.id === selected)
     if (!outfit || !date) return
 
-    // Signal like for chosen outfit
     signalOutfit(outfit.tags, [], "like")
-    // Signal skip for others (soft negative)
     for (const other of outfits.filter((o) => o.id !== selected)) {
       signalOutfit(other.tags, [], "skip")
     }
-    // Track freshness
     trackItemsUsed(outfit.items.map((i) => i.id))
 
     const tl: TimelineOutfit = {
@@ -287,7 +340,7 @@ export default function GenerateOutfitScreen() {
     navigate("/timeline")
   }
 
-  const topOutfit = outfits.length > 0 ? outfits[0] : null
+  const topOutfit = outfits[0]
 
   return (
     <AppShell>
@@ -315,25 +368,25 @@ export default function GenerateOutfitScreen() {
         </Card>
       ) : (
         <>
-          {/* Best score banner */}
+          {/* Top score banner */}
           {topOutfit && topOutfit.score >= 65 && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#4ECFA8]/10 px-3.5 py-2.5"
+              className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#4ECFA8]/8 px-3.5 py-2.5"
             >
               <Sparkles size={14} className="shrink-0 text-[#4ECFA8]" />
               <p className="text-[12px] text-[#4ECFA8]">
                 Best outfit scores{" "}
-                <span className="font-bold">{topOutfit.score}/100</span> —{" "}
-                {topOutfit.confidence === "high" ? "excellent combination" : "solid combination"}
+                <span className="font-bold">{topOutfit.score}/100</span> — tap a card to see
+                full styling notes
               </p>
             </motion.div>
           )}
 
           <p className="mb-4 text-[13px] text-[#6F7788]">
-            {outfits.length} outfit suggestion{outfits.length !== 1 ? "s" : ""} ranked by score
-            — tap to select, expand for breakdown
+            {outfits.length} suggestion{outfits.length !== 1 ? "s" : ""} ranked by score —
+            select one to add to your plan
           </p>
 
           <div className="space-y-3 pb-6">
