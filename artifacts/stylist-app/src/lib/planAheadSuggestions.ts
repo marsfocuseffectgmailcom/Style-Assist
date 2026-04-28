@@ -1,6 +1,12 @@
 import type { EventType, PlannedOutfitItem } from "./types"
 
-type SuggestionTemplate = Omit<PlannedOutfitItem, "id" | "purchaseStatus">
+type SuggestionTemplate = Omit<PlannedOutfitItem, "id" | "purchaseStatus"> & {
+  estimatedDeliveryDays: number
+}
+
+export type SuggestionWithDelivery = PlannedOutfitItem & {
+  estimatedDeliveryDays: number
+}
 
 const suggestions: Record<EventType, SuggestionTemplate[]> = {
   wedding: [
@@ -11,6 +17,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 189",
       brand: "ASOS",
+      estimatedDeliveryDays: 7,
     },
     {
       name: "Strappy Heeled Sandals",
@@ -19,6 +26,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 129",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
     {
       name: "Pearl Clutch Bag",
@@ -27,6 +35,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 89",
       brand: "ASOS",
+      estimatedDeliveryDays: 4,
     },
     {
       name: "Delicate Gold Necklace",
@@ -35,6 +44,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 65",
       brand: "H&M",
+      estimatedDeliveryDays: 3,
     },
   ],
   party: [
@@ -45,6 +55,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 149",
       brand: "SHEIN",
+      estimatedDeliveryDays: 10,
     },
     {
       name: "Block Heel Mules",
@@ -53,6 +64,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 99",
       brand: "Zara",
+      estimatedDeliveryDays: 5,
     },
     {
       name: "Mini Chain Bag",
@@ -61,6 +73,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 79",
       brand: "ASOS",
+      estimatedDeliveryDays: 4,
     },
   ],
   birthday: [
@@ -71,6 +84,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 119",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
     {
       name: "Kitten Heel Pumps",
@@ -79,6 +93,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 109",
       brand: "ASOS",
+      estimatedDeliveryDays: 7,
     },
     {
       name: "Velvet Hair Claw",
@@ -87,6 +102,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 28",
       brand: "SHEIN",
+      estimatedDeliveryDays: 12,
     },
   ],
   christmas: [
@@ -97,6 +113,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 159",
       brand: "Zara",
+      estimatedDeliveryDays: 7,
     },
     {
       name: "Festive Blazer",
@@ -105,6 +122,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 139",
       brand: "ASOS",
+      estimatedDeliveryDays: 5,
     },
     {
       name: "Pointed Toe Heels",
@@ -113,6 +131,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 119",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
   ],
   halloween: [
@@ -123,6 +142,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 69",
       brand: "SHEIN",
+      estimatedDeliveryDays: 14,
     },
     {
       name: "Faux Leather Mini Skirt",
@@ -131,6 +151,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 79",
       brand: "ASOS",
+      estimatedDeliveryDays: 5,
     },
     {
       name: "Platform Ankle Boots",
@@ -139,6 +160,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 149",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
   ],
   easter: [
@@ -149,6 +171,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 129",
       brand: "ASOS",
+      estimatedDeliveryDays: 7,
     },
     {
       name: "Pastel Linen Blazer",
@@ -157,6 +180,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 149",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
     {
       name: "Woven Tote Bag",
@@ -165,6 +189,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 79",
       brand: "ASOS",
+      estimatedDeliveryDays: 4,
     },
   ],
   custom: [
@@ -175,6 +200,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 109",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
     {
       name: "Silk Camisole",
@@ -183,6 +209,7 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 89",
       brand: "ASOS",
+      estimatedDeliveryDays: 5,
     },
     {
       name: "Leather Loafers",
@@ -191,11 +218,12 @@ const suggestions: Record<EventType, SuggestionTemplate[]> = {
       source: "suggestion",
       price: "AUD 139",
       brand: "Zara",
+      estimatedDeliveryDays: 6,
     },
   ],
 }
 
-export function getSuggestionsForEvent(type: EventType): PlannedOutfitItem[] {
+export function getSuggestionsForEvent(type: EventType): SuggestionWithDelivery[] {
   const templates = suggestions[type] ?? suggestions.custom
   return templates.map((t) => ({
     ...t,

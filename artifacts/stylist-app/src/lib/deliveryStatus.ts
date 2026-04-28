@@ -26,6 +26,22 @@ export function deliveryStatusColor(status: DeliveryStatus): string {
   }
 }
 
+export function canDeliverBy(eventDateStr: string, estimatedDeliveryDays: number): boolean {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const arrival = new Date(today)
+  arrival.setDate(arrival.getDate() + estimatedDeliveryDays)
+  const eventDate = new Date(eventDateStr)
+  eventDate.setHours(0, 0, 0, 0)
+  return arrival <= eventDate
+}
+
+export function estimatedArrivalLabel(estimatedDeliveryDays: number): string {
+  const arrival = new Date()
+  arrival.setDate(arrival.getDate() + estimatedDeliveryDays)
+  return arrival.toLocaleDateString("en-AU", { day: "numeric", month: "short" })
+}
+
 export function formatEventDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
     weekday: "short",

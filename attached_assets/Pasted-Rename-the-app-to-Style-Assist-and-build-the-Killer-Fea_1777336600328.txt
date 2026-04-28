@@ -1,0 +1,241 @@
+Rename the app to Style Assist and build the Killer Feature: Outfit Timeline Engine
+
+IMPORTANT:
+Do not redesign the whole app randomly
+Do not change the design system unless required
+Do not remove existing wardrobe, recommendation, product, or save flows
+Build this as the central app experience
+
+GOAL:
+Create a premium outfit planning system where users can plan outfits 1 week, 2 weeks, or 4 weeks ahead using:
+1. wardrobe items they already own
+2. incoming delivery items
+3. upcoming events
+4. AI-style outfit recommendations
+5. save-to-timeline planning
+
+CORE LOOP:
+wardrobe → recommendation → product/incoming item → save → timeline
+
+FEATURE NAME:
+Outfit Timeline Engine
+
+MAIN SCREEN:
+Create a screen called Timeline or Plan Ahead
+
+The user must be able to:
+- view outfits by day
+- switch between 1 week, 2 week, and 4 week planning
+- tap an empty day to generate outfit suggestions
+- save an outfit to a future date
+- include incoming delivery items only if they arrive before or on that date
+- drag an outfit from one day to another
+- remove an outfit from a day
+- duplicate an outfit to another day
+
+DATA MODELS:
+Create these data structures if they do not already exist:
+
+wardrobe_items:
+- id
+- name
+- category: top, bottom, dress, shoes, outerwear, accessory
+- image
+- color
+- style_tags
+- season_tags
+- owned: true
+
+incoming_items:
+- id
+- name
+- category
+- image
+- color
+- style_tags
+- delivery_date
+- store_name
+- owned: false
+
+events:
+- id
+- title
+- date
+- event_type: wedding, birthday, dinner, work, casual, party, holiday, travel, other
+- dress_code
+- notes
+
+outfits:
+- id
+- name
+- item_ids
+- date
+- event_id optional
+- confidence: high, safe, experimental
+- tags
+
+OUTFIT GENERATION LOGIC:
+When generating outfits for a selected date:
+
+1. Include all wardrobe_items
+2. Include incoming_items only when:
+   incoming_item.delivery_date <= selected_date
+
+3. Generate outfit combinations using:
+- one top OR one dress
+- one bottom if no dress
+- one pair of shoes
+- optional outerwear
+- optional accessories
+
+4. Match to event type when possible:
+- wedding: dressy, elegant, formal
+- birthday: fun, stylish, bold
+- dinner: smart casual, elegant
+- work: clean, professional
+- casual: relaxed, simple
+- party: bold, expressive
+- holiday: seasonal, themed
+- travel: comfortable, practical
+
+5. Assign confidence:
+- high = strong event match + complete outfit
+- safe = complete outfit but neutral
+- experimental = unusual mix, bold colour, or less certain match
+
+PLAN MY MONTH BUTTON:
+Add a main CTA button:
+“Plan My Month”
+
+When tapped:
+- generate outfits for the next 4 weeks
+- respect incoming item delivery dates
+- respect event dates
+- fill empty timeline days only
+- do not overwrite existing saved outfits unless user confirms
+- show a calm planning animation before filling the timeline
+
+ANIMATION:
+Use premium, calm micro-interactions:
+- button press scale: 0.97
+- card hover/lift: 4px
+- selected outfit lift: 6px
+- fade transitions: 160ms
+- timeline fill animation: stagger cards by day
+- drag/drop snap animation
+- avoid flashy neon effects
+
+UI STYLE:
+Premium, calm, clean, lifestyle-productivity feel
+
+Use:
+- soft off-white background in light mode
+- deep charcoal background in dark mode
+- muted gold or soft violet accent
+- rounded cards
+- subtle shadows
+- breathable spacing
+- large readable typography
+- clean outfit imagery
+
+Avoid:
+- childish fashion-game feel
+- clutter
+- neon
+- random gradients
+- overly busy screens
+
+SCREEN STRUCTURE:
+
+HOME SCREEN:
+- Header: “Your Week”
+- Subtitle: “Planned, ready”
+- Large card for today’s planned outfit
+- Small card for next delivery
+- Small card for next event
+- Main CTA: “Plan My Month”
+- Secondary CTA: “Open Timeline”
+
+TIMELINE SCREEN:
+Top:
+- segmented control: 1 Week / 2 Weeks / 4 Weeks
+
+Below:
+- horizontal date strip
+- selected date highlighted
+
+Main:
+- vertical list of day cards
+- each day card shows:
+  - date
+  - event if present
+  - planned outfit if present
+  - empty state button: “Generate outfit”
+
+Outfit card must show:
+- outfit image or item collage
+- outfit name
+- confidence badge
+- tags
+- edit/remove/duplicate controls
+
+GENERATE OUTFIT SCREEN:
+- Header: selected date + event name if any
+- Grid of 3 to 5 outfit suggestions
+- Each suggestion shows:
+  - item collage
+  - confidence badge
+  - tags
+  - list of included items
+- Button: “Add to Timeline”
+
+INCOMING ITEMS SCREEN:
+- List incoming delivery items
+- Each item card shows:
+  - image
+  - item name
+  - store name
+  - delivery date
+  - “Unlocks X outfits”
+- Tapping item shows future outfits that can use it
+
+EMPTY STATES:
+Use helpful text:
+- “No outfit planned yet”
+- “Generate looks for this day”
+- “This delivery unlocks new outfit options”
+- “Your month is planned”
+
+IMPORTANT UX RULES:
+- The app should feel like it removes stress
+- The user should always know what to tap next
+- Do not make users manually build every outfit
+- The best action should always be obvious
+- Planning ahead is the main emotional value
+
+APP STORE POSITIONING TO REFLECT IN COPY:
+Use language like:
+- “Plan your outfits weeks before you need them”
+- “Use your wardrobe and incoming deliveries”
+- “Never wonder what to wear again”
+- “Your outfits, already handled”
+
+ACCEPTANCE TESTS:
+After building, verify:
+
+1. User can add or view wardrobe items
+2. User can add incoming items with delivery dates
+3. User can create an event on a future date
+4. User can open Timeline
+5. User can switch between 1 week, 2 week, and 4 week views
+6. User can tap an empty day and generate outfit suggestions
+7. Generated outfits include incoming items only after their delivery date
+8. User can save a generated outfit to the selected date
+9. Saved outfit appears on the timeline
+10. User can duplicate, remove, and move outfits
+11. Plan My Month fills empty days for the next 4 weeks
+12. Plan My Month does not overwrite existing outfits without confirmation
+13. The UI remains premium, calm, clean, and consistent
+14. No existing core flow is broken
+
+Build this now as the main feature of Style Assist
