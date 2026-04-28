@@ -52,13 +52,17 @@ const EVENT_REQUIRED_TAGS: Record<string, string[]> = {
   travel:   ["comfortable", "practical", "layered", "relaxed"],
 }
 
+// ─── Effortless Precision personality ────────────────────────────────────────
+// Principle: anchor + one accent · silhouette balance · one elevation element
+// Priority: clarity > creativity · balance > boldness · simplicity > variety
+
 const OUTFIT_NAMES: Record<string, string[]> = {
-  professional: ["Clean Lines", "Desk Ready", "The Work Edit", "Power Polish", "Quiet Authority"],
-  casual:       ["Weekend Edit", "Off-Duty Chic", "Effortless Neutral", "Low Key", "Easy Wear"],
-  elegant:      ["Quiet Luxury", "Polished Hour", "Evening Edit", "The Classic", "Refined Look"],
-  bold:         ["Statement Hour", "Bold Move", "The Standout", "Making Moves", "Expressive Edit"],
-  sporty:       ["Active Edit", "On The Go", "Studio to Street", "Move Easy", "Casual Power"],
-  default:      ["Tonal Moment", "Clean Slate", "Daily Edit", "The Balance", "Simple Styling"],
+  professional: ["Clean Anchor", "Structured Ease", "Quiet Authority", "Precise", "The Work Edit"],
+  casual:       ["Balanced", "Clean and Easy", "Grounded", "The Quiet Edit", "Effortless Anchor"],
+  elegant:      ["Still", "Quiet Precision", "Clean Elevation", "The Edit", "Composed"],
+  bold:         ["One Statement", "Anchored Edge", "Clear Signal", "Controlled", "Defined"],
+  sporty:       ["Clean Function", "Deliberate Ease", "Structured Sport", "Composed Move", "Active Anchor"],
+  default:      ["The Anchor", "Quiet Balance", "Clean Form", "One Step", "Considered"],
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,9 @@ function pick(pool: string[], seed?: number): string {
   return pool[idx]
 }
 
+// ─── Effortless Precision: reason builders ────────────────────────────────────
+// Voice: calm · confident · minimal · no excitement qualifiers
+
 function buildReason(
   family: string,
   colorProfile: string,
@@ -151,36 +158,39 @@ function buildReason(
   const eventClause = eventType ? ` for ${eventType}` : ""
   const reasonsByFamily: Record<string, string[]> = {
     professional: [
-      `Structured and clean${eventClause} — works with the ${colorProfile}.`,
-      `Sharp pieces with a ${colorProfile} — looks intentional and put together.`,
-      `Polished combination${eventClause} built on a ${colorProfile}.`,
+      `Structured anchor, clean silhouette${eventClause}. The ${colorProfile} keeps it precise.`,
+      `Clear lines, nothing competing${eventClause}. The ${colorProfile} does the work.`,
+      `One direction, well-edited${eventClause} — the ${colorProfile} holds it together.`,
     ],
     elegant: [
-      `Refined and elevated${eventClause} — the ${colorProfile} adds quiet sophistication.`,
-      `Clean elegance${eventClause} — the ${colorProfile} keeps it understated.`,
-      `Dressed-up combination${eventClause} grounded in a ${colorProfile}.`,
+      `Understated${eventClause}. The ${colorProfile} adds elevation without effort.`,
+      `Quiet precision${eventClause} — the ${colorProfile} is the right choice here.`,
+      `One elevation point, everything else restrained${eventClause}. Built on a ${colorProfile}.`,
     ],
     casual: [
-      `Easy to wear${eventClause} and effortless — the ${colorProfile} keeps it relaxed.`,
-      `Laid-back and well-balanced${eventClause} with a ${colorProfile}.`,
-      `Low-key${eventClause} but considered — built on a ${colorProfile}.`,
+      `Balanced${eventClause}. The ${colorProfile} keeps it grounded without trying.`,
+      `One relaxed piece, one structured — the ${colorProfile} ties it together${eventClause}.`,
+      `Nothing excessive${eventClause}. The ${colorProfile} is doing exactly what it should.`,
     ],
     bold: [
-      `Confident combination${eventClause} — the ${colorProfile} gives it personality.`,
-      `Expressive${eventClause} — the ${colorProfile} sets the tone.`,
-      `Makes a statement${eventClause} with a ${colorProfile} as the base.`,
+      `One statement, the rest restrained${eventClause}. The ${colorProfile} anchors it.`,
+      `A single accent on a clean base${eventClause} — the ${colorProfile} controls the energy.`,
+      `Clear signal${eventClause}. The ${colorProfile} keeps this from tipping over.`,
     ],
     sporty: [
-      `Practical and comfortable${eventClause} — ${colorProfile} keeps it cohesive.`,
-      `Easy, active feel${eventClause} with a ${colorProfile}.`,
+      `Deliberate and clean${eventClause}. The ${colorProfile} keeps it cohesive.`,
+      `Function without clutter${eventClause} — the ${colorProfile} holds the look together.`,
     ],
   }
   const pool = reasonsByFamily[family] ?? [
-    `Well-balanced combination${eventClause} with a ${colorProfile}.`,
-    `Versatile${eventClause} — the ${colorProfile} does the work.`,
+    `Well-anchored${eventClause}. The ${colorProfile} gives it clarity.`,
+    `Clean and considered${eventClause} — the ${colorProfile} carries the look.`,
   ]
   return pick(pool)
 }
+
+// ─── Effortless Precision: tip builders ──────────────────────────────────────
+// Each tip references a specific EP principle: anchor · accent · elevation · balance
 
 function buildTips(
   items: ScoredItem[],
@@ -197,184 +207,218 @@ function buildTips(
   const shoe = items.find((i) => i.normCategory === "shoes")
   const outerwear = items.find((i) => i.normCategory === "outerwear")
   const hasDenim = accentColors.includes("denim") || accentColors.includes("blue")
+  const hasMultipleAccents = accentColors.filter((c) => c !== "denim" && c !== "blue").length > 1
 
-  // ── 1. Colour tip ──────────────────────────────────────────────────────────
+  // ── 1. Anchor + accent (colour structure) tip ─────────────────────────────
   if (accentColors.length === 0) {
     if (neutralColors.length >= 3) {
       tips.push(pick([
-        "Three neutral tones layered together adds depth without any clutter",
-        "A mix of neutrals reads as put-together without trying too hard",
-        "Tonal dressing in different shades of neutral is quietly sophisticated",
+        "Three neutrals in one look — each tone plays a supporting role, nothing dominates",
+        "A tonal neutral palette is the clearest expression of Effortless Precision",
+        "Depth through tone, not colour. The silhouette carries the look",
       ]))
     } else if (neutralColors.length === 2) {
       tips.push(pick([
-        `${cap(neutralColors[0])} and ${neutralColors[1]} is one of the cleanest pairings there is`,
-        "Two-tone neutral is timeless — works for almost any occasion",
-        "Keeping it to two neutrals keeps the eye focused on the silhouette",
+        `${cap(neutralColors[0])} anchors, ${neutralColors[1]} balances. Two neutrals is the cleanest structure`,
+        "Two neutrals keep the eye focused on fit and silhouette — that's where it should land",
+        "A two-tone neutral base is timeless. It works every time, without exception",
       ]))
     } else {
       tips.push(pick([
-        "Head-to-toe single colour is bold and intentional — commit to it",
-        "Monochromatic dressing creates a strong, streamlined effect",
-        "One colour from top to toe signals real confidence",
+        "One colour, head to toe — the silhouette becomes the statement",
+        "Monochromatic dressing removes all decisions except fit. That's the point",
+        "Single colour creates a clean, streamlined line. Precision by default",
       ]))
     }
   } else if (hasDenim) {
     tips.push(pick([
-      "Denim grounds the look with a relaxed, lived-in feel",
-      "Blue denim next to neutrals is an effortless combination — always works",
-      "Denim adds just enough texture to keep the outfit interesting",
+      "Denim as the anchor — relaxed, grounded, always works with a neutral",
+      "Blue denim next to a neutral is a proven structure. Uncomplicated and right",
+      "Denim grounds the base. The neutral on top keeps it balanced",
+    ]))
+  } else if (hasMultipleAccents) {
+    tips.push(pick([
+      "Two accents is a crowded palette — let one of them lead, the other follow",
+      "Multiple strong colours compete for attention. One anchor, one accent is cleaner",
     ]))
   } else {
     tips.push(pick([
-      `The ${accentColors[0]} accent gives the neutral base a lift without overwhelming it`,
-      `One colour accent is enough — the ${accentColors[0]} earns its place here`,
-      `The ${colorProfile} is doing a lot of the work — it looks considered`,
+      `The neutral base is the anchor. The ${accentColors[0]} is the only accent — that's the right call`,
+      `One ${accentColors[0]} accent on a neutral base. Nothing competes. That's the structure`,
+      `Anchor + single accent. The ${colorProfile} is correctly balanced`,
     ]))
   }
 
-  // ── 2. Style / family tip ─────────────────────────────────────────────────
-  const familyTips: Record<string, string[]> = {
-    professional: [
-      "Tailored pieces keep the silhouette sharp — minimal effort, strong result",
-      "Structured shapes signal confidence without needing to say a word",
-      "Clean lines are doing the heavy lifting here — that's the point",
-    ],
-    elegant: [
-      "Refined pieces translate well from day into evening without changing",
-      "The elevated base makes this feel dressed without looking overdone",
-      "A polished combination like this is harder to get wrong than it looks",
-    ],
-    casual: [
-      "Relaxed fit keeps this comfortable without losing its shape",
-      "Low-key doesn't mean low-effort — this reads as well considered",
-      "Easy pieces that look good without any overthinking",
-    ],
-    bold: [
-      "This combination has a clear personality — wear it with conviction",
-      "Statement dressing works best when the rest stays simple",
-      "There's intention here — that's what makes bold styling work",
-    ],
-    sporty: [
-      "Practical pieces that still look put-together — best of both",
-      "Comfort and style aren't mutually exclusive — this proves it",
-      "A clean active look works better than most people expect",
-    ],
-  }
-  if (familyTips[family]) {
-    tips.push(pick(familyTips[family]))
-  }
+  // ── 2. Silhouette balance or family tip ───────────────────────────────────
+  const tailoredItems = items.filter((i) => i.styleTags.some((t) => ["tailored", "structured", "fitted"].includes(t)))
+  const relaxedItems = items.filter((i) => i.styleTags.some((t) => ["relaxed", "casual", "cozy", "comfortable"].includes(t)))
+  const hasSilhouetteBalance = tailoredItems.length > 0 && relaxedItems.length > 0
 
-  // ── 3. Footwear tip ───────────────────────────────────────────────────────
-  if (shoe) {
-    const shTags = shoe.styleTags
-    if (shTags.some((t) => ["sporty", "casual"].includes(t))) {
-      if (family === "professional" || family === "elegant") {
-        tips.push(pick([
-          "Casual shoes soften the polish just enough — avoids looking stiff",
-          "Relaxed footwear keeps this from feeling too formal — good balance",
-        ]))
-      } else {
-        tips.push(pick([
-          "Clean sneakers work as a neutral — they don't compete with the outfit",
-          "White sneakers keep it fresh without adding visual noise",
-        ]))
-      }
-    } else if (shTags.some((t) => ["elegant", "dressy", "formal"].includes(t))) {
-      tips.push(pick([
-        "Dress shoes tie the whole look together with a clean, finished feel",
-        "A sleek shoe anchors the outfit and takes it up a level",
-      ]))
-    } else if (shTags.some((t) => ["smart casual", "polished"].includes(t))) {
-      tips.push(pick([
-        "Loafers hit the sweet spot between dressed and relaxed",
-        "Smart shoes elevate the look without making it stiff or formal",
-      ]))
+  if (hasSilhouetteBalance) {
+    tips.push(pick([
+      "One structured piece, one relaxed — that tension is what makes the silhouette interesting",
+      "Fitted meets relaxed. That contrast is intentional and it works",
+      "Silhouette balance: the structured piece gives shape, the relaxed piece gives ease",
+    ]))
+  } else {
+    const familyTips: Record<string, string[]> = {
+      professional: [
+        "Clean, structured shapes do the work without asking for attention",
+        "Tailored silhouette signals precision — no extra effort required",
+        "Structure is the statement here. Everything else is secondary",
+      ],
+      elegant: [
+        "Elevated pieces that don't try too hard — that's the mark of a precise wardrobe",
+        "The elevation is built in. Nothing needs to be added",
+        "Quiet formality — polished without performance",
+      ],
+      casual: [
+        "Relaxed fit, clean lines. Comfort and precision aren't mutually exclusive",
+        "Easy pieces, well-chosen. Casual doesn't mean unconsidered",
+        "The simplicity is doing the heavy lifting here",
+      ],
+      bold: [
+        "One strong element, everything else deliberate. That's controlled expression",
+        "Bold and restrained at the same time — that's the harder skill",
+        "The accent earns attention because the base doesn't compete",
+      ],
+      sporty: [
+        "Functional pieces kept clean. Active without being casual",
+        "Comfort without clutter — practical and precise",
+        "Clean active dressing is underrated. This reads better than it should",
+      ],
     }
+    if (familyTips[family]) tips.push(pick(familyTips[family]))
   }
 
-  // ── 4. Outerwear or layer tip ─────────────────────────────────────────────
+  // ── 3. Elevation element tip ──────────────────────────────────────────────
+  // EP rule: always one subtle elevation point (jacket, shoes, structure)
   if (outerwear) {
     const owTags = outerwear.styleTags
-    if (owTags.some((t) => ["tailored", "professional", "smart casual"].includes(t))) {
+    if (owTags.some((t) => ["tailored", "professional", "structured", "smart casual"].includes(t))) {
       tips.push(pick([
-        "A structured outer layer sharpens everything underneath",
-        "The jacket gives the outfit a frame — makes it look purposeful",
+        "The jacket is the elevation point — it frames everything underneath",
+        "A structured outer layer is doing quiet, precise work here",
+        "The outerwear provides the structure. It's the right elevation choice",
       ]))
     } else {
       tips.push(pick([
+        "The outer layer ties the look into one deliberate decision",
         "Layering adds dimension without complicating the palette",
-        "A good outer layer ties everything underneath into one look",
       ]))
+    }
+  } else if (shoe) {
+    const shTags = shoe.styleTags
+    if (shTags.some((t) => ["elegant", "dressy", "formal", "smart casual", "polished"].includes(t))) {
+      tips.push(pick([
+        "The shoe is the elevation point — one precise detail lifts the whole look",
+        "Smart footwear carries the elevation here. The rest stays relaxed",
+        "Shoes as the single elevation element — clean, deliberate, effective",
+      ]))
+    } else if (shTags.some((t) => ["sporty", "casual"].includes(t))) {
+      if (family === "professional" || family === "elegant") {
+        tips.push(pick([
+          "Casual shoes soften an otherwise structured look — deliberate contrast",
+          "Relaxed footwear keeps this from feeling stiff. Good tension",
+        ]))
+      } else {
+        tips.push(pick([
+          "Clean sneakers work as a neutral — they don't compete with anything",
+          "White sneakers keep it grounded without adding noise",
+        ]))
+      }
     }
   }
 
-  // ── 5. Event-specific tip ─────────────────────────────────────────────────
+  // ── 4. Event-specific tip ─────────────────────────────────────────────────
   if (eventType && breakdown.eventMatch >= 20) {
     const eTips: Record<string, string[]> = {
-      work: ["Office-appropriate but not boring — that's the sweet spot"],
-      dinner: ["Smart enough for dinner without feeling overdressed"],
-      wedding: ["Guest-appropriate — polished without stealing focus"],
-      party: ["Stands out without being too much — ideal for a party"],
-      travel: ["Travel-friendly pieces that still look like an actual outfit"],
+      work:    ["Calibrated for the office — precise without being rigid"],
+      dinner:  ["Appropriate for dinner without being overdressed. That's the balance"],
+      wedding: ["Guest-appropriate — considered, not competing"],
+      party:   ["Stands out because it's controlled, not because it's loud"],
+      travel:  ["Practical pieces that still hold together as an actual outfit"],
     }
     if (eTips[eventType]) tips.push(pick(eTips[eventType]))
   }
 
-  // ── 6. Off-season note ───────────────────────────────────────────────────
+  // ── 5. Off-season note ────────────────────────────────────────────────────
   if (breakdown.seasonSuitability < 7) {
     tips.push(pick([
-      "A couple of pieces skew off-season, but the overall combination still holds",
-      "Not every piece is season-perfect here, but it still comes together",
+      "A couple of pieces skew off-season — the overall structure still holds",
+      "Not season-perfect, but the balance is sound",
     ]))
   }
 
   // Return 2–4 tips, always at least 2
   const result = [...new Set(tips)].slice(0, 4)
-  return result.length >= 2 ? result : [...result, "Works as a base — accessories can take it in any direction"]
+  return result.length >= 2
+    ? result
+    : [...result, "A clean base — add one considered accessory if needed, nothing more"]
 }
+
+// ─── Effortless Precision: upgrade builders ───────────────────────────────────
+// Goal: push toward clarity, balance, and elevation — never toward complexity
 
 function buildUpgrade(
   items: ScoredItem[],
   family: string,
   score: number
 ): string | undefined {
-  // Only suggest an upgrade when there's meaningful room to improve
-  if (score >= 80) return undefined
+  if (score >= 82) return undefined  // high match: already EP-aligned, no note needed
 
   const shoe = items.find((i) => i.normCategory === "shoes")
   const bottom = items.find((i) => i.normCategory === "bottom")
   const hasOuterwear = items.some((i) => i.normCategory === "outerwear")
-  const hasDenim =
-    bottom?.colors.some((c) => ["denim", "blue"].includes(c)) ?? false
+  const hasDenim = bottom?.colors.some((c) => ["denim", "blue"].includes(c)) ?? false
+  const allTags = items.flatMap((i) => i.styleTags)
+  const hasMultipleStatements = allTags.filter((t) =>
+    ["bold", "statement", "expressive", "edgy"].includes(t)
+  ).length > 2
 
+  // Priority 1: Simplify competing elements — EP rule: one statement max
+  if (hasMultipleStatements) {
+    return pick([
+      "One statement piece is enough — let the strongest one lead and keep the rest neutral",
+      "Two statement elements compete. Choose one anchor piece and simplify everything else",
+      "Pull back on the louder elements — let one piece carry the look",
+    ])
+  }
+
+  // Priority 2: Footwear elevation in structured context
   if (shoe?.styleTags.some((t) => ["sporty", "casual"].includes(t))) {
     if (family === "professional" || family === "elegant") {
       return pick([
-        "Swap the sneakers for a loafer or ankle boot — it'd take this up a notch",
-        "Try a sleeker shoe here to sharpen the look",
+        "Swap the sneakers for a loafer or slim boot — one shoe change, significant result",
+        "A cleaner shoe here would sharpen the silhouette without changing anything else",
+        "The footwear is the one thing pulling this back. A structured shoe would complete it",
       ])
     }
   }
 
+  // Priority 3: Add structure to underbuilt professional/elegant looks
   if (!hasOuterwear && score < 74 && (family === "professional" || family === "elegant")) {
     return pick([
-      "Add a blazer or structured jacket — it gives the look more presence",
-      "Throw on a jacket to make this feel more intentional",
+      "A blazer or structured jacket would give this a clear elevation point",
+      "One structured outer layer turns this into a complete, precise look",
+      "Add a jacket — it frames everything underneath and makes the outfit deliberate",
     ])
   }
 
+  // Priority 4: Denim in formal context — guide toward clarity
   if (hasDenim && (family === "professional" || family === "elegant")) {
     return pick([
-      "Swap the jeans for tailored trousers and this becomes significantly more polished",
-      "Try trousers instead of denim here — same ease, cleaner result",
+      "Swap the denim for tailored trousers — same ease, considerably cleaner result",
+      "Trousers instead of jeans here. Same silhouette, more precision",
     ])
   }
 
+  // Priority 5: General balance improvement
   if (score < 66) {
     return pick([
-      "A tonal shoe choice would tie the look together more neatly",
-      "Try pairing your most structured pieces for a cleaner result",
+      "Match the formality of your pieces more closely — the balance isn't quite there",
+      "A tonal shoe would anchor the look. One small change with a clear effect",
+      "Simplify: keep your two strongest pieces and let those carry the outfit",
     ])
   }
 
@@ -477,10 +521,34 @@ export function scoreOutfit(
   const avgOverlap = tagOverlapRatios.reduce((a, b) => a + b, 0) / items.length
   const styleConsistency = Math.round(avgOverlap * 20)
 
-  // Penalty: formal + sport clash
+  // ── EP rule: formality clash penalties ──────────────────────────────────────
+  // Rule: mismatched formality is the primary anti-pattern for Effortless Precision
   const hasFormal = allTags.some((t) => ["elegant", "formal", "dressy"].includes(t))
-  const hasSport = allTags.some((t) => ["sporty", "athletic"].includes(t))
-  const clashPenalty = hasFormal && hasSport ? -8 : 0
+  const hasSport  = allTags.some((t) => ["sporty", "athletic"].includes(t))
+  const hasCasual = allTags.some((t) => ["relaxed", "casual", "cozy"].includes(t))
+  // Formal + sport: hardest clash
+  const formalSportClash  = hasFormal && hasSport  ? -10 : 0
+  // Elegant + fully casual extremes (no sport involved): moderate clash
+  const formalCasualClash = hasFormal && hasCasual && !hasSport ? -4 : 0
+  const clashPenalty = formalSportClash + formalCasualClash
+
+  // ── EP rule: multiple statement pieces penalty ────────────────────────────
+  // Rule: one standout element only — multiple statements are anti-EP
+  const statementTagCount = allTags.filter((t) =>
+    ["bold", "statement", "expressive", "edgy"].includes(t)
+  ).length
+  const multiStatementPenalty = statementTagCount > 2 ? -5 : 0
+
+  // ── EP bonus: elevation element present ──────────────────────────────────
+  // Rule: every complete EP outfit should have one subtle elevation point
+  const shoe     = items.find((i) => i.normCategory === "shoes")
+  const hasOuter = items.some((i) => i.normCategory === "outerwear" &&
+    i.styleTags.some((t) => ["tailored", "structured", "professional", "smart casual"].includes(t))
+  )
+  const hasElevatedShoe = shoe?.styleTags.some((t) =>
+    ["smart casual", "polished", "elegant", "dressy", "formal"].includes(t)
+  ) ?? false
+  const elevationBonus = hasOuter || hasElevatedShoe ? 3 : 0
 
   // 5. Season suitability — 10 pts
   const season = getCurrentSeason(dateStr)
@@ -513,7 +581,12 @@ export function scoreOutfit(
 
   const total = Math.max(
     0,
-    Math.min(100, eventMatch + colourHarmony + styleConsistency + clashPenalty + seasonSuitability + userPreference + freshness)
+    Math.min(
+      100,
+      eventMatch + colourHarmony + styleConsistency
+      + clashPenalty + multiStatementPenalty + elevationBonus
+      + seasonSuitability + userPreference + freshness
+    )
   )
 
   const family = dominantStyleFamily(items)
