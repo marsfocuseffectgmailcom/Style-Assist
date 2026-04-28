@@ -81,3 +81,43 @@ export type Product = {
   price: number
   category: "top" | "bottom" | "shoes" | "outerwear"
 }
+
+export type EventType =
+  | "wedding"
+  | "party"
+  | "birthday"
+  | "christmas"
+  | "halloween"
+  | "easter"
+  | "custom"
+
+export type DeliveryStatus = "Safe delivery" | "Risky delivery" | "Too late"
+
+export type PurchaseStatus = "not_purchased" | "waiting_for_delivery" | "arrived"
+
+export type PlannedEvent = {
+  id: string
+  type: EventType
+  name: string
+  date: string
+  createdAt: string
+}
+
+export type PlannedOutfitItem = {
+  id: string
+  name: string
+  image: string
+  category: string
+  source: "wardrobe" | "suggestion"
+  purchaseStatus: PurchaseStatus
+  price?: string
+  brand?: string
+}
+
+export type PlannedOutfit = {
+  id: string
+  eventId: string
+  items: PlannedOutfitItem[]
+  notes?: string
+  createdAt: string
+}
