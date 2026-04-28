@@ -4,12 +4,16 @@ import { motion, AnimatePresence } from "framer-motion"
 import { CalendarDays, Sparkles, X, Copy, MoveRight, Trash2, Package, ChevronRight } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
+import { NotificationBell } from "../components/NotificationCenter"
+import { FirstExperienceFlow } from "./FirstExperienceFlow"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { usePlannedEvents } from "../hooks/usePlannedEvents"
 import { wardrobeItems } from "../lib/mockData"
 import { generateMonthPlan } from "../lib/outfitGenerator"
 import type { PlannedEvent, TimelineOutfit } from "../lib/types"
+
+const FTE_KEY = "style-assist-fte-done"
 
 type Range = 1 | 2 | 4
 
@@ -230,6 +234,7 @@ export default function Timeline() {
   const [planningMonth, setPlanningMonth] = useState(false)
   const [planDone, setPlanDone] = useState(false)
   const [sheetMode, setSheetMode] = useState<{ type: "move" | "duplicate"; date: string } | null>(null)
+  const [showFTE, setShowFTE] = useState(() => localStorage.getItem(FTE_KEY) !== "true")
 
   const { outfits, saveOutfit, removeOutfit, moveOutfit, duplicateOutfit, bulkFill } =
     useTimelineOutfits()
@@ -269,24 +274,28 @@ export default function Timeline() {
   }
 
   return (
+    <>
     <AppShell>
       <header className="mb-5 flex items-start justify-between pt-4">
         <div>
           <p className="text-sm text-[#A8AFBE]">Your outfits,</p>
           <h1 className="text-[28px] font-bold leading-none tracking-[-0.5px]">already handled.</h1>
         </div>
-        <button
-          onClick={() => navigate("/incoming-items")}
-          className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]"
-          aria-label="Incoming items"
-        >
-          <Package size={18} />
-          {incomingItems.length > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF4D8D] text-[9px] font-bold">
-              {incomingItems.length}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/incoming-items")}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]"
+            aria-label="Incoming items"
+          >
+            <Package size={18} />
+            {incomingItems.length > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF4D8D] text-[9px] font-bold">
+                {incomingItems.length}
+              </span>
+            )}
+          </button>
+          <NotificationBell />
+        </div>
       </header>
 
       <button
@@ -403,5 +412,15 @@ export default function Timeline() {
         )}
       </AnimatePresence>
     </AppShell>
+
+    {showFTE && (
+      <FirstExperienceFlow
+        onComplete={() => {
+          localStorage.setItem(FTE_KEY, "true")
+          setShowFTE(false)
+        }}
+      />
+    )}
+  </>
   )
 }

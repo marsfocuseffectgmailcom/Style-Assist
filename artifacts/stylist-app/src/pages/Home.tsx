@@ -1,8 +1,9 @@
-import { Bell, Sparkles, Package, CalendarDays, ChevronRight } from "lucide-react"
+import { Sparkles, Package, CalendarDays, ChevronRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
+import { NotificationBell } from "../components/NotificationCenter"
 import { SectionHeader } from "../components/SectionHeader"
 import { OutfitCard } from "../components/OutfitCard"
 import { outfitCards } from "../lib/mockData"
@@ -43,9 +44,7 @@ export default function Home() {
           <p className="text-base text-[#A8AFBE]">Good morning,</p>
           <h1 className="text-[34px] font-bold leading-none tracking-[-0.5px]">Alex</h1>
         </div>
-        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]">
-          <Bell size={18} />
-        </button>
+        <NotificationBell />
       </header>
 
       <button
