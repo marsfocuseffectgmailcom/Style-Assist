@@ -1,4 +1,5 @@
 import type { StylePreferences } from "./stylingEngine"
+import { loadPersonalisationStore } from "./usePersonalisation"
 
 export type { StylePreferences }
 
@@ -13,6 +14,30 @@ export function loadPreferences(): StylePreferences {
   } catch {
     return { styleTags: {}, colors: {} }
   }
+}
+
+// ─── Direction bias weights ────────────────────────────────────────────────────
+
+const CASUAL_BOOST:   Record<string, number> = { relaxed: 0.8, casual: 0.8, everyday: 0.6, cozy: 0.5, weekend: 0.5 }
+const POLISHED_BOOST: Record<string, number> = { professional: 0.8, tailored: 0.8, polished: 0.8, "smart casual": 0.6, clean: 0.5 }
+
+export function loadPreferencesWithDirection(): StylePreferences {
+  const base   = loadPreferences()
+  const { styleDirection } = loadPersonalisationStore()
+
+  if (styleDirection === "balanced") return base
+
+  const boost = styleDirection === "casual" ? CASUAL_BOOST : POLISHED_BOOST
+  const merged: StylePreferences = {
+    styleTags: { ...base.styleTags },
+    colors:    { ...base.colors },
+  }
+
+  for (const [tag, weight] of Object.entries(boost)) {
+    merged.styleTags[tag] = (merged.styleTags[tag] ?? 0) + weight
+  }
+
+  return merged
 }
 
 export function savePreferences(prefs: StylePreferences): void {

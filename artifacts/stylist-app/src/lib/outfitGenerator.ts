@@ -3,7 +3,7 @@ import type { IncomingItem, PlannedOutfitItem, OutfitConfidence, TimelineOutfit 
 import type { StylePreferences } from "./stylingEngine"
 import { rankOutfits, extractColorsFromName, scoreOutfit, scoreShoeForContext, STYLE_FAMILIES } from "./stylingEngine"
 import type { ScoredItem, NormCategory, RankedOutfit } from "./stylingEngine"
-import { loadPreferences, loadRecentItemIds, addRecentItems } from "./stylePreferences"
+import { loadPreferences, loadPreferencesWithDirection, loadRecentItemIds, addRecentItems } from "./stylePreferences"
 import { loadItemPreferences } from "../hooks/useItemPreferences"
 import { loadRemovedIds } from "../hooks/useWardrobeRemoval"
 
@@ -143,7 +143,7 @@ export function generateOutfits(
     ...eligibleIncoming.map(incomingToScored).filter((i) => !removedIds.has(i.id)),
   ]
 
-  const preferences     = options?.preferences ?? loadPreferences()
+  const preferences     = options?.preferences ?? loadPreferencesWithDirection()
   const usedItemIds     = options?.usedItemIds ?? loadRecentItemIds()
   const itemPreferences = loadItemPreferences()
 
@@ -165,7 +165,7 @@ export function generateMonthPlan(
   incomingItems: IncomingItem[],
   existingDates: Set<string>
 ): TimelineOutfit[] {
-  const preferences = loadPreferences()
+  const preferences = loadPreferencesWithDirection()
   const usedItemIds = loadRecentItemIds()
   const localUsed = new Set(usedItemIds)
   const usedOutfitNames = new Set<string>()

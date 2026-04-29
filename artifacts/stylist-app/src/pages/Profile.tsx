@@ -1,8 +1,11 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw, Sparkles } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useState, useEffect, useRef } from "react"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
+import { usePersonalisation } from "../lib/usePersonalisation"
+import type { StyleDirection } from "../lib/usePersonalisation"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
@@ -10,6 +13,92 @@ function resetApp() {
   localStorage.removeItem(ONBOARDING_KEY)
   localStorage.removeItem("style-assist-timeline")
   window.location.reload()
+}
+
+const DIRECTIONS: { value: StyleDirection; label: string; sub: string }[] = [
+  { value: "casual",   label: "Casual",   sub: "Relaxed, everyday looks" },
+  { value: "balanced", label: "Balanced", sub: "A mix of both"            },
+  { value: "polished", label: "Polished", sub: "Considered, refined looks" },
+]
+
+function StyleMemoryCard() {
+  const { store, setStyleDirection, resetPersonalisation } = usePersonalisation()
+  const [resetDone, setResetDone] = useState(false)
+  const prevSignalsRef = useRef(store.totalSignals)
+
+  // Detect when totalSignals drops back to 0 (i.e. reset fired) → show feedback
+  useEffect(() => {
+    if (prevSignalsRef.current > 0 && store.totalSignals === 0) {
+      setResetDone(true)
+      const t = setTimeout(() => setResetDone(false), 2200)
+      prevSignalsRef.current = 0
+      return () => clearTimeout(t)
+    }
+    prevSignalsRef.current = store.totalSignals
+    return undefined
+  }, [store.totalSignals])
+
+  function handleReset() {
+    resetPersonalisation()
+  }
+
+  const signalCount = store.totalSignals
+  const hasSignals  = signalCount >= 1
+
+  return (
+    <Card className="mb-6">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#3F6F73]/15">
+          <Sparkles size={15} className="text-[#3F6F73]" />
+        </div>
+        <div>
+          <h3 className="text-[14px] font-semibold text-[#F5F5F5]">Style Memory</h3>
+          <p className="text-[12px] text-[#6B8490]">
+            {hasSignals
+              ? `Adjusting based on ${signalCount} signal${signalCount !== 1 ? "s" : ""}`
+              : "Learning from your choices"}
+          </p>
+        </div>
+      </div>
+
+      {/* Style direction selector */}
+      <p className="text-[12px] font-medium text-[#AABBC0] mb-2">Lean towards</p>
+      <div className="flex gap-2 mb-5">
+        {DIRECTIONS.map((d) => {
+          const active = store.styleDirection === d.value
+          return (
+            <button
+              key={d.value}
+              onClick={() => setStyleDirection(d.value)}
+              className="flex-1 rounded-[14px] border py-2.5 px-1 text-center transition-[transform] duration-[140ms] active:scale-[0.96]"
+              style={{
+                background:   active ? "rgba(63,111,115,0.14)" : "rgba(255,255,255,0.04)",
+                borderColor:  active ? "rgba(63,111,115,0.45)" : "rgba(255,255,255,0.08)",
+                color:        active ? "#3F6F73"               : "#6B8490",
+              }}
+            >
+              <p className="text-[12px] font-bold leading-none mb-0.5" style={{ color: active ? "#3F6F73" : "#AABBC0" }}>
+                {d.label}
+              </p>
+              <p className="text-[9px] font-medium" style={{ color: active ? "#5F9F9F" : "#6B8490" }}>
+                {d.sub}
+              </p>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Reset */}
+      <button
+        onClick={handleReset}
+        className="w-full rounded-[14px] border border-white/8 bg-white/4 py-3 text-[13px] font-semibold transition-[transform] duration-[160ms] active:scale-[0.97]"
+        style={{ color: resetDone ? "#3F6F73" : "#AABBC0" }}
+      >
+        {resetDone ? "Style memory cleared" : "Reset style memory"}
+      </button>
+    </Card>
+  )
 }
 
 const profileSections = [
@@ -124,6 +213,9 @@ export default function Profile() {
           )
         })}
       </section>
+
+      {/* ── Style Memory ── */}
+      <StyleMemoryCard />
 
       {/* ── Tester tools ── */}
       <Card className="mb-6">

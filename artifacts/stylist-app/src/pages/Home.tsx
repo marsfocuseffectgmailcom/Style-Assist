@@ -16,6 +16,8 @@ import { outfitCards, wardrobeItems } from "../lib/mockData"
 import type { WardrobeItem } from "../lib/mockData"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { usePlannedEvents } from "../hooks/usePlannedEvents"
+import { usePersonalisation } from "../lib/usePersonalisation"
+import { PersonalisationHint, ItemUsagePill } from "../components/PersonalisationHint"
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
 
@@ -321,6 +323,16 @@ export default function Home() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .find((e) => new Date(e.date) >= new Date(today))
 
+  // ── Personalisation ─────────────────────────────────────────────────────────
+  const {
+    recordAccept,
+    recordReshuffle,
+    recordAppOpen,
+    recordTonightMode,
+    getItemLabel,
+    outfitHint,
+  } = usePersonalisation()
+
   // ── Daily outfit state ──────────────────────────────────────────────────────
 
   const dailyDef = useMemo(() => DAILY_OUTFITS[now.getDay()], [])
@@ -334,11 +346,15 @@ export default function Home() {
   const [showTonightMode, setShowTonightMode] = useState(false)
 
   const showSuggestions = altCount >= 2
+  const hint = outfitHint(dailyDef.name)
 
-  // ── Analytics instrumentation ────────────────────────────────────────────────
+  // ── Analytics + personalisation boot ─────────────────────────────────────────
   const suggShownRef = useRef(false)
 
-  useEffect(() => { track("outfit_viewed") }, [])
+  useEffect(() => {
+    track("outfit_viewed")
+    recordAppOpen()
+  }, [recordAppOpen])
 
   useEffect(() => {
     if (showSuggestions && !suggShownRef.current) {
@@ -346,11 +362,13 @@ export default function Home() {
       suggShownRef.current = true
     }
   }, [showSuggestions])
+
   const outfitItems     = resolveItems(currentIds)
   const occasion        = OCCASION_STYLE[dailyDef.occasionTag] ?? OCCASION_STYLE.Casual
 
   function handleWearThis() {
     track("outfit_accepted", { outfit: dailyDef.name })
+    recordAccept(dailyDef.name, currentIds)
     setWornToday(true)
     setWornConfirm(true)
     setTimeout(() => setWornConfirm(false), 3000)
@@ -361,9 +379,15 @@ export default function Home() {
   }
 
   function handleSeeAlternatives() {
+    recordReshuffle(dailyDef.name)
     setAltCount((n) => n + 1)
     const d = now.toISOString().split("T")[0]
     navigate(`/timeline/generate/${d}`)
+  }
+
+  function handleTonightMode() {
+    recordTonightMode()
+    setShowTonightMode(true)
   }
 
   return (
@@ -503,18 +527,34 @@ export default function Home() {
 
                 {/* Photo grid */}
                 <div style={{ display: "flex", height: 180, gap: 2, margin: "0 0 0 0" }}>
-                  {outfitItems.slice(0, 2).map((item, i) => (
-                    <div key={item.id} style={{ flex: 1, overflow: "hidden", borderRadius: i === 0 ? "0 0 0 0" : "0 0 0 0" }}>
-                      <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                  ))}
+                  {outfitItems.slice(0, 2).map((item, i) => {
+                    const lbl = getItemLabel(item.id)
+                    return (
+                      <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+                        <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        {lbl && (
+                          <div style={{ position: "absolute", bottom: 5, left: i === 0 ? 6 : "auto", right: i === 1 ? 6 : "auto" }}>
+                            <ItemUsagePill label={lbl} />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                   {outfitItems.length > 2 && (
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                      {outfitItems.slice(2, 4).map((item) => (
-                        <div key={item.id} style={{ flex: 1, overflow: "hidden" }}>
-                          <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </div>
-                      ))}
+                      {outfitItems.slice(2, 4).map((item) => {
+                        const lbl = getItemLabel(item.id)
+                        return (
+                          <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+                            <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            {lbl && (
+                              <div style={{ position: "absolute", bottom: 4, right: 5 }}>
+                                <ItemUsagePill label={lbl} />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -537,6 +577,11 @@ export default function Home() {
                     </span>
                   </div>
                 </div>
+
+                {/* Personalisation hint — appears only after enough signals */}
+                <AnimatePresence>
+                  {hint && <PersonalisationHint key={hint} type={hint} />}
+                </AnimatePresence>
 
                 {/* Actions */}
                 <div style={{ padding: "0 16px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
@@ -607,7 +652,7 @@ export default function Home() {
               style={{ marginBottom: 16 }}
             >
               <button
-                onClick={() => setShowTonightMode(true)}
+                onClick={handleTonightMode}
                 style={{
                   width: "100%", padding: "15px 18px",
                   borderRadius: 20,

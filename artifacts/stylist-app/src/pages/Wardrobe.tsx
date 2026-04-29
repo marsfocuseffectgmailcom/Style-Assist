@@ -12,6 +12,8 @@ import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import type { CapturedItem } from "../hooks/useWardrobeCapture"
 import { useItemPreferences, REACH_COLOR } from "../hooks/useItemPreferences"
 import { useWardrobeRemoval } from "../hooks/useWardrobeRemoval"
+import { usePersonalisation } from "../lib/usePersonalisation"
+import { ItemUsagePill } from "../components/PersonalisationHint"
 
 const categories = ["All", "Tops", "Bottoms", "Shoes", "Outerwear"] as const
 type Category = (typeof categories)[number]
@@ -48,6 +50,7 @@ export default function Wardrobe() {
   const { items: capturedItems, removeItem: removeCapturedItem } = useWardrobeCapture()
   const { getPref } = useItemPreferences()
   const { removedIds } = useWardrobeRemoval()
+  const { getItemLabel } = usePersonalisation()
 
   // Merge static + captured into a single display list
   const allItems = useMemo<DisplayItem[]>(() => {
@@ -174,6 +177,12 @@ export default function Wardrobe() {
                     {item.isCapture && (
                       <div className="absolute left-2 top-2 rounded-full bg-[#5F8F7F]/25 px-1.5 py-0.5 text-[9px] font-semibold text-[#5F8F7F]">
                         New
+                      </div>
+                    )}
+
+                    {!item.isCapture && getItemLabel(item.id) === "frequently-worn" && (
+                      <div className="absolute bottom-2 left-2">
+                        <ItemUsagePill label="frequently-worn" />
                       </div>
                     )}
                   </div>
