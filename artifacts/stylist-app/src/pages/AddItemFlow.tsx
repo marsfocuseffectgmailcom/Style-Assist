@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -538,42 +538,116 @@ function CaptureStep({
 
 // ─── STEP: Analyzing ─────────────────────────────────────────────────────────
 
-function AnalyzingStep() {
-  const dots = ["Reading your photo", "Detecting item type", "Analysing colours", "Checking patterns"]
+const ANALYZING_MESSAGES = [
+  "Reading your colours and texture…",
+  "Understanding your style…",
+  "Finding patterns and details…",
+  "Placing this in your wardrobe…",
+]
+
+function AnalyzingStep({ photoUrl }: { photoUrl: string | null }) {
+  const [msgIndex, setMsgIndex] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setMsgIndex((i) => (i + 1) % ANALYZING_MESSAGES.length), 800)
+    return () => clearInterval(id)
+  }, [])
+
   return (
-    <div className="flex h-full flex-col items-center justify-center">
-      <motion.div
-        animate={{ scale: [1, 1.08, 1] }}
-        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-        className="mb-8 flex h-24 w-24 items-center justify-center rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(63,111,115,0.18), rgba(127,169,163,0.06))" }}
-      >
-        <Sparkles size={36} style={{ color: TOKEN.pink }} />
-      </motion.div>
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, overflow: "hidden", minHeight: "72vh" }}>
 
-      <h2 className="mb-2 text-[22px] font-bold tracking-[-0.3px]">Reading your photo…</h2>
-      <p className="mb-8 text-[14px]" style={{ color: TOKEN.sub }}>
-        Our AI is analysing your clothing item
-      </p>
+      {/* User's photo — blurred, dimmed backdrop */}
+      {photoUrl && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${photoUrl})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            filter: "blur(36px) saturate(0.45)",
+            transform: "scale(1.18)",
+          }}
+        />
+      )}
+      {/* Gradient overlay so text stays crisp */}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(31,42,55,0.82), rgba(31,42,55,0.92))" }} />
 
-      <div className="w-full max-w-[260px] space-y-3">
-        {dots.map((label, i) => (
+      {/* ── Content ── */}
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+
+        {/* Dual rotating rings + centre glow */}
+        <div style={{ position: "relative", width: 132, height: 132, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 44 }}>
+          {/* Outer ring */}
           <motion.div
-            key={label}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.35 }}
-            className="flex items-center gap-3"
-          >
-            <motion.div
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ delay: i * 0.35 + 0.2, repeat: Infinity, duration: 1.2 }}
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: TOKEN.pink }}
-            />
-            <span className="text-[13px]" style={{ color: TOKEN.sub }}>{label}</span>
-          </motion.div>
-        ))}
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 3.2, ease: "linear" }}
+            style={{
+              position: "absolute", inset: 0, borderRadius: "50%",
+              border: "1.5px solid transparent",
+              borderTopColor: TOKEN.pink,
+              borderRightColor: "rgba(63,111,115,0.28)",
+            }}
+          />
+          {/* Inner ring — opposite direction */}
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ repeat: Infinity, duration: 5.5, ease: "linear" }}
+            style={{
+              position: "absolute", inset: 14, borderRadius: "50%",
+              border: "1px solid transparent",
+              borderTopColor: TOKEN.coral,
+              borderLeftColor: "rgba(127,169,163,0.22)",
+            }}
+          />
+          {/* Breathe glow */}
+          <motion.div
+            animate={{ scale: [1, 1.22, 1], opacity: [0.35, 0.75, 0.35] }}
+            transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
+            style={{
+              position: "absolute", inset: 28, borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(63,111,115,0.45), transparent)",
+            }}
+          />
+          <Sparkles size={30} style={{ color: TOKEN.coral }} />
+        </div>
+
+        {/* Headline */}
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18, duration: 0.48 }}
+          style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.6px", marginBottom: 14, textAlign: "center", lineHeight: 1.15 }}
+        >
+          Reading your style
+        </motion.h2>
+
+        {/* Cycling insight phrase */}
+        <div style={{ height: 22, marginBottom: 44, overflow: "hidden", minWidth: 260 }}>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={msgIndex}
+              initial={{ opacity: 0, y: 9 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -9 }}
+              transition={{ duration: 0.26 }}
+              style={{ fontSize: 14, color: TOKEN.sub, textAlign: "center" }}
+            >
+              {ANALYZING_MESSAGES[msgIndex]}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ width: 210, height: 2, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+          <motion.div
+            initial={{ width: "0%" }}
+            animate={{ width: "93%" }}
+            transition={{ duration: 2.65, ease: [0.18, 0.82, 0.38, 1] }}
+            style={{ height: "100%", background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, borderRadius: 99 }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -879,8 +953,7 @@ export default function AddItemFlow() {
 
   async function goAnalyzing() {
     setPhase("analyzing")
-    // 1.5s simulated AI analysis
-    await new Promise((r) => setTimeout(r, 1600))
+    await new Promise((r) => setTimeout(r, 2800))
     const det = simulateDetection()
     setDetected(det)
     setPhase("review")
@@ -1003,7 +1076,7 @@ export default function AddItemFlow() {
             <CaptureStep photos={photos} setPhotos={setPhotos} onNext={goAnalyzing} />
           )}
 
-          {phase === "analyzing" && <AnalyzingStep />}
+          {phase === "analyzing" && <AnalyzingStep photoUrl={photos.front?.url ?? null} />}
 
           {phase === "review" && detected && (
             <ReviewStep
