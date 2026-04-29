@@ -89,10 +89,11 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
             className="fixed z-50 flex flex-col overflow-hidden"
             style={{
               top: 16,
+              bottom: 16,
               right: 12,
               width: "82vw",
               maxWidth: 380,
-              height: "calc(100vh - 32px)",
+              height: "calc(100dvh - 32px)",
               borderRadius: 28,
               backgroundColor: "#2A3645",
               border: "1px solid rgba(255,255,255,0.08)",
@@ -155,7 +156,7 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
             <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto px-5 pt-5"
-              style={{ paddingBottom: "calc(32px + env(safe-area-inset-bottom))" }}
+              style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
             >
               {/* ─── Section 1: Reach preference ─────────────────────────── */}
               <div className="mb-6">
