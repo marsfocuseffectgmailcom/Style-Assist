@@ -14,6 +14,7 @@ import OutfitResultScreen from "./pages/OutfitResultScreen"
 import IncomingItemsScreen from "./pages/IncomingItemsScreen"
 import OnboardingFlow from "./pages/OnboardingFlow"
 import AddItemFlow from "./pages/AddItemFlow"
+import RemovedItemsScreen from "./pages/RemovedItemsScreen"
 import PlanAheadScreen from "./pages/plan-ahead/PlanAheadScreen"
 import EventSetupScreen from "./pages/plan-ahead/EventSetupScreen"
 import OutfitTimelineScreen from "./pages/plan-ahead/OutfitTimelineScreen"
@@ -50,6 +51,7 @@ function AppContent() {
       <Route path="/timeline/generate/:date" element={<GenerateOutfitScreen />} />
       <Route path="/timeline/outfit-result" element={<OutfitResultScreen />} />
       <Route path="/incoming-items" element={<IncomingItemsScreen />} />
+      <Route path="/profile/removed-items" element={<RemovedItemsScreen />} />
       <Route path="/plan-ahead" element={<PlanAheadScreen />} />
       <Route path="/plan-ahead/new" element={<EventSetupScreen />} />
       <Route path="/plan-ahead/:eventId" element={<OutfitTimelineScreen />} />

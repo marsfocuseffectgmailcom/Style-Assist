@@ -1,4 +1,4 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive } from "lucide-react"
 import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
@@ -32,6 +32,13 @@ const profileSections = [
     title: "Saved Products",
     subtitle: "View your wishlist and shopping picks",
     href: "/saved-products",
+  },
+  {
+    id: 5,
+    icon: <Archive size={18} className="text-[#A8B0B8]" />,
+    title: "Removed Items",
+    subtitle: "View and restore items you've removed",
+    href: "/profile/removed-items",
   },
 ]
 

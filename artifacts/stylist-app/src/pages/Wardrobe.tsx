@@ -11,6 +11,7 @@ import { wardrobeItems } from "../lib/mockData"
 import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import type { CapturedItem } from "../hooks/useWardrobeCapture"
 import { useItemPreferences, REACH_COLOR } from "../hooks/useItemPreferences"
+import { useWardrobeRemoval } from "../hooks/useWardrobeRemoval"
 
 const categories = ["All", "Tops", "Bottoms", "Shoes", "Outerwear"] as const
 type Category = (typeof categories)[number]
@@ -44,19 +45,20 @@ export default function Wardrobe() {
   const [query, setQuery] = useState("")
   const [activeSheet, setActiveSheet] = useState<SheetItem | null>(null)
 
-  const { items: capturedItems } = useWardrobeCapture()
+  const { items: capturedItems, removeItem: removeCapturedItem } = useWardrobeCapture()
   const { getPref } = useItemPreferences()
+  const { removedIds } = useWardrobeRemoval()
 
   // Merge static + captured into a single display list
   const allItems = useMemo<DisplayItem[]>(() => {
-    const staticDisplayed: DisplayItem[] = wardrobeItems.map((i) => ({
+    const staticDisplayed: DisplayItem[] = wardrobeItems.filter((i) => !removedIds.has(String(i.id))).map((i) => ({
       id: i.id,
       name: i.name,
       category: i.category,
       image: i.image,
       wearCount: i.wearCount,
     }))
-    const capturedDisplayed: DisplayItem[] = capturedItems.map((i) => ({
+    const capturedDisplayed: DisplayItem[] = capturedItems.filter((i) => !removedIds.has(i.id)).map((i) => ({
       id: i.id,
       name: i.name,
       category: i.category === "Dress" ? "Tops" : i.category,
@@ -66,7 +68,7 @@ export default function Wardrobe() {
       status: i.status,
     }))
     return [...capturedDisplayed, ...staticDisplayed]
-  }, [capturedItems])
+  }, [capturedItems, removedIds])
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
@@ -140,10 +142,11 @@ export default function Wardrobe() {
                   key={item.id}
                   onClick={() =>
                     setActiveSheet({
-                      id:       item.id,
-                      name:     item.name,
-                      category: item.category,
-                      image:    item.image,
+                      id:        item.id,
+                      name:      item.name,
+                      category:  item.category,
+                      image:     item.image,
+                      isCapture: item.isCapture,
                     })
                   }
                   className="overflow-hidden rounded-[20px] border border-white/8 bg-[#202E3E] text-left transition active:scale-[0.97]"
@@ -218,6 +221,7 @@ export default function Wardrobe() {
       <ItemPreferenceSheet
         item={activeSheet}
         onClose={() => setActiveSheet(null)}
+        onPermanentDelete={(id) => removeCapturedItem(String(id))}
       />
     </AppShell>
   )

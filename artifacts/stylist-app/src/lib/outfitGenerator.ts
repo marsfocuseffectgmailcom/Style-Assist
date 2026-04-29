@@ -5,6 +5,7 @@ import { rankOutfits, extractColorsFromName } from "./stylingEngine"
 import type { ScoredItem, NormCategory, RankedOutfit } from "./stylingEngine"
 import { loadPreferences, loadRecentItemIds, addRecentItems } from "./stylePreferences"
 import { loadItemPreferences } from "../hooks/useItemPreferences"
+import { loadRemovedIds } from "../hooks/useWardrobeRemoval"
 
 // ─── Public result type ───────────────────────────────────────────────────────
 
@@ -123,9 +124,11 @@ export function generateOutfits(
     return delivery <= selected
   })
 
+  const removedIds = loadRemovedIds()
+
   const pool: ScoredItem[] = [
-    ...wardrobeItems.map(wardrobeToScored),
-    ...eligibleIncoming.map(incomingToScored),
+    ...wardrobeItems.map(wardrobeToScored).filter((i) => !removedIds.has(i.id)),
+    ...eligibleIncoming.map(incomingToScored).filter((i) => !removedIds.has(i.id)),
   ]
 
   const preferences     = options?.preferences ?? loadPreferences()

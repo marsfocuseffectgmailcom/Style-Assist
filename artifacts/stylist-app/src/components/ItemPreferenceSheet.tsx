@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Camera } from "lucide-react"
-import { useEffect, useRef } from "react"
+import { X, Camera, Trash2, EyeOff, Check } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import {
   REACH_OPTIONS, FEEL_OPTIONS, REACH_COLOR,
   useItemPreferences,
 } from "../hooks/useItemPreferences"
 import type { ReachPreference, FeelPreference } from "../hooks/useItemPreferences"
 import { useWardrobePanel } from "../contexts/WardrobePanelContext"
+import { useWardrobeRemoval } from "../hooks/useWardrobeRemoval"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,21 +16,33 @@ export type SheetItem = {
   name: string
   category: string
   image: string
+  isCapture?: boolean
 }
 
 type Props = {
   item: SheetItem | null
   onClose: () => void
+  onPermanentDelete?: (id: string | number) => void
 }
 
 // ─── Panel ────────────────────────────────────────────────────────────────────
 
-export function ItemPreferenceSheet({ item, onClose }: Props) {
+export function ItemPreferenceSheet({ item, onClose, onPermanentDelete }: Props) {
   const { getPref, setPref, toggleFeel } = useItemPreferences()
+  const { softRemove, permanentRemove } = useWardrobeRemoval()
   const { setPanelOpen } = useWardrobePanel()
   const open = item !== null
   const pref = item ? getPref(item.id) : {}
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [removalDone, setRemovalDone] = useState<"soft" | "permanent" | null>(null)
+
+  // Reset confirm state when a different item opens
+  useEffect(() => {
+    setConfirmDelete(false)
+    setRemovalDone(null)
+  }, [item?.id])
 
   // Sync panel-open state into context so BottomNav can react
   useEffect(() => {
@@ -56,11 +69,30 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
     toggleFeel(item.id, value)
   }
 
+  function handleSoftRemove() {
+    if (!item) return
+    softRemove({ id: item.id, name: item.name, category: item.category, image: item.image })
+    setRemovalDone("soft")
+    setTimeout(() => {
+      onClose()
+    }, 1200)
+  }
+
+  function handlePermanentDelete() {
+    if (!item) return
+    permanentRemove({ id: item.id, name: item.name, category: item.category, image: item.image })
+    if (item.isCapture) onPermanentDelete?.(item.id)
+    setRemovalDone("permanent")
+    setTimeout(() => {
+      onClose()
+    }, 1200)
+  }
+
   return (
     <AnimatePresence>
       {open && item && (
         <>
-          {/* ── Backdrop: blur + dim ── */}
+          {/* ── Backdrop ── */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -106,7 +138,7 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
               className="shrink-0 px-5 pb-4 pt-4"
               style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
             >
-              {/* Top row: close button left, drag hint right */}
+              {/* Top row: close left, drag hint right */}
               <div className="mb-3 flex items-center justify-between">
                 <button
                   onClick={onClose}
@@ -128,7 +160,6 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
                 >
                   <X size={16} strokeWidth={2.25} />
                 </button>
-                {/* Subtle drag-hint bar */}
                 <div className="h-[3px] w-8 rounded-full bg-white/15" />
               </div>
 
@@ -158,7 +189,8 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
               className="flex-1 overflow-y-auto px-5 pt-5"
               style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
             >
-              {/* ─── Section 1: Reach preference ─────────────────────────── */}
+
+              {/* ─── Reach preference ──────────────────────────────────── */}
               <div className="mb-6">
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#5E7580]">
                   How often do you reach for this?
@@ -205,8 +237,8 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
                 </div>
               </div>
 
-              {/* ─── Section 2: Feel preference ───────────────────────────── */}
-              <div>
+              {/* ─── Feel preference ───────────────────────────────────── */}
+              <div className="mb-8">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-[#5E7580]">
                   How does this feel on you?
                 </p>
@@ -237,7 +269,6 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
                   })}
                 </div>
 
-                {/* Confirmation note */}
                 {pref.reach && (
                   <motion.div
                     initial={{ opacity: 0, y: 6 }}
@@ -250,15 +281,121 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
                     }}
                   >
                     <p className="text-[12px] leading-[18px] text-[#6B8490]">
-                      {pref.reach === "go-to" &&
-                        "We'll factor this in when building outfits — pieces you reach for often make great anchors."}
-                      {pref.reach === "sometimes" &&
-                        "We'll suggest this when it's the right fit for the occasion, colour palette, or weather."}
-                      {pref.reach === "not-lately" &&
-                        "We'll occasionally bring this back when it works well — and explain exactly why it belongs in the outfit."}
+                      {pref.reach === "go-to" && "We'll factor this in when building outfits — pieces you reach for often make great anchors."}
+                      {pref.reach === "sometimes" && "We'll suggest this when it's the right fit for the occasion, colour palette, or weather."}
+                      {pref.reach === "not-lately" && "We'll occasionally bring this back when it works well — and explain exactly why it belongs in the outfit."}
                     </p>
                   </motion.div>
                 )}
+              </div>
+
+              {/* ─── Removal zone ──────────────────────────────────────── */}
+              <div
+                className="rounded-[20px] p-4"
+                style={{ border: "1px solid rgba(255,255,255,0.06)", backgroundColor: "rgba(255,255,255,0.02)" }}
+              >
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#5E7580]">
+                  Wardrobe
+                </p>
+
+                <AnimatePresence mode="wait">
+                  {removalDone ? (
+                    /* ── Confirmation message ── */
+                    <motion.div
+                      key="done"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-3 py-2"
+                    >
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#3F6F73]/15">
+                        <Check size={15} className="text-[#3F6F73]" />
+                      </div>
+                      <div>
+                        <p className="text-[14px] font-semibold text-[#F5F5F5]">
+                          {removalDone === "permanent" ? "Item deleted." : "Removed from wardrobe."}
+                        </p>
+                        {removalDone === "soft" && (
+                          <p className="mt-0.5 text-[12px] leading-[16px] text-[#6B8490]">
+                            Won't appear in outfit suggestions. You can restore it from Profile.
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ) : confirmDelete ? (
+                    /* ── Permanent delete confirmation ── */
+                    <motion.div
+                      key="confirm"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <p className="mb-3 text-[13px] leading-[18px] text-[#A8B0B8]">
+                        This will remove the item completely.{" "}
+                        <span className="text-[#F5F5F5]">Old saved outfits won't be affected.</span>
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="flex h-11 flex-1 items-center justify-center rounded-[14px] border border-white/10 text-[13px] font-semibold text-[#A8B0B8]"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handlePermanentDelete}
+                          className="flex h-11 flex-1 items-center justify-center rounded-[14px] text-[13px] font-bold text-white"
+                          style={{ backgroundColor: "rgba(180,60,60,0.75)" }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    /* ── Default removal options ── */
+                    <motion.div
+                      key="options"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="space-y-2"
+                    >
+                      {/* Remove from wardrobe (soft) */}
+                      <button
+                        onClick={handleSoftRemove}
+                        className="flex h-[52px] w-full items-center gap-3 rounded-[14px] border border-white/8 bg-white/3 px-4 text-left text-[14px] font-semibold text-[#F5F5F5]"
+                      >
+                        <EyeOff size={16} className="shrink-0 text-[#A8B0B8]" />
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate">Remove from wardrobe</span>
+                          <span className="block text-[11px] font-normal text-[#5E7580]">
+                            Won't appear in outfit suggestions
+                          </span>
+                        </div>
+                      </button>
+
+                      {/* Delete permanently */}
+                      <button
+                        onClick={() => setConfirmDelete(true)}
+                        className="flex h-[52px] w-full items-center gap-3 rounded-[14px] border px-4 text-left text-[14px] font-semibold"
+                        style={{
+                          borderColor: "rgba(180,60,60,0.20)",
+                          backgroundColor: "rgba(180,60,60,0.06)",
+                          color: "rgba(230,100,100,0.90)",
+                        }}
+                      >
+                        <Trash2 size={16} className="shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate">Delete permanently</span>
+                          <span
+                            className="block text-[11px] font-normal"
+                            style={{ color: "rgba(200,80,80,0.65)" }}
+                          >
+                            Requires confirmation
+                          </span>
+                        </div>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>
