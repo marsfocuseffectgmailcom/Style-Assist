@@ -256,11 +256,7 @@ function PlanLaterSheet({
               <button
                 onClick={onSave}
                 disabled={!value}
-                className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
-                style={{
-                  background: `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-                  boxShadow: "0 4px 20px rgba(63,111,115,0.28)",
-                }}
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#3F6F73] text-base font-bold text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] disabled:opacity-45"
               >
                 <Check size={16} />
                 Save to this date
@@ -290,6 +286,7 @@ export default function OutfitResultScreen() {
   const { signalOutfit, trackItemsUsed }             = useStylePreferences()
   const [planSheetOpen, setPlanSheetOpen]            = useState(false)
   const [planDate, setPlanDate]                      = useState(() => todayISO())
+  const [saved, setSaved]                            = useState(false)
 
   // If navigated here without state (direct URL), fall back to timeline
   if (!state?.outfit) {
@@ -320,6 +317,8 @@ export default function OutfitResultScreen() {
   // ── Save handler ────────────────────────────────────────────────────────────
 
   function handleSave() {
+    if (saved) return
+    if ("vibrate" in navigator) navigator.vibrate(12)
     signalOutfit(outfit.tags, [], "like")
     trackItemsUsed(outfit.items.map((i) => i.id))
 
@@ -335,7 +334,8 @@ export default function OutfitResultScreen() {
       createdAt:  new Date().toISOString(),
     }
     saveOutfit(tl)
-    navigate("/timeline")
+    setSaved(true)
+    setTimeout(() => navigate("/timeline"), 900)
   }
 
   function handleTryAnother() {
@@ -512,23 +512,47 @@ export default function OutfitResultScreen() {
       {/* ── Action buttons ── */}
       <div className="pb-8 pt-2">
         {/* Primary */}
-        <button
+        <motion.button
           onClick={handleSave}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97]"
-          style={{
-            background: `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-            boxShadow: "0 4px 20px rgba(63,111,115,0.28)",
-          }}
+          disabled={saved}
+          animate={saved ? { scale: 0.96 } : { scale: 1 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
+          className="mb-3 relative flex h-14 w-full items-center justify-center overflow-hidden rounded-[18px] bg-[#3F6F73] text-base font-bold text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] disabled:opacity-75"
         >
-          <Check size={16} />
-          {isTonight ? "Wear this" : "Save outfit"}
-        </button>
+          <AnimatePresence mode="wait" initial={false}>
+            {saved ? (
+              <motion.span
+                key="saved"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.14 }}
+                className="flex items-center gap-2"
+              >
+                <Check size={16} strokeWidth={2.5} />
+                Outfit saved
+              </motion.span>
+            ) : (
+              <motion.span
+                key="idle"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.14 }}
+                className="flex items-center gap-2"
+              >
+                <Check size={16} />
+                {isTonight ? "Wear this" : "Save to Timeline"}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
 
         {/* Secondary */}
         <button
           onClick={handleTryAnother}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] border py-4 text-[14px] font-semibold transition active:scale-[0.97]"
-          style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.04)", color: T.sub }}
+          className="mb-3 flex h-[52px] w-full items-center justify-center gap-2 rounded-[18px] border text-[15px] font-semibold"
+          style={{ borderColor: "rgba(168,176,184,0.28)", backgroundColor: "rgba(255,255,255,0.03)", color: T.sub }}
         >
           <RefreshCw size={15} />
           {isTonight ? "Try another option" : "Try another look"}
@@ -537,7 +561,7 @@ export default function OutfitResultScreen() {
         {/* Tertiary */}
         <button
           onClick={handlePlanLater}
-          className="flex w-full items-center justify-center gap-2 py-3 text-[13px] font-medium transition active:opacity-70"
+          className="flex w-full items-center justify-center gap-2 py-3 text-[13px] font-medium"
           style={{ color: T.muted }}
         >
           <Calendar size={14} />

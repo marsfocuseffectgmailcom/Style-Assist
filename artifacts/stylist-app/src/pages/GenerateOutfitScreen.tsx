@@ -13,15 +13,25 @@ import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { useStylePreferences } from "../hooks/useStylePreferences"
+import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { wardrobeItems } from "../lib/mockData"
 import { generateOutfits } from "../lib/outfitGenerator"
 import type { GeneratedOutfit } from "../lib/outfitGenerator"
+import type { TimelineOutfit } from "../lib/types"
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
     weekday: "long",
     day: "numeric",
     month: "long",
+  })
+}
+
+function formatDateShort(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
   })
 }
 
@@ -71,7 +81,7 @@ const breakdownMax: Record<string, number> = {
   freshness: 5,
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── ScoreMeter ───────────────────────────────────────────────────────────────
 
 function ScoreMeter({ score, color }: { score: number; color: string }) {
   const size = 52
@@ -100,6 +110,8 @@ function ScoreMeter({ score, color }: { score: number; color: string }) {
   )
 }
 
+// ─── BreakdownRow ─────────────────────────────────────────────────────────────
+
 function BreakdownRow({ label, value, max }: { label: string; value: number; max: number }) {
   const pct = Math.round((value / max) * 100)
   return (
@@ -120,24 +132,45 @@ function BreakdownRow({ label, value, max }: { label: string; value: number; max
   )
 }
 
+// ─── OutfitCard ───────────────────────────────────────────────────────────────
+
 function OutfitCard({
   outfit,
   selected,
+  anySelected,
   onSelect,
 }: {
   outfit: GeneratedOutfit
   selected: boolean
+  anySelected: boolean
   onSelect: () => void
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false)
   const cfg = confidenceConfig[outfit.confidence]
   const shown = outfit.items.slice(0, 4)
 
+  // Animate: lift + glow when selected; dim when another is selected
+  const dimmed = anySelected && !selected
+
   return (
     <motion.div
       layout
-      className={`w-full overflow-hidden rounded-[24px] border text-left transition-colors ${
-        selected ? "border-[#3F6F73]/40 bg-[#3F6F73]/5" : "border-white/8 bg-[#2A3645]"
+      animate={{
+        y:       selected ? -6  : 0,
+        scale:   selected ? 1.015 : dimmed ? 0.98 : 1,
+        opacity: dimmed ? 0.62 : 1,
+      }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
+      style={{
+        borderRadius: 24,
+        boxShadow: selected
+          ? "0 12px 32px rgba(63,111,115,0.22)"
+          : "none",
+      }}
+      className={`w-full overflow-hidden border text-left transition-colors ${
+        selected
+          ? "border-[#3F6F73] bg-[#3F6F73]/6"
+          : "border-white/8 bg-[#2A3645]"
       }`}
     >
       {/* ── Tappable header ── */}
@@ -167,18 +200,19 @@ function OutfitCard({
               <ScoreMeter score={outfit.score} color={cfg.ring} />
             </div>
 
-            {/* Reason — always visible */}
             {outfit.reason && (
               <p className="mt-2 text-[12px] leading-relaxed text-[#6B8490]">{outfit.reason}</p>
             )}
           </div>
 
-          {/* Check */}
-          {selected && (
-            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#3F6F73]">
-              <Check size={13} className="text-white" />
-            </span>
-          )}
+          {/* Selected check */}
+          <motion.div
+            animate={{ scale: selected ? 1 : 0, opacity: selected ? 1 : 0 }}
+            transition={{ duration: 0.14, ease: "easeOut" }}
+            className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#3F6F73]"
+          >
+            <Check size={13} className="text-white" />
+          </motion.div>
         </div>
 
         {/* Tags */}
@@ -213,14 +247,14 @@ function OutfitCard({
         </div>
       </button>
 
-      {/* ── Expanded insight panel (only when selected) ── */}
+      {/* ── Expanded insight + confirmation (only when selected) ── */}
       <AnimatePresence>
         {selected && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
             className="overflow-hidden"
           >
             {/* Stylist notes */}
@@ -232,15 +266,12 @@ function OutfitCard({
                 <ul className="space-y-2">
                   {outfit.tips.map((tip, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <span
-                        className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8A96A]/60"
-                      />
+                      <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8A96A]/60" />
                       <span className="text-[13px] leading-relaxed text-[#D0D8D5]">{tip}</span>
                     </li>
                   ))}
                 </ul>
 
-                {/* Upgrade suggestion */}
                 {outfit.upgrade && (
                   <div className="mt-3 flex items-start gap-2.5 rounded-[12px] border border-[#3F6F73]/15 bg-[#3F6F73]/6 px-3 py-2.5">
                     <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-[#3F6F73]" />
@@ -284,6 +315,17 @@ function OutfitCard({
                 </AnimatePresence>
               </div>
             )}
+
+            {/* ── "You're set." confirmation ── */}
+            <div
+              className="border-t border-[#3F6F73]/15 px-4 py-3"
+              style={{ backgroundColor: "rgba(63,111,115,0.04)" }}
+            >
+              <p className="text-[14px] font-semibold text-[#F5F5F5]">You're set.</p>
+              <p className="mt-0.5 text-[12px] leading-[18px] text-[#6B8490]">
+                You can still switch to another option anytime.
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -297,7 +339,8 @@ export default function GenerateOutfitScreen() {
   const navigate = useNavigate()
   const { date } = useParams<{ date: string }>()
   const { items: incomingItems } = useIncomingItems()
-  const { preferences, recentItemIds } = useStylePreferences()
+  const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
+  const { saveOutfit } = useTimelineOutfits()
 
   const outfits = useMemo(
     () =>
@@ -305,17 +348,49 @@ export default function GenerateOutfitScreen() {
         preferences,
         usedItemIds: recentItemIds,
       }),
-    [date, incomingItems, preferences]
+    [date, incomingItems, preferences, recentItemIds]
   )
 
   const [selected, setSelected] = useState<string | null>(
     outfits.length > 0 ? outfits[0].id : null
   )
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
-  function handleViewResult() {
+  const anySelected = selected !== null
+
+  async function handleSave() {
     const outfit = outfits.find((o) => o.id === selected)
-    if (!outfit || !date) return
-    navigate("/timeline/outfit-result", { state: { outfit, date } })
+    if (!outfit || !date || saving) return
+
+    setSaving(true)
+
+    // Vibrate once on final save (where supported)
+    if ("vibrate" in navigator) navigator.vibrate(12)
+
+    // Signal preference learning
+    signalOutfit(outfit.tags, [], "like")
+    trackItemsUsed(outfit.items.map((i) => i.id))
+
+    // Persist to timeline
+    const tl: TimelineOutfit = {
+      id:         outfit.id,
+      date,
+      name:       outfit.name,
+      items:      outfit.items,
+      confidence: outfit.confidence,
+      tags:       outfit.tags,
+      score:      outfit.score,
+      reason:     outfit.reason,
+      createdAt:  new Date().toISOString(),
+    }
+    saveOutfit(tl)
+
+    // Show success state for 900ms, then navigate
+    setSaved(true)
+    setTimeout(() => {
+      navigate("/timeline")
+    }, 900)
   }
 
   const topOutfit = outfits[0]
@@ -325,14 +400,18 @@ export default function GenerateOutfitScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate("/timeline")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0]"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Generate Outfit</h1>
-          <p className="text-xs text-[#6B8490]">{formatDate(date ?? "")}</p>
+          <h1 className="text-[20px] font-bold leading-[26px] tracking-[-0.02em] text-[#F5F5F5]">
+            Choose an outfit
+          </h1>
+          <p className="text-[12px] leading-[16px] font-medium text-[#6B8490]">
+            {formatDate(date ?? "")}
+          </p>
         </div>
       </header>
 
@@ -356,36 +435,78 @@ export default function GenerateOutfitScreen() {
               <Sparkles size={14} className="shrink-0 text-[#5F8F7F]" />
               <p className="text-[12px] text-[#5F8F7F]">
                 Best outfit scores{" "}
-                <span className="font-bold">{topOutfit.score}/100</span> — tap a card to see
-                full styling notes
+                <span className="font-bold">{topOutfit.score}/100</span> — tap to see full styling notes
               </p>
             </motion.div>
           )}
 
           <p className="mb-4 text-[13px] text-[#6B8490]">
-            {outfits.length} suggestion{outfits.length !== 1 ? "s" : ""} ranked by score —
-            select one to add to your plan
+            {outfits.length} suggestion{outfits.length !== 1 ? "s" : ""} — tap one to see why it works
           </p>
 
-          <div className="space-y-3 pb-6">
+          {/* Cards list — extra bottom padding so lifted card isn't clipped */}
+          <div className="space-y-3 pb-6 pt-1">
             {outfits.map((outfit) => (
               <OutfitCard
                 key={outfit.id}
                 outfit={outfit}
                 selected={selected === outfit.id}
+                anySelected={anySelected}
                 onSelect={() => setSelected(outfit.id)}
               />
             ))}
           </div>
 
-          <div className="sticky bottom-[80px] pb-3">
-            <button
-              onClick={handleViewResult}
-              disabled={!selected}
-              className="flex h-14 w-full items-center justify-center rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97] disabled:opacity-45"
+          {/* CTA */}
+          <div className="sticky bottom-[88px] pb-3">
+            <motion.button
+              onClick={handleSave}
+              disabled={!selected || saving}
+              animate={saved ? { scale: 0.96 } : { scale: 1 }}
+              transition={{ duration: 0.14, ease: "easeOut" }}
+              className="relative flex h-14 w-full items-center justify-center overflow-hidden rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] disabled:opacity-45"
             >
-              View outfit →
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                {saved ? (
+                  <motion.span
+                    key="saved"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.14 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Check size={16} strokeWidth={2.5} />
+                    Outfit saved
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.14 }}
+                  >
+                    Wear this
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
+            {/* Sub-note: only once a card is selected */}
+            <AnimatePresence>
+              {anySelected && !saved && (
+                <motion.p
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-2 text-center text-[12px] text-[#5E7580]"
+                >
+                  Saved for {formatDateShort(date ?? "")}. You can still change it anytime.
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </>
       )}
