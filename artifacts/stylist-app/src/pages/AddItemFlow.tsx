@@ -161,6 +161,84 @@ function TextInput({
   )
 }
 
+// ─── Photo picker action sheet ────────────────────────────────────────────────
+
+function PhotoPickerSheet({
+  onCamera,
+  onLibrary,
+  onClose,
+}: {
+  onCamera:  () => void
+  onLibrary: () => void
+  onClose:   () => void
+}) {
+  const sheetBtnBase: React.CSSProperties = {
+    width: "100%",
+    padding: "15px 16px",
+    borderRadius: 16,
+    textAlign: "center",
+    fontSize: 15,
+    fontWeight: 600,
+    color: TOKEN.text,
+    background: "rgba(255,255,255,0.06)",
+    border: "none",
+    cursor: "pointer",
+  }
+
+  return (
+    <>
+      {/* Scrim */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18 }}
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.52)" }}
+      />
+      {/* Bottom sheet */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }}
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1200,
+          background: TOKEN.elevated,
+          borderRadius: "24px 24px 0 0",
+          padding: "10px 16px 40px",
+          boxShadow: "0 -8px 32px rgba(0,0,0,0.32)",
+        }}
+      >
+        {/* Pull handle */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.15)" }} />
+        </div>
+
+        <p style={{ fontSize: 14, fontWeight: 700, color: TOKEN.sub, textAlign: "center", marginBottom: 16, letterSpacing: "-0.01em" }}>
+          Add photo
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button onClick={onCamera}  style={sheetBtnBase}>Take photo</button>
+          <button onClick={onLibrary} style={sheetBtnBase}>Choose from library</button>
+          <div style={{ height: 4 }} />
+          <button
+            onClick={onClose}
+            style={{ ...sheetBtnBase, color: TOKEN.muted, background: "rgba(255,255,255,0.03)" }}
+          >
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </>
+  )
+}
+
 // ─── Photo slot ───────────────────────────────────────────────────────────────
 
 function PhotoSlot({
@@ -172,7 +250,9 @@ function PhotoSlot({
   photo: { url: string } | null
   onCapture: (file: File) => void
 }) {
-  const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef  = useRef<HTMLInputElement>(null)
+  const libraryRef = useRef<HTMLInputElement>(null)
+  const [showSheet, setShowSheet] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -180,22 +260,29 @@ function PhotoSlot({
     e.target.value = ""
   }
 
+  function openCamera() {
+    setShowSheet(false)
+    setTimeout(() => cameraRef.current?.click(), 50)
+  }
+
+  function openLibrary() {
+    setShowSheet(false)
+    setTimeout(() => libraryRef.current?.click(), 50)
+  }
+
   return (
     <div className="flex-1">
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleChange}
-      />
+      {/* Camera input — forces camera on mobile */}
+      <input ref={cameraRef}  type="file" accept="image/*" capture="environment" className="hidden" onChange={handleChange} />
+      {/* Library input — opens photo picker / file browser */}
+      <input ref={libraryRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+
       <button
         type="button"
-        onClick={() => fileRef.current?.click()}
+        onClick={() => setShowSheet(true)}
         className="relative flex h-[130px] w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[20px] border transition active:scale-[0.97]"
         style={{
-          borderColor: photo ? `rgba(95,143,127,0.35)` : TOKEN.border,
+          borderColor:     photo ? `rgba(95,143,127,0.35)` : TOKEN.border,
           backgroundColor: photo ? "rgba(95,143,127,0.06)" : "rgba(255,255,255,0.03)",
         }}
       >
@@ -223,6 +310,17 @@ function PhotoSlot({
           </>
         )}
       </button>
+
+      <AnimatePresence>
+        {showSheet && (
+          <PhotoPickerSheet
+            key="photo-picker"
+            onCamera={openCamera}
+            onLibrary={openLibrary}
+            onClose={() => setShowSheet(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -303,9 +401,29 @@ function CaptureStep({
   setPhotos: (p: Photos) => void
   onNext: () => void
 }) {
+  const tagCameraRef  = useRef<HTMLInputElement>(null)
+  const tagLibraryRef = useRef<HTMLInputElement>(null)
+  const [showTagSheet, setShowTagSheet] = useState(false)
+
   async function handleCapture(slot: keyof Photos, file: File) {
     const url = URL.createObjectURL(file)
     setPhotos({ ...photos, [slot]: { file, url } })
+  }
+
+  function handleTagFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (f) handleCapture("tag", f)
+    e.target.value = ""
+  }
+
+  function openTagCamera() {
+    setShowTagSheet(false)
+    setTimeout(() => tagCameraRef.current?.click(), 50)
+  }
+
+  function openTagLibrary() {
+    setShowTagSheet(false)
+    setTimeout(() => tagLibraryRef.current?.click(), 50)
   }
 
   const canContinue = photos.front !== null
@@ -341,21 +459,14 @@ function CaptureStep({
         className="mb-3 overflow-hidden rounded-[20px] border"
         style={{ borderColor: photos.tag ? "rgba(95,143,127,0.35)" : TOKEN.border, backgroundColor: photos.tag ? "rgba(95,143,127,0.06)" : "rgba(255,255,255,0.03)" }}
       >
-        <input
-          type="file"
-          id="tag-input"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) handleCapture("tag", f)
-            e.target.value = ""
-          }}
-        />
-        <label
-          htmlFor="tag-input"
-          className="flex cursor-pointer items-center gap-4 px-4 py-3.5"
+        {/* Hidden tag inputs */}
+        <input ref={tagCameraRef}  type="file" accept="image/*" capture="environment" className="hidden" onChange={handleTagFile} />
+        <input ref={tagLibraryRef} type="file" accept="image/*" className="hidden" onChange={handleTagFile} />
+
+        <button
+          type="button"
+          onClick={() => setShowTagSheet(true)}
+          className="flex w-full cursor-pointer items-center gap-4 px-4 py-3.5 text-left"
         >
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
@@ -381,7 +492,18 @@ function CaptureStep({
           {!photos.tag && (
             <span className="text-[11px] font-medium" style={{ color: TOKEN.muted }}>Optional</span>
           )}
-        </label>
+        </button>
+
+        <AnimatePresence>
+          {showTagSheet && (
+            <PhotoPickerSheet
+              key="tag-picker"
+              onCamera={openTagCamera}
+              onLibrary={openTagLibrary}
+              onClose={() => setShowTagSheet(false)}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Upload tip */}
