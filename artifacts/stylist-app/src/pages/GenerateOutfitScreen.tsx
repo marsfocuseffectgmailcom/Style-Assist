@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -8,6 +8,9 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpRight,
+  RefreshCw,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
@@ -22,42 +25,51 @@ import type { TimelineOutfit } from "../lib/types"
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
     weekday: "long",
-    day: "numeric",
-    month: "long",
+    day:     "numeric",
+    month:   "long",
   })
 }
 
 function formatDateShort(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
     weekday: "long",
-    day: "numeric",
-    month: "short",
+    day:     "numeric",
+    month:   "short",
   })
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function outfitSignature(outfit: GeneratedOutfit): string {
+  return outfit.items
+    .map((i) => i.id)
+    .sort()
+    .join("|")
 }
 
 // ─── Confidence config ────────────────────────────────────────────────────────
 
 const confidenceConfig = {
   high: {
-    label: "High match",
-    color: "#5F8F7F",
-    bg: "rgba(95,143,127,0.10)",
+    label:  "High match",
+    color:  "#5F8F7F",
+    bg:     "rgba(95,143,127,0.10)",
     border: "rgba(95,143,127,0.22)",
-    ring: "#5F8F7F",
+    ring:   "#5F8F7F",
   },
   safe: {
-    label: "Safe choice",
-    color: "#C8A96A",
-    bg: "rgba(200,169,106,0.10)",
+    label:  "Safe choice",
+    color:  "#C8A96A",
+    bg:     "rgba(200,169,106,0.10)",
     border: "rgba(200,169,106,0.22)",
-    ring: "#C8A96A",
+    ring:   "#C8A96A",
   },
   experimental: {
-    label: "Bold pick",
-    color: "#7FA9A3",
-    bg: "rgba(127,169,163,0.10)",
+    label:  "Bold pick",
+    color:  "#7FA9A3",
+    bg:     "rgba(127,169,163,0.10)",
     border: "rgba(127,169,163,0.22)",
-    ring: "#7FA9A3",
+    ring:   "#7FA9A3",
   },
 }
 
@@ -73,20 +85,20 @@ const breakdownLabels: Record<string, string> = {
 }
 
 const breakdownMax: Record<string, number> = {
-  eventMatch: 30,
-  colourHarmony: 25,
-  styleConsistency: 20,
+  eventMatch:        30,
+  colourHarmony:     25,
+  styleConsistency:  20,
   seasonSuitability: 10,
-  userPreference: 10,
-  freshness: 5,
+  userPreference:    10,
+  freshness:         5,
 }
 
 // ─── ScoreMeter ───────────────────────────────────────────────────────────────
 
 function ScoreMeter({ score, color }: { score: number; color: string }) {
   const size = 52
-  const sw = 4
-  const r = (size - sw) / 2
+  const sw   = 4
+  const r    = (size - sw) / 2
   const circ = 2 * Math.PI * r
   const dash = (score / 100) * circ
   return (
@@ -139,33 +151,34 @@ function OutfitCard({
   selected,
   anySelected,
   onSelect,
+  index,
 }: {
-  outfit: GeneratedOutfit
-  selected: boolean
+  outfit:      GeneratedOutfit
+  selected:    boolean
   anySelected: boolean
-  onSelect: () => void
+  onSelect:    () => void
+  index:       number
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false)
-  const cfg = confidenceConfig[outfit.confidence]
-  const shown = outfit.items.slice(0, 4)
-
-  // Animate: lift + glow when selected; dim when another is selected
+  const cfg    = confidenceConfig[outfit.confidence]
+  const shown  = outfit.items.slice(0, 4)
   const dimmed = anySelected && !selected
 
   return (
     <motion.div
       layout
-      animate={{
-        y:       selected ? -6  : 0,
-        scale:   selected ? 1.015 : dimmed ? 0.98 : 1,
-        opacity: dimmed ? 0.62 : 1,
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: dimmed ? 0.62 : 1, y: selected ? -6 : 0, scale: selected ? 1.015 : dimmed ? 0.98 : 1 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{
+        layout:   { duration: 0.16, ease: "easeOut" },
+        opacity:  { duration: 0.2,  ease: "easeOut", delay: index * 0.05 },
+        y:        { duration: 0.2,  ease: "easeOut", delay: index * 0.05 },
+        scale:    { duration: 0.16, ease: "easeOut" },
       }}
-      transition={{ duration: 0.16, ease: "easeOut" }}
       style={{
         borderRadius: 24,
-        boxShadow: selected
-          ? "0 12px 32px rgba(63,111,115,0.22)"
-          : "none",
+        boxShadow: selected ? "0 12px 32px rgba(63,111,115,0.22)" : "none",
       }}
       className={`w-full overflow-hidden border text-left transition-colors ${
         selected
@@ -336,43 +349,124 @@ function OutfitCard({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function GenerateOutfitScreen() {
-  const navigate = useNavigate()
-  const { date } = useParams<{ date: string }>()
-  const { items: incomingItems } = useIncomingItems()
+  const navigate                                      = useNavigate()
+  const { date }                                      = useParams<{ date: string }>()
+  const { items: incomingItems }                      = useIncomingItems()
   const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
-  const { saveOutfit } = useTimelineOutfits()
+  const { saveOutfit }                                = useTimelineOutfits()
 
-  const outfits = useMemo(
+  // ── Seen-outfit tracking refs (mutable, no re-render) ──────────────────────
+  const seenSignatures = useRef<Set<string>>(new Set())
+  const seenNames      = useRef<Set<string>>(new Set())
+
+  function addToSeen(outfits: GeneratedOutfit[]) {
+    outfits.forEach((o) => {
+      seenSignatures.current.add(outfitSignature(o))
+      seenNames.current.add(o.name)
+    })
+  }
+
+  // ── Initial batch ──────────────────────────────────────────────────────────
+  const initialBatch = useMemo(
     () =>
       generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, {
         preferences,
         usedItemIds: recentItemIds,
-      }),
-    [date, incomingItems, preferences, recentItemIds]
+      }).slice(0, 3),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [date] // Only recompute when the date changes — not on preference updates mid-session
   )
 
+  // ── Display state ──────────────────────────────────────────────────────────
+  const [currentOutfits,    setCurrentOutfits]    = useState<GeneratedOutfit[]>(initialBatch)
+  const [batchKey,          setBatchKey]           = useState(0)
+  const [isReshuffling,     setIsReshuffling]      = useState(false)
+  const [isReshuffledBatch, setIsReshuffledBatch]  = useState(false)
+  const [isEmpty,           setIsEmpty]            = useState(false)
+
   const [selected, setSelected] = useState<string | null>(
-    outfits.length > 0 ? outfits[0].id : null
+    initialBatch.length > 0 ? initialBatch[0].id : null
   )
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [saved,  setSaved]  = useState(false)
 
   const anySelected = selected !== null
 
+  // Register the initial batch into seen sets once
+  useEffect(() => {
+    addToSeen(initialBatch)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only on mount
+
+  // Reset everything when date changes (navigating to a different day)
+  useEffect(() => {
+    seenSignatures.current = new Set()
+    seenNames.current      = new Set()
+    const fresh = initialBatch
+    addToSeen(fresh)
+    setCurrentOutfits(fresh)
+    setSelected(fresh[0]?.id ?? null)
+    setIsEmpty(false)
+    setIsReshuffledBatch(false)
+    setBatchKey((k) => k + 1)
+    setSaved(false)
+    setSaving(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date])
+
+  // ── Reshuffle ──────────────────────────────────────────────────────────────
+
+  function handleReshuffle(signal?: "like" | "dislike") {
+    if (isReshuffling || isEmpty) return
+    const selectedOutfit = currentOutfits.find((o) => o.id === selected)
+
+    // Apply explicit feedback on the currently selected outfit before regenerating
+    if (selectedOutfit && signal) {
+      signalOutfit(selectedOutfit.tags, [], signal)
+    }
+
+    setIsReshuffling(true)
+
+    setTimeout(() => {
+      const candidates = generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, {
+        preferences,
+        usedItemIds: recentItemIds,
+        usedOutfitNames: seenNames.current,
+      })
+
+      // Filter out exact item-combination repeats
+      const fresh = candidates
+        .filter((o) => !seenSignatures.current.has(outfitSignature(o)))
+        .slice(0, 3)
+
+      if (fresh.length === 0) {
+        setIsEmpty(true)
+        setIsReshuffling(false)
+        return
+      }
+
+      addToSeen(fresh)
+      setCurrentOutfits(fresh)
+      setSelected(fresh[0].id)
+      setIsReshuffledBatch(true)
+      setBatchKey((k) => k + 1)
+      setIsReshuffling(false)
+    }, 300)
+  }
+
+  // ── Save ───────────────────────────────────────────────────────────────────
+
   async function handleSave() {
-    const outfit = outfits.find((o) => o.id === selected)
+    const outfit = currentOutfits.find((o) => o.id === selected)
     if (!outfit || !date || saving) return
 
     setSaving(true)
-
-    // Vibrate once on final save (where supported)
     if ("vibrate" in navigator) navigator.vibrate(12)
 
-    // Signal preference learning
-    signalOutfit(outfit.tags, [], "like")
+    // Reshuffled picks get a weaker preference signal ("skip") vs initial picks ("like")
+    signalOutfit(outfit.tags, [], isReshuffledBatch ? "skip" : "like")
     trackItemsUsed(outfit.items.map((i) => i.id))
 
-    // Persist to timeline
     const tl: TimelineOutfit = {
       id:         outfit.id,
       date,
@@ -386,14 +480,13 @@ export default function GenerateOutfitScreen() {
     }
     saveOutfit(tl)
 
-    // Show success state for 900ms, then navigate
     setSaved(true)
     setTimeout(() => {
       navigate("/timeline")
     }, 900)
   }
 
-  const topOutfit = outfits[0]
+  const topOutfit = currentOutfits[0]
 
   return (
     <AppShell>
@@ -415,7 +508,7 @@ export default function GenerateOutfitScreen() {
         </div>
       </header>
 
-      {outfits.length === 0 ? (
+      {currentOutfits.length === 0 && !isReshuffling ? (
         <Card className="py-10 text-center">
           <Sparkles size={28} className="mx-auto mb-3 text-[#6B8490]" />
           <p className="text-sm font-medium text-[#AABBC0]">Not enough wardrobe items yet</p>
@@ -426,8 +519,9 @@ export default function GenerateOutfitScreen() {
       ) : (
         <>
           {/* Top score banner */}
-          {topOutfit && topOutfit.score >= 65 && (
+          {topOutfit && topOutfit.score >= 65 && !isReshuffling && (
             <motion.div
+              key={batchKey}
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#5F8F7F]/8 px-3.5 py-2.5"
@@ -441,23 +535,115 @@ export default function GenerateOutfitScreen() {
           )}
 
           <p className="mb-4 text-[13px] text-[#6B8490]">
-            {outfits.length} suggestion{outfits.length !== 1 ? "s" : ""} — tap one to see why it works
+            {currentOutfits.length} suggestion{currentOutfits.length !== 1 ? "s" : ""} —{" "}
+            {isReshuffledBatch ? "reshuffled for you" : "tap one to see why it works"}
           </p>
 
-          {/* Cards list — extra bottom padding so lifted card isn't clipped */}
-          <div className="space-y-3 pb-6 pt-1">
-            {outfits.map((outfit) => (
-              <OutfitCard
-                key={outfit.id}
-                outfit={outfit}
-                selected={selected === outfit.id}
-                anySelected={anySelected}
-                onSelect={() => setSelected(outfit.id)}
-              />
-            ))}
+          {/* ── Card list with keyed AnimatePresence for batch swap animation ── */}
+          <AnimatePresence mode="wait" initial={false}>
+            {isReshuffling ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col gap-3 pb-4"
+              >
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-[120px] animate-pulse rounded-[24px] bg-white/4"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key={`batch-${batchKey}`}
+                initial={false}
+                className="space-y-3 pb-4 pt-1"
+              >
+                {currentOutfits.map((outfit, i) => (
+                  <OutfitCard
+                    key={outfit.id}
+                    outfit={outfit}
+                    selected={selected === outfit.id}
+                    anySelected={anySelected}
+                    onSelect={() => setSelected(outfit.id)}
+                    index={i}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Reshuffle controls ── */}
+          <div className="mb-4 space-y-2">
+            {/* Feedback row — only when an outfit is selected */}
+            <AnimatePresence>
+              {anySelected && !saved && !isEmpty && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="flex gap-2"
+                >
+                  <button
+                    onClick={() => handleReshuffle("like")}
+                    disabled={isReshuffling}
+                    className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-white/4 text-[13px] font-semibold text-[#AABBC0] disabled:opacity-40"
+                  >
+                    <ThumbsUp size={14} className="text-[#5F8F7F]" />
+                    More like this
+                  </button>
+                  <button
+                    onClick={() => handleReshuffle("dislike")}
+                    disabled={isReshuffling}
+                    className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border border-white/8 bg-white/4 text-[13px] font-semibold text-[#AABBC0] disabled:opacity-40"
+                  >
+                    <ThumbsDown size={14} className="text-[#AABBC0]" />
+                    Less like this
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Empty fallback or Reshuffle button */}
+            <AnimatePresence mode="wait" initial={false}>
+              {isEmpty ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-[16px] border border-white/6 bg-white/3 px-4 py-4 text-center"
+                >
+                  <p className="text-[13px] font-semibold text-[#AABBC0]">No better options yet</p>
+                  <p className="mt-1 text-[12px] leading-[18px] text-[#5E7580]">
+                    Add more wardrobe items to improve suggestions.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="reshuffle"
+                  onClick={() => handleReshuffle()}
+                  disabled={isReshuffling || saved}
+                  animate={isReshuffling ? { opacity: 0.5 } : { opacity: 1 }}
+                  className="flex h-11 w-full items-center justify-center gap-2.5 rounded-[14px] border border-white/8 bg-white/4 text-[13px] font-semibold text-[#AABBC0] disabled:opacity-40"
+                >
+                  <motion.span
+                    animate={isReshuffling ? { rotate: 360 } : { rotate: 0 }}
+                    transition={isReshuffling ? { repeat: Infinity, duration: 0.7, ease: "linear" } : {}}
+                  >
+                    <RefreshCw size={14} className="text-[#7FA9A3]" />
+                  </motion.span>
+                  Reshuffle looks
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* CTA */}
+          {/* ── CTA ── */}
           <div className="sticky bottom-[88px] pb-3">
             <motion.button
               onClick={handleSave}
@@ -493,7 +679,6 @@ export default function GenerateOutfitScreen() {
               </AnimatePresence>
             </motion.button>
 
-            {/* Sub-note: only once a card is selected */}
             <AnimatePresence>
               {anySelected && !saved && (
                 <motion.p
