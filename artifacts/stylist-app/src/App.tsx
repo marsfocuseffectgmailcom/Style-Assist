@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { NotificationsProvider } from "./contexts/NotificationsContext"
+import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
 import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
@@ -62,9 +63,11 @@ function AppContent() {
 export default function App() {
   return (
     <NotificationsProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <AppContent />
-      </BrowserRouter>
+      <WardrobePanelProvider>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <AppContent />
+        </BrowserRouter>
+      </WardrobePanelProvider>
     </NotificationsProvider>
   )
 }
