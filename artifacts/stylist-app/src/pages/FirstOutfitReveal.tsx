@@ -1,11 +1,11 @@
-import { useEffect, useState, type CSSProperties } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Sparkles, CalendarDays, Layers, RefreshCw } from "lucide-react"
+import { ArrowLeft, Sparkles, CalendarDays, Layers, RefreshCw, PackagePlus } from "lucide-react"
 import { wardrobeItems } from "../lib/mockData"
 import type { WardrobeItem } from "../lib/mockData"
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens ─────────────────────────────────────────────────────────────
 
 const T = {
   bg:     "#1F2A37",
@@ -20,7 +20,7 @@ const T = {
   muted:  "#6B8490",
 }
 
-// ─── Navigation state ─────────────────────────────────────────────────────────
+// ─── Navigation state ──────────────────────────────────────────────────────────
 
 type RevealState = {
   photo:    string | null
@@ -31,7 +31,7 @@ type RevealState = {
   occasion: string
 }
 
-// ─── Variation data model ─────────────────────────────────────────────────────
+// ─── Variant model ─────────────────────────────────────────────────────────────
 
 type VarDir = "polished" | "relaxed" | "shoes"
 
@@ -41,6 +41,7 @@ type Variant = {
   microcopy:  string
   partnerIds: number[]
   dir:        VarDir
+  score:      number   // 1-10 — higher = stronger combination, shown first
 }
 
 type Anchor = {
@@ -51,99 +52,144 @@ type Anchor = {
   variants:   Variant[]
 }
 
-// ─── Anchor + variant pools per category ─────────────────────────────────────
-// All variants share the same anchor occasion — only execution changes.
-// wardrobeItems: 1=Brown Blazer, 2=Cream Knit, 3=Black Coat, 4=Blue Denim,
-//                5=Beige Trousers, 6=Black Trousers, 7=White Sneakers,
-//                8=Black Loafers, 9=Black Heels, 10=Black T-Shirt
+// ─── Anchor + variant pools ────────────────────────────────────────────────────
+// Ordering: index 0 = best polished, index 2 = best relaxed, index 4 = best shoes.
+// Scores drive reshuffle order. Default shows index 0 (polished) + index 2 (relaxed).
+//
+// wardrobeItems: 1=Brown Blazer  2=Cream Knit    3=Black Coat
+//                4=Blue Denim    5=Beige Trousers 6=Black Trousers
+//                7=White Sneakers 8=Black Loafers  9=Black Heels
+//                10=Black T-Shirt
 
 const ANCHORS: Record<string, Anchor> = {
   Tops: {
-    name: "Weekend edit",   occasion: "Casual", vibe: "Easy and effortless",
+    name: "Weekend edit", occasion: "Casual", vibe: "Easy and effortless",
     partnerIds: [4, 7],
     variants: [
-      { id:"tp1", name:"Smart version",  microcopy:"A cleaner version",            partnerIds:[5, 8],     dir:"polished" },
-      { id:"tp2", name:"Office ready",   microcopy:"More polished for this",       partnerIds:[6, 8],     dir:"polished" },
-      { id:"tr1", name:"Layered easy",   microcopy:"A more relaxed take",          partnerIds:[3, 4, 7],  dir:"relaxed"  },
-      { id:"tr2", name:"Soft version",   microcopy:"A softer alternative",         partnerIds:[5, 7],     dir:"relaxed"  },
-      { id:"ts1", name:"Evening twist",  microcopy:"Different shoes, new mood",    partnerIds:[5, 9],     dir:"shoes"    },
-      { id:"ts2", name:"Elevated edit",  microcopy:"The heel changes everything",  partnerIds:[6, 9],     dir:"shoes"    },
+      { id:"tp1", name:"Smart version",  microcopy:"A cleaner version",            partnerIds:[5, 8],    dir:"polished", score:9 },
+      { id:"tp2", name:"Office ready",   microcopy:"More polished for this",       partnerIds:[6, 8],    dir:"polished", score:8 },
+      { id:"tr1", name:"Layered easy",   microcopy:"A more relaxed take",          partnerIds:[3, 4, 7], dir:"relaxed",  score:7 },
+      { id:"tr2", name:"Soft version",   microcopy:"A softer alternative",         partnerIds:[5, 7],    dir:"relaxed",  score:6 },
+      { id:"ts1", name:"Evening twist",  microcopy:"Different shoes, new mood",    partnerIds:[5, 9],    dir:"shoes",    score:8 },
+      { id:"ts2", name:"Elevated edit",  microcopy:"The heel changes everything",  partnerIds:[6, 9],    dir:"shoes",    score:7 },
     ],
   },
   Bottoms: {
-    name: "Easy morning",   occasion: "Casual", vibe: "Cosy and put-together",
+    name: "Easy morning", occasion: "Casual", vibe: "Cosy and put-together",
     partnerIds: [2, 7],
     variants: [
-      { id:"bp1", name:"Clean lines",    microcopy:"A cleaner version",            partnerIds:[10, 8],    dir:"polished" },
-      { id:"bp2", name:"Polished edit",  microcopy:"More polished for this",       partnerIds:[1, 2, 8],  dir:"polished" },
-      { id:"br1", name:"Relaxed take",   microcopy:"A more relaxed take",          partnerIds:[10, 7],    dir:"relaxed"  },
-      { id:"br2", name:"Layered soft",   microcopy:"A softer alternative",         partnerIds:[3, 10, 7], dir:"relaxed"  },
-      { id:"bs1", name:"Heel lift",      microcopy:"Different shoes, new mood",    partnerIds:[10, 9],    dir:"shoes"    },
-      { id:"bs2", name:"Dressed up",     microcopy:"The heel changes everything",  partnerIds:[2, 9],     dir:"shoes"    },
+      { id:"bp1", name:"Clean lines",   microcopy:"A cleaner version",            partnerIds:[10, 8],    dir:"polished", score:9 },
+      { id:"bp2", name:"Polished edit", microcopy:"More polished for this",       partnerIds:[1, 2, 8],  dir:"polished", score:8 },
+      { id:"br1", name:"Relaxed take",  microcopy:"A more relaxed take",          partnerIds:[10, 7],    dir:"relaxed",  score:7 },
+      { id:"br2", name:"Layered soft",  microcopy:"A softer alternative",         partnerIds:[3, 10, 7], dir:"relaxed",  score:6 },
+      { id:"bs1", name:"Heel lift",     microcopy:"Different shoes, new mood",    partnerIds:[10, 9],    dir:"shoes",    score:8 },
+      { id:"bs2", name:"Dressed up",    microcopy:"The heel changes everything",  partnerIds:[2, 9],     dir:"shoes",    score:7 },
     ],
   },
   Outerwear: {
-    name: "Monochrome day", occasion: "Work",   vibe: "Polished and clean",
+    name: "Monochrome day", occasion: "Work", vibe: "Polished and clean",
     partnerIds: [10, 6, 8],
     variants: [
-      { id:"op1", name:"Softer inside",  microcopy:"A cleaner version",            partnerIds:[2, 6, 8],  dir:"polished" },
-      { id:"op2", name:"Tonal shift",    microcopy:"More polished for this",       partnerIds:[10, 5, 8], dir:"polished" },
-      { id:"or1", name:"Denim version",  microcopy:"A more relaxed take",          partnerIds:[10, 4, 7], dir:"relaxed"  },
-      { id:"or2", name:"Soft layers",    microcopy:"A softer alternative",         partnerIds:[2, 4, 7],  dir:"relaxed"  },
-      { id:"os1", name:"Heel day",       microcopy:"Different shoes, new mood",    partnerIds:[10, 6, 9], dir:"shoes"    },
-      { id:"os2", name:"Evening ready",  microcopy:"The heel changes everything",  partnerIds:[2, 5, 9],  dir:"shoes"    },
+      { id:"op1", name:"Softer inside",  microcopy:"A cleaner version",            partnerIds:[2, 6, 8],  dir:"polished", score:9 },
+      { id:"op2", name:"Tonal shift",    microcopy:"More polished for this",       partnerIds:[10, 5, 8], dir:"polished", score:8 },
+      { id:"or1", name:"Denim version",  microcopy:"A more relaxed take",          partnerIds:[10, 4, 7], dir:"relaxed",  score:7 },
+      { id:"or2", name:"Soft layers",    microcopy:"A softer alternative",         partnerIds:[2, 4, 7],  dir:"relaxed",  score:6 },
+      { id:"os1", name:"Heel day",       microcopy:"Different shoes, new mood",    partnerIds:[10, 6, 9], dir:"shoes",    score:8 },
+      { id:"os2", name:"Evening ready",  microcopy:"The heel changes everything",  partnerIds:[2, 5, 9],  dir:"shoes",    score:7 },
     ],
   },
   Shoes: {
-    name: "Neutral tones",  occasion: "Casual", vibe: "Grounded and easy",
+    name: "Neutral tones", occasion: "Casual", vibe: "Grounded and easy",
     partnerIds: [2, 5],
     variants: [
-      { id:"shp1", name:"Sharp pairing", microcopy:"A cleaner version",            partnerIds:[10, 6],    dir:"polished" },
-      { id:"shp2", name:"Blazer edit",   microcopy:"More polished for this",       partnerIds:[1, 10, 6], dir:"polished" },
-      { id:"shr1", name:"Denim pairing", microcopy:"A more relaxed take",          partnerIds:[2, 4],     dir:"relaxed"  },
-      { id:"shr2", name:"Easy layers",   microcopy:"A softer alternative",         partnerIds:[10, 4],    dir:"relaxed"  },
-      { id:"shl1", name:"Coat finish",   microcopy:"A layer over, same shoe",      partnerIds:[3, 2, 5],  dir:"shoes"    },
-      { id:"shl2", name:"Blazer finish", microcopy:"Warm layer, same foundation",  partnerIds:[1, 2, 5],  dir:"shoes"    },
+      { id:"shp1", name:"Sharp pairing", microcopy:"A cleaner version",            partnerIds:[10, 6],    dir:"polished", score:9 },
+      { id:"shp2", name:"Blazer edit",   microcopy:"More polished for this",       partnerIds:[1, 10, 6], dir:"polished", score:8 },
+      { id:"shr1", name:"Denim pairing", microcopy:"A more relaxed take",          partnerIds:[2, 4],     dir:"relaxed",  score:7 },
+      { id:"shr2", name:"Easy layers",   microcopy:"A softer alternative",         partnerIds:[10, 4],    dir:"relaxed",  score:6 },
+      { id:"shl1", name:"Coat finish",   microcopy:"A warm layer over",            partnerIds:[3, 2, 5],  dir:"shoes",    score:8 },
+      { id:"shl2", name:"Blazer finish", microcopy:"Layered, same foundation",     partnerIds:[1, 2, 5],  dir:"shoes",    score:7 },
     ],
   },
   Dress: {
-    name: "Day look",       occasion: "Casual", vibe: "Simple and fresh",
+    name: "Day look", occasion: "Casual", vibe: "Simple and fresh",
     partnerIds: [8],
     variants: [
-      { id:"dp1", name:"Blazer day",     microcopy:"A cleaner version",            partnerIds:[1, 8],     dir:"polished" },
-      { id:"dp2", name:"Coat layer",     microcopy:"More polished for this",       partnerIds:[3, 8],     dir:"polished" },
-      { id:"dr1", name:"Sneaker edit",   microcopy:"A more relaxed take",          partnerIds:[7],        dir:"relaxed"  },
-      { id:"dr2", name:"Casual blazer",  microcopy:"A softer alternative",         partnerIds:[1, 7],     dir:"relaxed"  },
-      { id:"ds1", name:"Heel moment",    microcopy:"Different shoes, new mood",    partnerIds:[9],        dir:"shoes"    },
-      { id:"ds2", name:"Evening poise",  microcopy:"The heel changes everything",  partnerIds:[3, 9],     dir:"shoes"    },
+      { id:"dp1", name:"Blazer day",    microcopy:"A cleaner version",            partnerIds:[1, 8],  dir:"polished", score:9 },
+      { id:"dp2", name:"Coat layer",    microcopy:"More polished for this",       partnerIds:[3, 8],  dir:"polished", score:8 },
+      { id:"dr1", name:"Sneaker edit",  microcopy:"A more relaxed take",          partnerIds:[7],     dir:"relaxed",  score:7 },
+      { id:"dr2", name:"Casual blazer", microcopy:"A softer alternative",         partnerIds:[1, 7],  dir:"relaxed",  score:6 },
+      { id:"ds1", name:"Heel moment",   microcopy:"Different shoes, new mood",    partnerIds:[9],     dir:"shoes",    score:8 },
+      { id:"ds2", name:"Evening poise", microcopy:"The heel changes everything",  partnerIds:[3, 9],  dir:"shoes",    score:7 },
     ],
   },
 }
 
-// third pill label differs for Shoes (new item IS the shoes)
-const THIRD_PILL_LABEL: Record<string, string> = {
-  Shoes: "Different layer",
-}
+const THIRD_PILL: Record<string, string> = { Shoes: "Different layer" }
 
-// ─── Helper: resolve partner WardrobeItems ────────────────────────────────────
+// Phase thresholds (number of pairs added to history)
+const PHASE2_AT = 2   // history.size ≥ 2 → exploring
+const PHASE3_AT = 5   // history.size ≥ 5 → deep dive, show persistent card
 
-function resolvePartners(ids: number[]): WardrobeItem[] {
-  return ids.map((id) => wardrobeItems.find((w) => w.id === id)).filter((w): w is WardrobeItem => !!w)
-}
+// ─── Reshuffle engine ──────────────────────────────────────────────────────────
 
 function comboKey(a: Variant, b: Variant) {
   return [a.id, b.id].sort().join("|")
 }
 
-// ─── Moodboard: new item left + partners right ────────────────────────────────
+function resolvePartners(ids: number[]): WardrobeItem[] {
+  return ids.map((id) => wardrobeItems.find((w) => w.id === id)).filter((w): w is WardrobeItem => !!w)
+}
+
+/**
+ * Pick the next best unseen pair.
+ *
+ * If dir is set, slot A is biased toward that direction (highest-scored variant
+ * matching dir), then slot B is the best remaining unseen partner anywhere in
+ * the full pool. This keeps the pool large (10+ unique biased pairs) while
+ * still feeling directionally intentional.
+ *
+ * Returns null only when every possible pair has been seen.
+ */
+function pickNextPair(
+  variants: Variant[],
+  dir: VarDir | null,
+  history: Set<string>,
+): [number, number] | null {
+  const byScore = [...variants.map((v, i) => ({ v, i }))].sort((a, b) => b.v.score - a.v.score)
+
+  if (dir) {
+    // Biased: try each dir-matching item as slot A, best remaining as slot B
+    const dirItems = byScore.filter(({ v }) => v.dir === dir)
+    const allItems = byScore
+
+    for (const aItem of dirItems) {
+      for (const bItem of allItems) {
+        if (aItem.i === bItem.i) continue
+        const key = comboKey(aItem.v, bItem.v)
+        if (!history.has(key)) return [aItem.i, bItem.i]
+      }
+    }
+  }
+
+  // Unbiased fallback (or dir exhausted): best unseen pair from full pool
+  for (let ai = 0; ai < byScore.length; ai++) {
+    for (let bi = ai + 1; bi < byScore.length; bi++) {
+      const key = comboKey(byScore[ai].v, byScore[bi].v)
+      if (!history.has(key)) return [byScore[ai].i, byScore[bi].i]
+    }
+  }
+
+  return null // all 15 pairs seen
+}
+
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function Moodboard({ newPhoto, partners, height }: { newPhoto: string | null; partners: WardrobeItem[]; height: number }) {
   return (
     <div style={{ display: "flex", height, overflow: "hidden" }}>
-      {/* New item — left 56% */}
       <div style={{ flex: "0 0 56%", position: "relative", overflow: "hidden" }}>
         {newPhoto
-          ? <img src={newPhoto} alt="New item" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ? <img src={newPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : <div style={{ width: "100%", height: "100%", background: T.raised }} />
         }
         <div style={{
@@ -151,13 +197,11 @@ function Moodboard({ newPhoto, partners, height }: { newPhoto: string | null; pa
           background: "rgba(200,169,106,0.92)", borderRadius: 99,
           padding: "2px 8px", fontSize: 9, fontWeight: 700, color: "#1F2A37", letterSpacing: "0.04em",
         }}>NEW</div>
-        {/* Fade edge */}
         <div style={{
           position: "absolute", top: 0, right: 0, bottom: 0, width: 24,
           background: `linear-gradient(to right, transparent, ${T.card})`,
         }} />
       </div>
-      {/* Partners — right 44%, stacked */}
       <div style={{ flex: "0 0 44%", display: "flex", flexDirection: "column", gap: 2, paddingLeft: 2 }}>
         {partners.slice(0, 3).map((item) => (
           <div key={item.id} style={{ flex: 1, overflow: "hidden" }}>
@@ -170,15 +214,11 @@ function Moodboard({ newPhoto, partners, height }: { newPhoto: string | null; pa
   )
 }
 
-// ─── Main outfit card ─────────────────────────────────────────────────────────
-
 function MainCard({
   anchor, newPhoto, isSelected, onClick, mounted,
 }: {
   anchor: Anchor; newPhoto: string | null; isSelected: boolean; onClick: () => void; mounted: boolean
 }) {
-  const accent = T.teal
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -188,18 +228,14 @@ function MainCard({
     >
       <motion.button
         onClick={onClick}
-        animate={{
-          scale:   isSelected ? 1 : 0.98,
-          opacity: isSelected ? 1 : 0.58,
-        }}
+        animate={{ scale: isSelected ? 1 : 0.98, opacity: isSelected ? 1 : 0.55 }}
         transition={{ duration: 0.22 }}
         style={{
           width: "100%", padding: 0, border: "none", cursor: "pointer", textAlign: "left",
-          borderRadius: 22, overflow: "hidden",
-          background: T.card,
-          outline: isSelected ? `2px solid ${accent}` : "2px solid transparent",
+          borderRadius: 22, overflow: "hidden", background: T.card,
+          outline: isSelected ? `2px solid ${T.teal}` : "2px solid transparent",
           outlineOffset: 2,
-          boxShadow: isSelected ? `0 6px 24px rgba(63,111,115,0.22)` : "none",
+          boxShadow: isSelected ? "0 6px 24px rgba(63,111,115,0.22)" : "none",
         }}
       >
         <Moodboard newPhoto={newPhoto} partners={resolvePartners(anchor.partnerIds)} height={180} />
@@ -212,11 +248,11 @@ function MainCard({
           </div>
           <div style={{
             display: "flex", alignItems: "center", gap: 5,
-            background: `${accent}18`, border: `1px solid ${accent}30`,
+            background: `${T.teal}18`, border: `1px solid ${T.teal}30`,
             borderRadius: 99, padding: "4px 10px",
           }}>
-            {isSelected && <div style={{ width: 6, height: 6, borderRadius: "50%", background: accent }} />}
-            <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>
+            {isSelected && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.teal }} />}
+            <span style={{ fontSize: 11, fontWeight: 700, color: T.teal }}>
               {isSelected ? "Selected" : anchor.occasion}
             </span>
           </div>
@@ -226,83 +262,155 @@ function MainCard({
   )
 }
 
-// ─── Variation card ───────────────────────────────────────────────────────────
-
 function VariationCard({
-  variant, newPhoto, isSelected, isFaded, onClick, delay, mounted,
+  variant, newPhoto, isSelected, isFaded, onClick,
 }: {
   variant: Variant; newPhoto: string | null; isSelected: boolean
-  isFaded: boolean; onClick: () => void; delay: number; mounted: boolean
+  isFaded: boolean; onClick: () => void
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: mounted ? 1 : 0, y: mounted ? 0 : 16 }}
-      transition={{ delay, duration: 0.38, ease: "easeOut" }}
-      style={{ flex: 1, minWidth: 0 }}
+    <motion.button
+      onClick={onClick}
+      animate={{
+        scale:   isSelected ? 1.025 : isFaded ? 0.97 : 1,
+        opacity: isFaded ? 0.45 : 1,
+      }}
+      transition={{ duration: 0.22 }}
+      style={{
+        flex: 1, minWidth: 0, padding: 0, border: "none", cursor: "pointer", textAlign: "left",
+        borderRadius: 18, overflow: "hidden", background: T.card,
+        outline: isSelected ? `2px solid ${T.teal}` : "2px solid transparent",
+        outlineOffset: 2,
+        boxShadow: isSelected ? "0 4px 18px rgba(63,111,115,0.22)" : "none",
+      }}
     >
-      <motion.button
-        onClick={onClick}
-        animate={{
-          scale:   isSelected ? 1.02 : isFaded ? 0.97 : 1,
-          opacity: isFaded ? 0.48 : 1,
-        }}
-        transition={{ duration: 0.22 }}
-        style={{
-          width: "100%", padding: 0, border: "none", cursor: "pointer", textAlign: "left",
-          borderRadius: 18, overflow: "hidden",
-          background: T.card,
-          outline: isSelected ? `2px solid ${T.teal}` : "2px solid transparent",
-          outlineOffset: 2,
-          boxShadow: isSelected ? `0 4px 18px rgba(63,111,115,0.22)` : "none",
-        }}
-      >
-        <Moodboard newPhoto={newPhoto} partners={resolvePartners(variant.partnerIds)} height={130} />
-        <div style={{ padding: "10px 11px 12px" }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: T.text, letterSpacing: "-0.15px", marginBottom: 2 }}>
-            {variant.name}
+      <Moodboard newPhoto={newPhoto} partners={resolvePartners(variant.partnerIds)} height={130} />
+      <div style={{ padding: "10px 11px 12px" }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: T.text, letterSpacing: "-0.15px", marginBottom: 2 }}>
+          {variant.name}
+        </p>
+        <p style={{ fontSize: 11, color: T.muted, lineHeight: 1.35 }}>{variant.microcopy}</p>
+      </div>
+    </motion.button>
+  )
+}
+
+function DirPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileTap={{ scale: 0.95 }}
+      style={{
+        padding: "7px 14px", borderRadius: 99, border: "none", cursor: "pointer",
+        fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+        background: active ? T.teal : "rgba(255,255,255,0.07)",
+        color:      active ? "#fff"  : T.sub,
+        transition: "background 0.18s, color 0.18s",
+      }}
+    >
+      {label}
+    </motion.button>
+  )
+}
+
+// ─── Phase 3 insight card ──────────────────────────────────────────────────────
+
+function Phase3Card({ onAddItems }: { onAddItems: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8, height: 0 }}
+      animate={{ opacity: 1, y: 0, height: "auto" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      style={{
+        marginTop: 14,
+        padding: "14px 16px",
+        borderRadius: 16,
+        background: "rgba(200,169,106,0.06)",
+        border: "1px solid rgba(200,169,106,0.2)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <Sparkles size={14} style={{ color: T.gold, marginTop: 1, flexShrink: 0 }} />
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: T.gold, marginBottom: 4 }}>
+            You've seen your strongest combinations
           </p>
-          <p style={{ fontSize: 11, color: T.muted, lineHeight: 1.35 }}>{variant.microcopy}</p>
+          <p style={{ fontSize: 12, color: T.muted, lineHeight: 1.45, marginBottom: 10 }}>
+            These are the best looks your current wardrobe can make with this piece.
+            Keep exploring or add more items to unlock new combinations.
+          </p>
+          <button
+            onClick={onAddItems}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "7px 12px", borderRadius: 99, border: "none", cursor: "pointer",
+              background: "rgba(200,169,106,0.14)",
+              fontSize: 12, fontWeight: 700, color: T.gold,
+            }}
+          >
+            <PackagePlus size={12} />
+            Add new items to unlock more looks
+          </button>
         </div>
-      </motion.button>
+      </div>
     </motion.div>
   )
 }
 
-// ─── Direction pill ───────────────────────────────────────────────────────────
+// ─── Feedback banner (transient) ───────────────────────────────────────────────
 
-function DirPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+const FEEDBACK_ICONS: Record<string, typeof RefreshCw> = {
+  direction: RefreshCw,
+  wrap:      Sparkles,
+  phase:     Sparkles,
+}
+const FEEDBACK_COLOURS: Record<string, string> = {
+  direction: T.coral,
+  wrap:      T.muted,
+  phase:     T.gold,
+}
+
+function FeedbackBanner({ msg, kind }: { msg: string; kind: string }) {
+  const Icon  = FEEDBACK_ICONS[kind] ?? RefreshCw
+  const color = FEEDBACK_COLOURS[kind] ?? T.coral
   return (
-    <button
-      onClick={onClick}
+    <motion.div
+      key={msg}
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.28 }}
       style={{
-        padding: "7px 14px", borderRadius: 99, border: "none", cursor: "pointer",
-        fontSize: 12, fontWeight: 600,
-        background: active ? T.teal : "rgba(255,255,255,0.07)",
-        color:      active ? "#fff" : T.sub,
-        transition: "background 0.18s, color 0.18s",
+        position: "fixed", top: 54, left: "50%", transform: "translateX(-50%)",
+        zIndex: 500,
+        background: T.raised, border: `1px solid ${T.border}`,
+        borderRadius: 99, padding: "8px 16px",
+        display: "flex", alignItems: "center", gap: 7,
+        boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
         whiteSpace: "nowrap",
       }}
     >
-      {label}
-    </button>
+      <Icon size={12} style={{ color }} />
+      <span style={{ fontSize: 12, fontWeight: 600, color: T.sub }}>{msg}</span>
+    </motion.div>
   )
 }
 
-// ─── Main screen ──────────────────────────────────────────────────────────────
+// ─── Main screen ────────────────────────────────────────────────────────────────
 
 export default function FirstOutfitReveal() {
   const navigate = useNavigate()
   const location = useLocation()
   const state    = location.state as RevealState | null
 
-  const [mounted, setMounted]     = useState(false)
-  const [selected, setSelected]   = useState<"main" | "a" | "b">("main")
-  const [varA, setVarA]           = useState(0)   // index into anchor.variants for slot A
-  const [varB, setVarB]           = useState(2)   // index into anchor.variants for slot B
-  const [rejected, setRejected]   = useState<Set<string>>(new Set())
+  const [mounted,   setMounted]   = useState(false)
+  const [selected,  setSelected]  = useState<"main" | "a" | "b">("main")
+  const [varA,      setVarA]      = useState(0)   // index into anchor.variants
+  const [varB,      setVarB]      = useState(2)
+  const [history,   setHistory]   = useState<Set<string>>(new Set())
+  const [phase,     setPhase]     = useState<1 | 2 | 3>(1)
   const [activeDir, setActiveDir] = useState<VarDir | null>(null)
-  const [feedback, setFeedback]   = useState<string | null>(null)
+  const [feedback,  setFeedback]  = useState<{ msg: string; kind: string } | null>(null)
 
   useEffect(() => {
     if (!state) { navigate("/wardrobe", { replace: true }); return }
@@ -319,74 +427,72 @@ export default function FirstOutfitReveal() {
 
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-  // ── Reshuffle logic ──────────────────────────────────────────────────────────
+  // ── Reshuffle ──────────────────────────────────────────────────────────────
 
-  function reshuffle(dir: VarDir) {
-    // Mark current pair as rejected
-    const key      = comboKey(vA, vB)
-    const newRej   = new Set(rejected)
-    newRej.add(key)
+  function reshuffle(dir?: VarDir) {
+    const nextDir = dir ?? activeDir ?? null
 
-    // Pool for this direction
-    const pool = variants
-      .map((v, i) => ({ v, i }))
-      .filter(({ v }) => v.dir === dir)
+    // Record current pair in history
+    const newHistory = new Set(history)
+    newHistory.add(comboKey(vA, vB))
 
-    // Find pairs not in rejected (try up to all combos)
-    let chosenA = -1, chosenB = -1
-    outer: for (let ai = 0; ai < pool.length; ai++) {
-      for (let bi = ai + 1; bi < pool.length; bi++) {
-        const k = comboKey(pool[ai].v, pool[bi].v)
-        if (!newRej.has(k)) { chosenA = pool[ai].i; chosenB = pool[bi].i; break outer }
-      }
+    const newPhase: 1 | 2 | 3 = newHistory.size >= PHASE3_AT ? 3
+                               : newHistory.size >= PHASE2_AT ? 2
+                               : 1
+
+    // Pick next pair
+    let result = pickNextPair(variants, nextDir, newHistory)
+
+    let msg: string
+    let kind: string
+
+    if (!result) {
+      // All pairs exhausted — wrap with clear history and restart
+      newHistory.clear()
+      result = pickNextPair(variants, nextDir, newHistory)
+      msg  = "These pieces work best together"
+      kind = "wrap"
+    } else if (newPhase === 3 && phase < 3) {
+      msg  = "You've seen your strongest combinations"
+      kind = "phase"
+    } else if (nextDir && nextDir !== activeDir) {
+      msg  = "Trying a different direction"
+      kind = "direction"
+    } else {
+      msg  = "Refreshed"
+      kind = "direction"
     }
 
-    // If every combo is rejected, reset rejected and pick first pair
-    if (chosenA === -1 && pool.length >= 2) {
-      newRej.clear()
-      chosenA = pool[0].i
-      chosenB = pool[1].i
-    } else if (chosenA === -1 && pool.length === 1) {
-      chosenA = pool[0].i
-      chosenB = pool[0].i
+    // Commit state
+    setHistory(newHistory)
+    setPhase(newPhase)
+    if (dir !== undefined) setActiveDir(dir)
+
+    if (result) {
+      setVarA(result[0])
+      setVarB(result[1])
     }
 
-    setRejected(newRej)
-    if (chosenA !== -1) { setVarA(chosenA); setVarB(chosenB) }
     setSelected("main")
-    setActiveDir(dir)
-    setFeedback("Trying a different direction")
-    setTimeout(() => setFeedback(null), 2400)
+    setFeedback({ msg, kind })
+    setTimeout(() => setFeedback(null), 2500)
   }
 
   const someVarSelected = selected === "a" || selected === "b"
-  const thirdLabel = THIRD_PILL_LABEL[state.category] ?? "Different shoes"
+  const thirdLabel      = THIRD_PILL[state.category] ?? "Different shoes"
+
+  // Phase label for the "Refine" area
+  const phaseLabel =
+    phase === 1 ? "Refine" :
+    phase === 2 ? "Explore further" :
+    "Keep going"
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, paddingBottom: 110, overflowX: "hidden" }}>
 
       {/* ── Feedback banner ── */}
       <AnimatePresence>
-        {feedback && (
-          <motion.div
-            key="feedback"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              position: "fixed", top: 56, left: "50%", transform: "translateX(-50%)",
-              zIndex: 500,
-              background: T.raised, border: `1px solid ${T.border}`,
-              borderRadius: 99, padding: "8px 16px",
-              display: "flex", alignItems: "center", gap: 7,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.28)",
-            }}
-          >
-            <RefreshCw size={12} style={{ color: T.coral }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: T.sub }}>{feedback}</span>
-          </motion.div>
-        )}
+        {feedback && <FeedbackBanner key={feedback.msg} msg={feedback.msg} kind={feedback.kind} />}
       </AnimatePresence>
 
       {/* ── Back button ── */}
@@ -425,6 +531,7 @@ export default function FirstOutfitReveal() {
           position: "absolute", inset: 0,
           background: `linear-gradient(to bottom, rgba(31,42,55,0.1) 0%, rgba(31,42,55,0.5) 55%, ${T.bg} 100%)`,
         }} />
+
         {/* "New addition" badge */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -441,7 +548,8 @@ export default function FirstOutfitReveal() {
           <Sparkles size={11} style={{ color: T.gold }} />
           <span style={{ fontSize: 11, fontWeight: 700, color: T.gold }}>New addition</span>
         </motion.div>
-        {/* Name + tags */}
+
+        {/* Item name + tags */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 18px 18px" }}>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
@@ -491,7 +599,7 @@ export default function FirstOutfitReveal() {
         />
       </div>
 
-      {/* ── Variations section ── */}
+      {/* ── "More ways to wear this" ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: mounted ? 1 : 0, y: mounted ? 0 : 12 }}
@@ -506,14 +614,14 @@ export default function FirstOutfitReveal() {
           <p style={{ fontSize: 11, color: T.muted }}>tap to select</p>
         </div>
 
-        {/* Two variation cards side by side */}
+        {/* Two variation cards — animate swap as a unit */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`${varA}-${varB}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22 }}
             style={{ display: "flex", gap: 10 }}
           >
             <VariationCard
@@ -522,8 +630,6 @@ export default function FirstOutfitReveal() {
               isSelected={selected === "a"}
               isFaded={someVarSelected && selected !== "a"}
               onClick={() => setSelected(selected === "a" ? "main" : "a")}
-              delay={0.78}
-              mounted={mounted}
             />
             <VariationCard
               variant={vB}
@@ -531,24 +637,43 @@ export default function FirstOutfitReveal() {
               isSelected={selected === "b"}
               isFaded={someVarSelected && selected !== "b"}
               onClick={() => setSelected(selected === "b" ? "main" : "b")}
-              delay={0.86}
-              mounted={mounted}
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Reshuffle pills */}
+        {/* Phase 3 insight card — persistent once reached */}
+        <AnimatePresence>
+          {phase === 3 && (
+            <Phase3Card key="phase3" onAddItems={() => navigate("/wardrobe/add")} />
+          )}
+        </AnimatePresence>
+
+        {/* Reshuffle direction pills */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: mounted ? 1 : 0 }}
           transition={{ delay: 0.95, duration: 0.32 }}
           style={{ paddingTop: 16 }}
         >
-          <p style={{ fontSize: 11, color: T.muted, marginBottom: 8 }}>Refine</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ fontSize: 11, color: T.muted }}>{phaseLabel}</p>
+            {/* Phase indicator dots */}
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+              {([1, 2, 3] as const).map((p) => (
+                <div key={p} style={{
+                  width: p === phase ? 12 : 6,
+                  height: 4, borderRadius: 99,
+                  background: p === phase ? T.teal : T.border,
+                  transition: "all 0.3s",
+                }} />
+              ))}
+            </div>
+          </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <DirPill label="More polished"  active={activeDir === "polished"} onClick={() => reshuffle("polished")} />
             <DirPill label="More relaxed"   active={activeDir === "relaxed"}  onClick={() => reshuffle("relaxed")}  />
             <DirPill label={thirdLabel}     active={activeDir === "shoes"}    onClick={() => reshuffle("shoes")}    />
+            <DirPill label="Refresh"        active={false}                    onClick={() => reshuffle()}            />
           </div>
         </motion.div>
       </motion.div>
