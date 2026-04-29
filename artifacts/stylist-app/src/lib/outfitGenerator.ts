@@ -1,7 +1,7 @@
 import type { WardrobeItem } from "./mockData"
 import type { IncomingItem, PlannedOutfitItem, OutfitConfidence, TimelineOutfit } from "./types"
 import type { StylePreferences } from "./stylingEngine"
-import { rankOutfits, extractColorsFromName } from "./stylingEngine"
+import { rankOutfits, extractColorsFromName, scoreOutfit, scoreShoeForContext, STYLE_FAMILIES } from "./stylingEngine"
 import type { ScoredItem, NormCategory, RankedOutfit } from "./stylingEngine"
 import { loadPreferences, loadRecentItemIds, addRecentItems } from "./stylePreferences"
 import { loadItemPreferences } from "../hooks/useItemPreferences"
@@ -209,4 +209,201 @@ export function generateMonthPlan(
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10)
+}
+
+// ─── Incoming item matching ───────────────────────────────────────────────────
+
+export type IncomingItemOutfitMatch = {
+  id: string
+  items: PlannedOutfitItem[]
+  tags: string[]
+  score: number
+  shoeScore: number
+  shoeItem?: PlannedOutfitItem
+}
+
+export type ShoeStatus =
+  | "no_match"
+  | "strong_single"
+  | "multiple"
+  | "incoming_is_shoe"
+
+export type IncomingItemMatchResult = {
+  matches: IncomingItemOutfitMatch[]
+  shoeStatus: ShoeStatus
+  bestShoes: PlannedOutfitItem[]
+}
+
+export function matchIncomingItem(
+  incoming: IncomingItem,
+  wardrobeItems: WardrobeItem[],
+): IncomingItemMatchResult {
+  const removedIds  = loadRemovedIds()
+  const anchor      = incomingToScored(incoming)
+  const wardrobe    = wardrobeItems.map(wardrobeToScored).filter((i) => !removedIds.has(i.id))
+
+  const tops      = wardrobe.filter((i) => i.normCategory === "top")
+  const bottoms   = wardrobe.filter((i) => i.normCategory === "bottom")
+  const dresses   = wardrobe.filter((i) => i.normCategory === "dress")
+  const shoes     = wardrobe.filter((i) => i.normCategory === "shoes")
+  const outerwear = wardrobe.filter((i) => i.normCategory === "outerwear")
+
+  const isShoe = anchor.normCategory === "shoes"
+
+  // ── Build candidate combos with anchor item forced in ────────────────────
+  const combos: ScoredItem[][] = []
+
+  if (isShoe) {
+    // New item IS shoes → pair with wardrobe tops/bottoms/dresses
+    for (const top of tops.slice(0, 5)) {
+      for (const bottom of bottoms.slice(0, 5)) {
+        combos.push([top, bottom, anchor])
+        for (const ow of outerwear.slice(0, 2)) {
+          combos.push([top, bottom, anchor, ow])
+        }
+      }
+    }
+    for (const dress of dresses.slice(0, 4)) {
+      combos.push([dress, anchor])
+      for (const ow of outerwear.slice(0, 2)) {
+        combos.push([dress, anchor, ow])
+      }
+    }
+  } else if (anchor.normCategory === "top") {
+    for (const bottom of bottoms.slice(0, 5)) {
+      for (const shoe of shoes.slice(0, 4)) {
+        combos.push([anchor, bottom, shoe])
+        for (const ow of outerwear.slice(0, 2)) {
+          combos.push([anchor, bottom, shoe, ow])
+        }
+      }
+    }
+  } else if (anchor.normCategory === "bottom") {
+    for (const top of tops.slice(0, 5)) {
+      for (const shoe of shoes.slice(0, 4)) {
+        combos.push([top, anchor, shoe])
+        for (const ow of outerwear.slice(0, 2)) {
+          combos.push([top, anchor, shoe, ow])
+        }
+      }
+    }
+  } else if (anchor.normCategory === "dress") {
+    for (const shoe of shoes.slice(0, 4)) {
+      combos.push([anchor, shoe])
+      for (const ow of outerwear.slice(0, 2)) {
+        combos.push([anchor, shoe, ow])
+      }
+    }
+  } else if (anchor.normCategory === "outerwear") {
+    for (const top of tops.slice(0, 4)) {
+      for (const bottom of bottoms.slice(0, 4)) {
+        for (const shoe of shoes.slice(0, 3)) {
+          combos.push([top, bottom, shoe, anchor])
+        }
+      }
+    }
+    for (const dress of dresses.slice(0, 3)) {
+      for (const shoe of shoes.slice(0, 3)) {
+        combos.push([dress, shoe, anchor])
+      }
+    }
+  } else {
+    // accessory or unknown — show best general wardrobe outfits (anchor shown in UI as add-on)
+    for (const top of tops.slice(0, 4)) {
+      for (const bottom of bottoms.slice(0, 4)) {
+        for (const shoe of shoes.slice(0, 3)) {
+          combos.push([top, bottom, shoe])
+        }
+      }
+    }
+    for (const dress of dresses.slice(0, 3)) {
+      for (const shoe of shoes.slice(0, 3)) {
+        combos.push([dress, shoe])
+      }
+    }
+  }
+
+  // ── Score + filter ────────────────────────────────────────────────────────
+  type ScoredMatch = {
+    items: ScoredItem[]
+    tags: string[]
+    total: number
+    shoeScore: number
+  }
+
+  const seen    = new Set<string>()
+  const scored: ScoredMatch[] = []
+
+  for (const combo of combos) {
+    const key = combo.map((i) => i.id).sort().join("|")
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    const result = scoreOutfit(combo, {})
+    if (!result || result.total < 45) continue
+
+    const shoe = combo.find((i) => i.normCategory === "shoes")
+    const shoeScore = shoe
+      ? scoreShoeForContext(shoe, combo.filter((i) => i.normCategory !== "shoes"), undefined, undefined)
+      : (isShoe ? scoreShoeForContext(anchor, combo.filter((i) => i.normCategory !== "shoes"), undefined, undefined) : 0)
+
+    const tags = Object.entries(STYLE_FAMILIES)
+      .filter(([, ftags]) => combo.some((i) => i.styleTags.some((t) => ftags.includes(t))))
+      .map(([family]) => family)
+
+    scored.push({ items: combo, tags, total: result.total, shoeScore })
+  }
+
+  scored.sort((a, b) => b.total - a.total)
+
+  // ── Deduplicate (same as rankOutfits Pass 1) ──────────────────────────────
+  const deduped: ScoredMatch[] = []
+  for (const candidate of scored) {
+    const isDup = deduped.some((d) => {
+      const overlap = candidate.items.filter((i) => d.items.some((di) => di.id === i.id)).length
+      return overlap >= candidate.items.length - 1
+    })
+    if (!isDup) deduped.push(candidate)
+    if (deduped.length >= 3) break
+  }
+
+  const matches: IncomingItemOutfitMatch[] = deduped.map((d) => {
+    const shoeInCombo = d.items.find((i) => i.normCategory === "shoes")
+    return {
+      id: uid(),
+      items: d.items.map(scoredToPlannedItem),
+      tags: d.tags,
+      score: d.total,
+      shoeScore: d.shoeScore,
+      shoeItem: shoeInCombo ? scoredToPlannedItem(shoeInCombo) : undefined,
+    }
+  })
+
+  // ── Determine shoe status ─────────────────────────────────────────────────
+  let shoeStatus: ShoeStatus
+  let bestShoes: PlannedOutfitItem[] = []
+
+  if (isShoe) {
+    shoeStatus = "incoming_is_shoe"
+  } else if (shoes.length === 0) {
+    shoeStatus = "no_match"
+  } else {
+    // Score each wardrobe shoe against the new item's style context
+    const context = [anchor, ...wardrobe.filter((i) => i.normCategory !== "shoes").slice(0, 2)]
+    const scoredShoes = shoes
+      .map((s) => ({ shoe: s, score: scoreShoeForContext(s, context.filter((i) => i.normCategory !== "shoes"), undefined, undefined) }))
+      .filter(({ score }) => score >= 5)
+      .sort((a, b) => b.score - a.score)
+
+    if (scoredShoes.length === 0) {
+      shoeStatus = "no_match"
+    } else if (scoredShoes.length >= 2) {
+      shoeStatus = "multiple"
+      bestShoes = scoredShoes.slice(0, 3).map(({ shoe }) => scoredToPlannedItem(shoe))
+    } else {
+      shoeStatus = "strong_single"
+    }
+  }
+
+  return { matches, shoeStatus, bestShoes }
 }

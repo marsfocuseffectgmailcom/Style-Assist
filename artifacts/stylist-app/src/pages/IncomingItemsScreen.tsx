@@ -1,12 +1,15 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Package, Plus, Trash2, ChevronDown } from "lucide-react"
+import { ArrowLeft, Package, Plus, Trash2, ChevronDown, ChevronUp, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
 import { useIncomingItems } from "../hooks/useIncomingItems"
+import { matchIncomingItem } from "../lib/outfitGenerator"
+import type { IncomingItemMatchResult, IncomingItemOutfitMatch } from "../lib/outfitGenerator"
 import type { IncomingItem } from "../lib/types"
+import { wardrobeItems } from "../lib/mockData"
 
 type Category = IncomingItem["category"]
 
@@ -51,12 +54,189 @@ const blankForm = {
   storeName: "",
 }
 
+// ─── Score badge ──────────────────────────────────────────────────────────────
+
+function ScoreBadge({ score }: { score: number }) {
+  const color =
+    score >= 82 ? "#7FA9A3"
+    : score >= 65 ? "#C8A96A"
+    : "#AABBC0"
+  return (
+    <span
+      className="shrink-0 text-[12px] font-bold tabular-nums"
+      style={{ color }}
+    >
+      {score}
+    </span>
+  )
+}
+
+// ─── Single outfit match card ─────────────────────────────────────────────────
+
+function MatchCard({
+  match,
+  anchorId,
+}: {
+  match: IncomingItemOutfitMatch
+  anchorId: string
+}) {
+  return (
+    <div
+      className="rounded-[16px] p-3"
+      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      {/* Thumbnails + score */}
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1.5">
+          {match.items.slice(0, 4).map((item) => (
+            <div key={item.id} className="relative">
+              <div
+                className="h-9 w-9 overflow-hidden rounded-[10px]"
+                style={{
+                  backgroundColor: "#243140",
+                  outline: item.id === anchorId ? "2px solid #7FA9A3" : "none",
+                  outlineOffset: "1px",
+                }}
+              >
+                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+              </div>
+              {item.id === anchorId && (
+                <span
+                  className="absolute -top-1 -right-1 rounded-full px-1 text-[8px] font-bold"
+                  style={{ backgroundColor: "#7FA9A3", color: "#1F2A37" }}
+                >
+                  NEW
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          {match.tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full px-2 py-0.5 text-[9px] font-semibold capitalize"
+              style={{ backgroundColor: "rgba(127,169,163,0.10)", color: "#7FA9A3" }}
+            >
+              {tag}
+            </span>
+          ))}
+          <ScoreBadge score={match.score} />
+        </div>
+      </div>
+
+      {/* Item names (non-anchor) */}
+      <div className="mt-2 space-y-0.5">
+        {match.items
+          .filter((i) => i.id !== anchorId)
+          .map((item) => (
+            <p key={item.id} className="truncate text-[11px] text-[#5E7580]">
+              {item.name}
+            </p>
+          ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Shoe status section ──────────────────────────────────────────────────────
+
+function ShoeStatusSection({ result }: { result: IncomingItemMatchResult }) {
+  if (result.shoeStatus === "incoming_is_shoe" || result.shoeStatus === "strong_single") return null
+
+  if (result.shoeStatus === "no_match") {
+    return (
+      <div
+        className="mt-2 flex items-center gap-2.5 rounded-[14px] px-3.5 py-2.5"
+        style={{ backgroundColor: "rgba(200,169,106,0.07)", border: "1px solid rgba(200,169,106,0.15)" }}
+      >
+        <span className="text-[13px]">👟</span>
+        <p className="text-[12px] leading-[17px] text-[#C8A96A]">
+          Add neutral shoes to unlock stronger outfits.
+        </p>
+      </div>
+    )
+  }
+
+  if (result.shoeStatus === "multiple" && result.bestShoes.length > 0) {
+    return (
+      <div
+        className="mt-2 rounded-[14px] p-3"
+        style={{ backgroundColor: "rgba(127,169,163,0.06)", border: "1px solid rgba(127,169,163,0.13)" }}
+      >
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5E7580]">
+          Best shoe matches
+        </p>
+        <div className="space-y-1.5">
+          {result.bestShoes.map((shoe) => (
+            <div key={shoe.id} className="flex items-center gap-2">
+              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
+                <img src={shoe.image} alt={shoe.name} className="h-full w-full object-cover" />
+              </div>
+              <span className="flex-1 truncate text-[11px] text-[#AABBC0]">{shoe.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ─── Outfit matches panel ──────────────────────────────────────────────────────
+
+function OutfitMatchesPanel({ item }: { item: IncomingItem }) {
+  const result = useMemo(
+    () => matchIncomingItem(item, wardrobeItems),
+    [item.id] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const isShoe  = item.category === "shoes"
+  const isEmpty = result.matches.length === 0
+
+  return (
+    <div className="mt-3 border-t border-white/[0.06] pt-3">
+      {isShoe && (
+        <p className="mb-2.5 text-[12px] leading-[17px] text-[#7FA9A3]">
+          When they arrive, these look best:
+        </p>
+      )}
+
+      {isEmpty ? (
+        <p className="text-[12px] text-[#5E7580]">
+          Add more wardrobe pieces to see outfit combinations.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {result.matches.map((match) => (
+            <MatchCard key={match.id} match={match} anchorId={item.id} />
+          ))}
+        </div>
+      )}
+
+      <ShoeStatusSection result={result} />
+    </div>
+  )
+}
+
+// ─── Main screen ──────────────────────────────────────────────────────────────
+
 export default function IncomingItemsScreen() {
   const navigate = useNavigate()
   const { items, addItem, removeItem, daysUntilDelivery } = useIncomingItems()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(blankForm)
   const [submitting, setSubmitting] = useState(false)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  function toggleExpanded(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   const sorted = [...items].sort(
     (a, b) => new Date(a.deliveryDate).getTime() - new Date(b.deliveryDate).getTime()
@@ -214,39 +394,74 @@ export default function IncomingItemsScreen() {
           <SectionHeader title="Your deliveries" />
           <div className="space-y-3">
             {sorted.map((item) => {
-              const days = daysUntilDelivery(item)
-              const status = deliveryStatusConfig(days)
+              const days      = daysUntilDelivery(item)
+              const status    = deliveryStatusConfig(days)
+              const expanded  = expandedIds.has(item.id)
               return (
                 <motion.div
                   key={item.id}
                   layout
-                  className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-[#2A3645] p-3"
+                  className="overflow-hidden rounded-[20px] border border-white/8 bg-[#2A3645]"
                 >
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#243140]">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                  </div>
+                  {/* ── Item row ── */}
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#243140]">
+                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#F2F4F5]">{item.name}</p>
-                    <p className="mt-0.5 text-xs text-[#6B8490]">{item.storeName}</p>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className="text-xs text-[#AABBC0]">Arrives {formatDate(item.deliveryDate)}</span>
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                        style={{ color: status.color, backgroundColor: status.bg }}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-[#F2F4F5]">{item.name}</p>
+                      <p className="mt-0.5 text-xs text-[#6B8490]">{item.storeName}</p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <span className="text-xs text-[#AABBC0]">Arrives {formatDate(item.deliveryDate)}</span>
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{ color: status.color, backgroundColor: status.bg }}
+                        >
+                          {status.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 flex-col items-center gap-1.5">
+                      {/* Outfit matches toggle */}
+                      <button
+                        onClick={() => toggleExpanded(item.id)}
+                        className="flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-semibold transition"
+                        style={{
+                          backgroundColor: expanded ? "rgba(127,169,163,0.15)" : "rgba(127,169,163,0.08)",
+                          color: "#7FA9A3",
+                        }}
+                        aria-label={expanded ? "Hide outfit matches" : "Show outfit matches"}
                       >
-                        {status.label}
-                      </span>
+                        <Sparkles size={11} />
+                        {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                      </button>
+                      {/* Remove */}
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-[#6B8490] transition hover:bg-white/5 hover:text-[#7FA9A3]"
+                        aria-label="Remove"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B8490] transition hover:bg-white/5 hover:text-[#7FA9A3]"
-                    aria-label="Remove"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  {/* ── Outfit matches panel ── */}
+                  <AnimatePresence>
+                    {expanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="overflow-hidden px-3 pb-3"
+                      >
+                        <OutfitMatchesPanel item={item} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               )
             })}
