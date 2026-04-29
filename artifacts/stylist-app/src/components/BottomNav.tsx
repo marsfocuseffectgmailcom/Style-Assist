@@ -15,8 +15,8 @@ export function BottomNav() {
   const { panelOpen } = useWardrobePanel()
 
   return (
-    // Outer shell: handles viewport-relative fixed positioning only.
-    // No framer-motion here so translateX(-50%) is never overwritten.
+    // Outer shell: viewport-relative fixed position only.
+    // Static — no framer-motion — so translateX(-50%) is never clobbered.
     <div
       style={{
         position:  "fixed",
@@ -28,7 +28,8 @@ export function BottomNav() {
         zIndex:    1000,
       }}
     >
-      {/* Inner shell: handles opacity + slide animation only */}
+      {/* Inner shell: animation only (opacity + translateY).
+          framer-motion owns transform here; positioning is the outer div's job. */}
       <motion.div
         animate={{
           opacity:       panelOpen ? 0 : 1,
@@ -36,27 +37,71 @@ export function BottomNav() {
           pointerEvents: panelOpen ? "none" : "auto",
         }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        style={{ pointerEvents: panelOpen ? "none" : "auto" }}
-        className="h-[72px] w-full rounded-[28px] border border-white/8 bg-[#2A3645]/90 shadow-[0_8px_24px_rgba(0,0,0,0.20)] backdrop-blur-xl"
+        style={{
+          pointerEvents:   panelOpen ? "none" : "auto",
+          height:          72,
+          borderRadius:    999,
+          padding:         "8px 10px",
+          display:         "flex",
+          alignItems:      "center",
+          justifyContent:  "space-between",
+          background:      "rgba(31,42,55,0.92)",
+          backdropFilter:  "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+          border:          "1px solid rgba(232,223,200,0.42)",
+          boxShadow:       "0 14px 36px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08)",
+        }}
       >
-        <div className="flex h-full items-center justify-between px-4">
-          {navItems.map(({ label, to, icon: Icon }) => (
-            <NavLink
-              key={label}
-              to={to}
-              end={to === "/"}
-              tabIndex={panelOpen ? -1 : 0}
-              className={({ isActive }) =>
-                `flex min-w-[52px] flex-col items-center gap-1 transition-[color] duration-[160ms] ${
-                  isActive ? "text-[#3F6F73]" : "text-[#9CA3AF]"
-                }`
-              }
-            >
-              <Icon size={24} strokeWidth={2} />
-              <span className="text-[11px] font-medium">{label}</span>
-            </NavLink>
-          ))}
-        </div>
+        {navItems.map(({ label, to, icon: Icon }) => (
+          <NavLink
+            key={label}
+            to={to}
+            end={to === "/"}
+            tabIndex={panelOpen ? -1 : 0}
+            style={{ flex: 1, minWidth: 0, textDecoration: "none" }}
+          >
+            {({ isActive }) => (
+              <motion.div
+                animate={{
+                  backgroundColor: isActive
+                    ? "rgba(127,169,163,0.10)"
+                    : "rgba(0,0,0,0)",
+                }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+                whileTap={{ scale: 0.96 }}
+                style={{
+                  height:         56,
+                  borderRadius:   999,
+                  display:        "flex",
+                  flexDirection:  "column",
+                  alignItems:     "center",
+                  justifyContent: "center",
+                  gap:            4,
+                  minWidth:       44,
+                  cursor:         "pointer",
+                }}
+              >
+                <Icon
+                  size={24}
+                  strokeWidth={2.2}
+                  style={{ color: isActive ? "#7FA9A3" : "rgba(245,245,245,0.58)" }}
+                />
+                <span
+                  style={{
+                    fontSize:      11,
+                    lineHeight:    "13px",
+                    fontWeight:    650,
+                    letterSpacing: "-0.01em",
+                    color:         isActive ? "#7FA9A3" : "rgba(245,245,245,0.58)",
+                    transition:    "color 160ms ease",
+                  }}
+                >
+                  {label}
+                </span>
+              </motion.div>
+            )}
+          </NavLink>
+        ))}
       </motion.div>
     </div>
   )
