@@ -82,6 +82,7 @@ const breakdownLabels: Record<string, string> = {
   seasonSuitability: "Season fit",
   userPreference:    "Your taste",
   freshness:         "Freshness",
+  shoeMatch:         "Shoe fit",
 }
 
 const breakdownMax: Record<string, number> = {
@@ -91,6 +92,7 @@ const breakdownMax: Record<string, number> = {
   seasonSuitability: 10,
   userPreference:    10,
   freshness:         5,
+  shoeMatch:         10,
 }
 
 // ─── ScoreMeter ───────────────────────────────────────────────────────────────
@@ -160,6 +162,7 @@ function OutfitCard({
   index:       number
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showShoeAlts,  setShowShoeAlts]  = useState(false)
   const cfg    = confidenceConfig[outfit.confidence]
   const shown  = outfit.items.slice(0, 4)
   const dimmed = anySelected && !selected
@@ -244,19 +247,65 @@ function OutfitCard({
 
         {/* Item list */}
         <div className="mt-3 space-y-1.5">
-          {outfit.items.map((item) => (
-            <div key={item.id} className="flex items-center gap-2">
-              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
-                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+          {outfit.items.map((item) => {
+            const isShoe = item.category === "Shoes"
+            const hasAlts = isShoe && outfit.shoeAlternatives.length > 0
+            return (
+              <div key={item.id}>
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
+                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                  </div>
+                  <span className="flex-1 truncate text-xs text-[#AABBC0]">{item.name}</span>
+                  {item.source === "suggestion" && (
+                    <span className="shrink-0 rounded-full bg-[#C8A96A]/15 px-2 py-0.5 text-[9px] font-semibold text-[#C8A96A]">
+                      Incoming
+                    </span>
+                  )}
+                  {hasAlts && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowShoeAlts((v) => !v) }}
+                      className="ml-1 shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-semibold text-[#7FA9A3]"
+                    >
+                      {showShoeAlts ? "Close" : "Try others"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Inline shoe alternatives */}
+                <AnimatePresence>
+                  {isShoe && showShoeAlts && outfit.shoeAlternatives.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div
+                        className="mt-2 rounded-[14px] p-3"
+                        style={{ backgroundColor: "rgba(127,169,163,0.07)", border: "1px solid rgba(127,169,163,0.14)" }}
+                      >
+                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5E7580]">
+                          Also works with this outfit
+                        </p>
+                        <div className="space-y-1.5">
+                          {outfit.shoeAlternatives.map((alt) => (
+                            <div key={alt.id} className="flex items-center gap-2">
+                              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
+                                <img src={alt.image} alt={alt.name} className="h-full w-full object-cover" />
+                              </div>
+                              <span className="flex-1 truncate text-[11px] text-[#AABBC0]">{alt.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <span className="flex-1 truncate text-xs text-[#AABBC0]">{item.name}</span>
-              {item.source === "suggestion" && (
-                <span className="ml-auto shrink-0 rounded-full bg-[#C8A96A]/15 px-2 py-0.5 text-[9px] font-semibold text-[#C8A96A]">
-                  Incoming
-                </span>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </button>
 
@@ -576,6 +625,32 @@ export default function GenerateOutfitScreen() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* ── Shoe-repeat notice ── */}
+          {(() => {
+            const allSame =
+              currentOutfits.length >= 2 &&
+              !isReshuffling &&
+              currentOutfits.every((o) => o.shoeIsShared ||
+                currentOutfits[0].items.find((i) => i.category === "Shoes")?.id ===
+                o.items.find((i) => i.category === "Shoes")?.id
+              )
+            return allSame ? (
+              <motion.div
+                key="shoe-repeat"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mb-3 flex items-center gap-2.5 rounded-[14px] px-3.5 py-2.5"
+                style={{ backgroundColor: "rgba(127,169,163,0.07)", border: "1px solid rgba(127,169,163,0.12)" }}
+              >
+                <span className="text-[13px] text-[#7FA9A3]">👟</span>
+                <p className="text-[12px] leading-[17px] text-[#7FA9A3]">
+                  These shoes work best with your current wardrobe.
+                </p>
+              </motion.div>
+            ) : null
+          })()}
 
           {/* ── Reshuffle controls ── */}
           <div className="mb-4 space-y-2">

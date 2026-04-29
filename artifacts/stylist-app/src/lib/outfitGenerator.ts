@@ -21,6 +21,8 @@ export type GeneratedOutfit = {
   upgrade?: string
   breakdown?: Record<string, number>
   gapSuggestion?: string
+  shoeAlternatives: PlannedOutfitItem[]
+  shoeIsShared: boolean
 }
 
 // ─── Item normalisation ───────────────────────────────────────────────────────
@@ -97,6 +99,8 @@ function rankedToGenerated(r: RankedOutfit): GeneratedOutfit {
     upgrade: r.upgrade,
     breakdown: r.breakdown,
     gapSuggestion: r.gapSuggestion,
+    shoeAlternatives: r.shoeAlternatives.map(scoredToPlannedItem),
+    shoeIsShared: r.shoeIsShared,
   }
 }
 

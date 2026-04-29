@@ -449,6 +449,72 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+// ─── Shoe context scoring ─────────────────────────────────────────────────────
+// Returns 0-10: how well a shoe fits this outfit's event, colour, style, season
+
+const FORMAL_SHOE_TAGS = new Set([
+  "elegant", "formal", "dressy", "smart casual", "polished", "tailored", "classic",
+])
+const CASUAL_SHOE_TAGS = new Set([
+  "casual", "relaxed", "sporty", "athletic", "everyday", "weekend", "minimal",
+])
+const FORMAL_EVENTS = new Set(["wedding", "dinner", "work"])
+const CASUAL_EVENTS = new Set(["casual", "weekend", "travel", "holiday"])
+
+export function scoreShoeForContext(
+  shoe: ScoredItem,
+  otherItems: ScoredItem[],
+  eventType: string | undefined,
+  dateStr?: string,
+): number {
+  const shoeTags = shoe.styleTags.map((t) => t.toLowerCase())
+  const isFormal = shoeTags.some((t) => FORMAL_SHOE_TAGS.has(t))
+  const isCasual = shoeTags.some((t) => CASUAL_SHOE_TAGS.has(t))
+
+  // ── 1. Event fit (0–4) ───────────────────────────────────────────────────
+  let eventScore = 2 // neutral default
+  if (eventType) {
+    if (FORMAL_EVENTS.has(eventType)) {
+      eventScore = isFormal ? 4 : isCasual ? 1 : 2
+    } else if (CASUAL_EVENTS.has(eventType)) {
+      eventScore = isCasual ? 4 : isFormal ? 2 : 3
+    } else if (eventType === "party") {
+      // party accepts both; formal is slightly preferred
+      eventScore = isFormal ? 3 : isCasual ? 3 : 2
+    }
+  }
+
+  // ── 2. Colour harmony with outfit (0–3) ──────────────────────────────────
+  const outfitColors = otherItems.flatMap((i) => i.colors.map((c) => c.toLowerCase()))
+  const shoeColors   = shoe.colors.map((c) => c.toLowerCase())
+  const shoeNeutral  = shoeColors.every((c) => NEUTRAL_COLORS.has(c))
+  let colourScore = 1
+  if (shoeNeutral) {
+    colourScore = 3 // neutral shoes always compatible
+  } else {
+    const outfitAccents = outfitColors.filter((c) => !NEUTRAL_COLORS.has(c))
+    const shoeAccents   = shoeColors.filter((c) => !NEUTRAL_COLORS.has(c))
+    const accentMatch   = shoeAccents.some((sc) => outfitAccents.includes(sc))
+    const tempClash =
+      (shoeAccents.some((c) => WARM_COLORS.has(c)) && outfitAccents.some((c) => COOL_COLORS.has(c))) ||
+      (shoeAccents.some((c) => COOL_COLORS.has(c)) && outfitAccents.some((c) => WARM_COLORS.has(c)))
+    colourScore = accentMatch ? 3 : tempClash ? 0 : 1
+  }
+
+  // ── 3. Style family compatibility (0–2) ──────────────────────────────────
+  const outfitFamily     = dominantStyleFamily(otherItems)
+  const familyTags       = STYLE_FAMILIES[outfitFamily] ?? []
+  const styleFamilyMatch = shoeTags.some((t) => familyTags.includes(t))
+  const styleScore       = styleFamilyMatch ? 2 : 0
+
+  // ── 4. Season suitability (0–1) ──────────────────────────────────────────
+  const season    = getCurrentSeason(dateStr)
+  const shoeSeason = shoe.seasonTags.length > 0 ? shoe.seasonTags : ["all-season"]
+  const seasonScore = shoeSeason.includes(season) || shoeSeason.includes("all-season") ? 1 : 0
+
+  return eventScore + colourScore + styleScore + seasonScore
+}
+
 // ─── Completeness check ───────────────────────────────────────────────────────
 
 export function isComplete(items: ScoredItem[]): boolean {
@@ -571,6 +637,12 @@ export function scoreOutfit(
   ) ?? false
   const elevationBonus = hasOuter || hasElevatedShoe ? 3 : 0
 
+  // ── Shoe context match — 0-10 pts ─────────────────────────────────────────
+  // Dedicated shoe-fit score above and beyond the general colour/style scoring
+  const shoeMatch = shoe
+    ? scoreShoeForContext(shoe, items.filter((i) => i.normCategory !== "shoes"), eventType, dateStr)
+    : 0
+
   // 5. Season suitability — 10 pts
   const season = getCurrentSeason(dateStr)
   const seasonMatches = items.filter((i) => {
@@ -619,7 +691,7 @@ export function scoreOutfit(
       eventMatch + colourHarmony + styleConsistency
       + clashPenalty + multiStatementPenalty + elevationBonus
       + seasonSuitability + userPreference + freshness
-      + reachBoost
+      + reachBoost + shoeMatch
     )
   )
 
@@ -628,7 +700,7 @@ export function scoreOutfit(
 
   return {
     total,
-    breakdown: { eventMatch, colourHarmony, styleConsistency, seasonSuitability, userPreference, freshness },
+    breakdown: { eventMatch, colourHarmony, styleConsistency, seasonSuitability, userPreference, freshness, shoeMatch },
     dominantFamily: family,
     colorProfile,
   }
@@ -684,6 +756,8 @@ export type RankedOutfit = {
   upgrade?: string
   gapSuggestion?: string
   breakdown: Record<string, number>
+  shoeAlternatives: ScoredItem[]
+  shoeIsShared: boolean
 }
 
 type ScoredCombo = {
@@ -702,6 +776,26 @@ type ScoredCombo = {
   gapSuggestion?: string
 }
 
+// ─── Shoe-alternatives helper ─────────────────────────────────────────────────
+
+function computeShoeAlternatives(
+  selectedShoe: ScoredItem | undefined,
+  nonShoeItems: ScoredItem[],
+  allShoes: ScoredItem[],
+  eventType: string | undefined,
+  dateStr: string | undefined,
+  limit = 3,
+): ScoredItem[] {
+  if (!selectedShoe || allShoes.length <= 1) return []
+  return allShoes
+    .filter((s) => s.id !== selectedShoe.id)
+    .map((s) => ({ shoe: s, score: scoreShoeForContext(s, nonShoeItems, eventType, dateStr) }))
+    .filter(({ score }) => score >= 4) // only surface acceptable alternatives
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ shoe }) => shoe)
+}
+
 export function rankOutfits(
   pool: ScoredItem[],
   opts: {
@@ -715,7 +809,7 @@ export function rankOutfits(
   }
 ): RankedOutfit[] {
   const combos = buildCombinations(pool)
-  const seen = new Set<string>()
+  const seen   = new Set<string>()
   const scored: ScoredCombo[] = []
 
   for (const combo of combos) {
@@ -742,7 +836,7 @@ export function rankOutfits(
       confidence,
       tags,
       reason: buildReason(dominantFamily, colorProfile, opts.eventType, total),
-      tips: [],           // built after deduplication for surviving outfits only
+      tips: [],
       dominantFamily,
       colorProfile,
       breakdown,
@@ -751,28 +845,90 @@ export function rankOutfits(
 
   scored.sort((a, b) => b.score - a.score)
 
-  // Deduplicate by item overlap — avoid nearly identical outfits
-  const deduplicated: ScoredCombo[] = []
+  // ── Pass 1: deduplicate by item overlap ────────────────────────────────────
+  const candidates: ScoredCombo[] = []
   for (const outfit of scored) {
-    const isDuplicate = deduplicated.some((f) => {
-      const overlap = outfit.items.filter((i) => f.items.some((fi) => fi.id === i.id)).length
+    const isNearDuplicate = candidates.some((c) => {
+      const overlap = outfit.items.filter((i) => c.items.some((ci) => ci.id === i.id)).length
       return overlap >= outfit.items.length - 1
     })
-    if (!isDuplicate) {
-      deduplicated.push(outfit)
-      if (deduplicated.length >= (opts.maxResults ?? 5)) break
-    }
+    if (!isNearDuplicate) candidates.push(outfit)
   }
 
-  // Assign names + build insight content only for surviving outfits
-  const usedNames = new Set<string>(opts.usedOutfitNames ?? [])
-  const final: RankedOutfit[] = deduplicated.map((outfit) => {
-    const name = generateOutfitName(outfit.dominantFamily, usedNames)
+  // ── Pass 2: shoe-variety selection ────────────────────────────────────────
+  // Outfit 1: always best overall. For outfits 2+: prefer a different shoe
+  // within SHOE_VARIETY_THRESHOLD score points of the "would-be-best" option.
+  const SHOE_VARIETY_THRESHOLD = 8
+  const maxResults = opts.maxResults ?? 5
+  const usedShoeIds = new Set<string>()
+  const deduplicated: ScoredCombo[] = []
+
+  for (let slot = 0; slot < maxResults && candidates.length > 0; slot++) {
+    // Remaining candidates not yet selected
+    const remaining = candidates.filter((c) => !deduplicated.includes(c))
+    if (remaining.length === 0) break
+
+    const bestOverall = remaining[0]
+
+    if (slot === 0) {
+      // First slot: always the absolute best
+      deduplicated.push(bestOverall)
+      const shoe = bestOverall.items.find((i) => i.normCategory === "shoes")
+      if (shoe) usedShoeIds.add(shoe.id)
+      continue
+    }
+
+    // For slots 2+: try to find the best candidate whose shoe hasn't been used
+    const bestWithNewShoe = remaining.find((c) => {
+      const shoe = c.items.find((i) => i.normCategory === "shoes")
+      return !shoe || !usedShoeIds.has(shoe.id)
+    })
+
+    if (
+      bestWithNewShoe &&
+      bestWithNewShoe.score >= bestOverall.score - SHOE_VARIETY_THRESHOLD
+    ) {
+      deduplicated.push(bestWithNewShoe)
+    } else {
+      deduplicated.push(bestOverall)
+    }
+    const chosenShoe = deduplicated[deduplicated.length - 1].items.find(
+      (i) => i.normCategory === "shoes"
+    )
+    if (chosenShoe) usedShoeIds.add(chosenShoe.id)
+  }
+
+  // ── Assign names + insight content ────────────────────────────────────────
+  const usedNames  = new Set<string>(opts.usedOutfitNames ?? [])
+  const allShoes   = pool.filter((i) => i.normCategory === "shoes")
+  const shoeIdsInBatch = deduplicated.map(
+    (o) => o.items.find((i) => i.normCategory === "shoes")?.id
+  )
+  const shoeIsSharedInBatch = (outfitIdx: number): boolean => {
+    const myShoeId = shoeIdsInBatch[outfitIdx]
+    return myShoeId !== undefined &&
+      shoeIdsInBatch.some((id, idx) => idx !== outfitIdx && id === myShoeId)
+  }
+
+  const final: RankedOutfit[] = deduplicated.map((outfit, idx) => {
+    const name    = generateOutfitName(outfit.dominantFamily, usedNames)
     usedNames.add(name)
-    const tips = buildTips(outfit.items, outfit.dominantFamily, outfit.colorProfile, outfit.breakdown, opts.eventType, opts.itemPreferences)
+    const tips    = buildTips(outfit.items, outfit.dominantFamily, outfit.colorProfile, outfit.breakdown, opts.eventType, opts.itemPreferences)
     const upgrade = buildUpgrade(outfit.items, outfit.dominantFamily, outfit.score)
+
+    const shoe         = outfit.items.find((i) => i.normCategory === "shoes")
+    const nonShoeItems = outfit.items.filter((i) => i.normCategory !== "shoes")
+    const shoeAlternatives = computeShoeAlternatives(shoe, nonShoeItems, allShoes, opts.eventType, opts.dateStr)
+
     const { _key, dominantFamily: _df, colorProfile: _cp, ...rest } = outfit
-    return { ...rest, name, tips, upgrade }
+    return {
+      ...rest,
+      name,
+      tips,
+      upgrade,
+      shoeAlternatives,
+      shoeIsShared: shoeIsSharedInBatch(idx),
+    }
   })
 
   // Gap suggestion when wardrobe is thin
@@ -792,6 +948,8 @@ export function rankOutfits(
           tips: ["Add more pieces to get full styling insights"],
           gapSuggestion,
           breakdown: {},
+          shoeAlternatives: [],
+          shoeIsShared: false,
         })
       }
     }
