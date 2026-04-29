@@ -1104,7 +1104,16 @@ export default function AddItemFlow() {
       addedAt:         new Date().toISOString(),
     }
     addItem(item)
-    navigate("/generate")
+    navigate("/first-outfit", {
+      state: {
+        photo:    photos.front?.url ?? null,
+        name:     autoName,
+        category: detected.category,
+        colour:   detected.colour,
+        style:    detected.style,
+        occasion: detected.occasion,
+      },
+    })
   }
 
   async function handleSave() {
