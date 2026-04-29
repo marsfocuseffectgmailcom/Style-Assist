@@ -25,6 +25,7 @@ type PersonalisationStore = {
   styleDirection: StyleDirection
   totalSignals:   number
   lastUpdated:    string
+  clearedAt?:     string   // ISO timestamp of last reset, for transient feedback
 }
 
 const STORAGE_KEY = "style-assist-personalisation"
@@ -164,6 +165,7 @@ export function usePersonalisation() {
         styleDirection:   "balanced",
         totalSignals:     0,
         lastUpdated:      new Date().toISOString(),
+        clearedAt:        new Date().toISOString(),
       }
       saveStore(fresh)
       return fresh

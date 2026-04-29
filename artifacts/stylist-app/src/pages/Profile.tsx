@@ -1,6 +1,6 @@
 import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw, Sparkles } from "lucide-react"
 import { Link } from "react-router-dom"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
@@ -21,22 +21,22 @@ const DIRECTIONS: { value: StyleDirection; label: string; sub: string }[] = [
   { value: "polished", label: "Polished", sub: "Considered, refined looks" },
 ]
 
+const CLEAR_WINDOW_MS = 2400
+
 function StyleMemoryCard() {
   const { store, setStyleDirection, resetPersonalisation } = usePersonalisation()
-  const [resetDone, setResetDone] = useState(false)
-  const prevSignalsRef = useRef(store.totalSignals)
+  const [, forceUpdate] = useState(0)
 
-  // Detect when totalSignals drops back to 0 (i.e. reset fired) → show feedback
+  // Derived directly from the store — no separate local state needed
+  const justCleared = !!store.clearedAt && (Date.now() - new Date(store.clearedAt).getTime()) < CLEAR_WINDOW_MS
+
+  // Schedule a re-render when the clear window expires so the button reverts
   useEffect(() => {
-    if (prevSignalsRef.current > 0 && store.totalSignals === 0) {
-      setResetDone(true)
-      const t = setTimeout(() => setResetDone(false), 2200)
-      prevSignalsRef.current = 0
-      return () => clearTimeout(t)
-    }
-    prevSignalsRef.current = store.totalSignals
-    return undefined
-  }, [store.totalSignals])
+    if (!justCleared) return
+    const remaining = CLEAR_WINDOW_MS - (Date.now() - new Date(store.clearedAt!).getTime())
+    const t = setTimeout(() => forceUpdate((n) => n + 1), remaining + 50)
+    return () => clearTimeout(t)
+  }, [store.clearedAt, justCleared])
 
   function handleReset() {
     resetPersonalisation()
@@ -64,13 +64,14 @@ function StyleMemoryCard() {
 
       {/* Style direction selector */}
       <p className="text-[12px] font-medium text-[#AABBC0] mb-2">Lean towards</p>
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-5" role="group" aria-label="Style direction">
         {DIRECTIONS.map((d) => {
           const active = store.styleDirection === d.value
           return (
             <button
               key={d.value}
               onClick={() => setStyleDirection(d.value)}
+              aria-pressed={active}
               className="flex-1 rounded-[14px] border py-2.5 px-1 text-center transition-[transform] duration-[140ms] active:scale-[0.96]"
               style={{
                 background:   active ? "rgba(63,111,115,0.14)" : "rgba(255,255,255,0.04)",
@@ -93,9 +94,9 @@ function StyleMemoryCard() {
       <button
         onClick={handleReset}
         className="w-full rounded-[14px] border border-white/8 bg-white/4 py-3 text-[13px] font-semibold transition-[transform] duration-[160ms] active:scale-[0.97]"
-        style={{ color: resetDone ? "#3F6F73" : "#AABBC0" }}
+        style={{ color: justCleared ? "#3F6F73" : "#AABBC0" }}
       >
-        {resetDone ? "Style memory cleared" : "Reset style memory"}
+        {justCleared ? "Style memory cleared" : "Reset style memory"}
       </button>
     </Card>
   )
