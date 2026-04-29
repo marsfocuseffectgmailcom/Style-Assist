@@ -1,24 +1,24 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react"
 
-type PrimaryButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type SecondaryButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
   fullWidth?: boolean
 }
 
-export function PrimaryButton({
+export function SecondaryButton({
   children,
   className = "",
   fullWidth = true,
   disabled,
   ...props
-}: PrimaryButtonProps) {
+}: SecondaryButtonProps) {
   return (
     <button
       disabled={disabled}
       className={[
-        "flex h-14 items-center justify-center rounded-[18px] bg-[#3F6F73] px-5",
-        "text-base font-bold tracking-[-0.01em] text-white",
-        "shadow-[0_8px_20px_rgba(63,111,115,0.24)]",
+        "flex h-[52px] items-center justify-center rounded-[18px] bg-transparent px-5",
+        "border border-[rgba(168,176,184,0.28)]",
+        "text-[15px] font-semibold text-[#F5F5F5]",
         "transition-[transform,opacity] duration-[160ms] ease-[ease]",
         "active:scale-[0.97] disabled:opacity-45",
         fullWidth ? "w-full" : "",

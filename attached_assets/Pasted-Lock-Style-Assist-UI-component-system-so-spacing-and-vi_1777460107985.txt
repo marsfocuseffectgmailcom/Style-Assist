@@ -1,0 +1,242 @@
+Lock Style Assist UI component system so spacing and visual style cannot drift
+
+Do not redesign the app randomly
+Do not change the app structure
+Create reusable component styles and apply them consistently across all screens
+
+DESIGN FEEL:
+Calm Precision
+Premium, organised, neutral, intelligent
+
+COLOURS:
+Dark background: #1F2A37
+Dark surface: #2A3645
+Light background: #F5F3EF
+Light surface: #EAE7E2
+Primary accent: #3F6F73
+Secondary accent: #7FA9A3
+Premium ivory: #E8DFC8
+Success: #5F8F7F
+Warning: #C8A96A
+Error: #B86B6B
+
+TEXT:
+Dark primary: #F5F5F5
+Dark secondary: #A8B0B8
+Light primary: #1F2A37
+Light secondary: #4B5563
+Muted: #9CA3AF
+
+SPACING SYSTEM:
+Use an 8px spacing grid only
+
+xs: 4px
+sm: 8px
+md: 16px
+lg: 24px
+xl: 32px
+2xl: 40px
+3xl: 48px
+
+PAGE LAYOUT:
+Mobile max width: 430px
+Page horizontal padding: 20px
+Top padding: 24px
+Bottom safe padding: 32px
+Section gap: 24px
+Card gap: 16px
+
+BORDER RADIUS:
+Small chips: 12px
+Buttons: 18px
+Cards: 24px
+Large hero cards: 28px
+App panels/modals: 32px
+
+SHADOWS:
+Use soft shadows only
+
+Card shadow:
+0 8px 24px rgba(0,0,0,0.14)
+
+Hero shadow:
+0 16px 40px rgba(0,0,0,0.20)
+
+Button shadow:
+0 8px 20px rgba(63,111,115,0.24)
+
+Dark mode shadows should be subtle
+No harsh black shadows
+No neon glow
+
+BUTTONS:
+
+Primary button:
+height: 56px
+width: 100%
+border-radius: 18px
+background: #3F6F73
+text: #FFFFFF
+font-size: 16px
+font-weight: 700
+letter-spacing: -0.01em
+box-shadow: 0 8px 20px rgba(63,111,115,0.24)
+
+Primary button interaction:
+on press scale to 0.97
+transition: 160ms ease
+disabled opacity: 0.45
+
+Secondary button:
+height: 52px
+width: 100%
+border-radius: 18px
+background: transparent
+border: 1px solid rgba(168,176,184,0.28)
+text: current primary text
+font-size: 15px
+font-weight: 600
+
+Small pill button:
+height: 36px
+padding: 0 14px
+border-radius: 999px
+font-size: 13px
+font-weight: 600
+
+FLOATING TONIGHT BUTTON:
+position: fixed
+right: 20px
+bottom: 28px
+height: 56px
+padding: 0 20px
+border-radius: 999px
+background: #3F6F73
+text: #FFFFFF
+shadow: 0 12px 32px rgba(63,111,115,0.30)
+label: Tonight
+
+CARDS:
+
+Standard card:
+background: surface colour
+border-radius: 24px
+padding: 16px
+shadow: card shadow
+border: 1px solid rgba(255,255,255,0.06)
+
+Hero card:
+border-radius: 28px
+padding: 20px
+shadow: hero shadow
+min-height: 220px
+
+Outfit card:
+border-radius: 24px
+padding: 14px
+image/collage area height: 160px
+image radius: 20px
+title font-size: 17px
+title font-weight: 700
+reason font-size: 13px
+reason line-height: 1.4
+gap between image and text: 12px
+
+Day timeline card:
+border-radius: 24px
+padding: 16px
+min-height: 132px
+display event label at top
+display outfit card below
+empty state button centred
+
+CHIPS / BADGES:
+
+Confidence badge:
+height: 28px
+padding: 0 10px
+border-radius: 999px
+font-size: 12px
+font-weight: 700
+
+High confidence:
+background: rgba(95,143,127,0.18)
+text: #5F8F7F
+
+Safe:
+background: rgba(168,176,184,0.16)
+text: #A8B0B8
+
+Experimental:
+background: rgba(200,169,106,0.18)
+text: #C8A96A
+
+Selected chip:
+background: rgba(63,111,115,0.16)
+border: 1px solid rgba(63,111,115,0.42)
+text: #3F6F73
+
+TYPOGRAPHY:
+Use Inter or system font
+
+Screen title:
+font-size: 32px
+line-height: 36px
+font-weight: 800
+letter-spacing: -0.03em
+
+Section title:
+font-size: 20px
+line-height: 26px
+font-weight: 750
+letter-spacing: -0.02em
+
+Card title:
+font-size: 17px
+line-height: 22px
+font-weight: 700
+
+Body:
+font-size: 15px
+line-height: 22px
+font-weight: 400
+
+Caption:
+font-size: 12px
+line-height: 16px
+font-weight: 500
+
+NAVIGATION:
+Bottom nav height: 72px
+Icon size: 24px
+Label font-size: 11px
+Selected item uses primary accent
+Unselected uses muted text
+Keep nav background slightly elevated from page background
+
+ANIMATION:
+Default transition: 160ms ease
+Card hover/lift: translateY(-4px)
+Selected outfit lift: translateY(-6px)
+Button press: scale(0.97)
+Modal entrance: fade + translateY(8px)
+Timeline auto-fill: stagger each card by 80ms
+
+RULES:
+Use these styles as reusable classes or design tokens
+Do not use random spacing values
+Do not use random colours
+Do not create one-off button styles
+Do not use neon
+Do not use pure black unless absolutely necessary
+Do not make screens feel cluttered
+Every screen must feel calm, premium, and intentional
+
+Apply this component system to:
+- Home
+- Onboarding
+- Timeline
+- Generate Outfit
+- Tonight Mode
+- Incoming Items
+- Settings

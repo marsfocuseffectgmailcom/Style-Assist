@@ -176,9 +176,9 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
               <p className="mt-0.5 text-xs text-[#6B8490]">
                 {outfit.items.length} piece{outfit.items.length !== 1 ? "s" : ""}
               </p>
-              <div className="mt-1.5">
+              <div className="mt-2">
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+                  className="inline-flex h-7 items-center rounded-full px-2.5 text-[12px] font-bold"
                   style={{
                     color: confidenceLabel[outfit.confidence]?.color,
                     backgroundColor: confidenceLabel[outfit.confidence]?.bg,
@@ -278,10 +278,12 @@ export default function Timeline() {
   return (
     <>
     <AppShell>
-      <header className="mb-5 flex items-start justify-between pt-4">
+      <header className="mb-6 flex items-start justify-between">
         <div>
-          <p className="text-sm text-[#AABBC0]">Your outfits,</p>
-          <h1 className="text-[28px] font-bold leading-none tracking-[-0.5px]">already handled.</h1>
+          <p className="text-[15px] leading-[22px] text-[#A8B0B8]">Your outfits,</p>
+          <h1 className="text-[32px] font-extrabold leading-[36px] tracking-[-0.03em] text-[#F5F5F5]">
+            already handled.
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -303,7 +305,7 @@ export default function Timeline() {
       <button
         onClick={handlePlanMonth}
         disabled={planningMonth}
-        className="mb-5 flex w-full items-center justify-center gap-2 rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97] disabled:opacity-70"
+        className="mb-6 flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97] disabled:opacity-45"
       >
         {planningMonth ? (
           <>
@@ -367,7 +369,7 @@ export default function Timeline() {
             key={dateStr}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: Math.min(i * 0.04, 0.3) }}
+            transition={{ delay: Math.min(i * 0.08, 0.4) }}
           >
             <DayCard
               dateStr={dateStr}
@@ -421,11 +423,11 @@ export default function Timeline() {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
       onClick={() => setShowTonightMode(true)}
-      className="fixed bottom-[88px] right-4 z-40 flex items-center gap-2 rounded-full bg-[#243140] px-4 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-[#C8A96A]/25 text-[#F2F4F5] transition active:scale-[0.96] hover:border-[#C8A96A]/50"
+      className="fixed bottom-7 right-5 z-40 flex h-14 items-center gap-2 rounded-full bg-[#3F6F73] px-5 text-white shadow-[0_12px_32px_rgba(63,111,115,0.30)] transition-[transform] duration-[160ms] active:scale-[0.97]"
       aria-label="Tonight Mode"
     >
-      <Moon size={15} className="text-[#C8A96A]" />
-      <span className="text-[13px] font-semibold">Tonight</span>
+      <Moon size={16} />
+      <span className="text-[15px] font-bold">Tonight</span>
     </motion.button>
 
     <AnimatePresence>

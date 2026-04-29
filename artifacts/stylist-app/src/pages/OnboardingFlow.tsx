@@ -236,7 +236,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.55 }}
-              className="text-[38px] font-bold leading-[1.1] tracking-[-1px] text-[#F2F4F5]"
+              className="text-[32px] font-extrabold leading-[36px] tracking-[-0.03em] text-[#F5F5F5]"
             >
               Your outfits,
               <br />
@@ -391,7 +391,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F2F4F5]"
+              className="mb-2 text-[32px] font-extrabold leading-[36px] tracking-[-0.03em] text-[#F5F5F5]"
             >
               What&apos;s your style?
             </motion.h2>
@@ -447,7 +447,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   onClick={() => advance(3)}
-                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97]"
+                  className="mb-10 flex h-14 w-full items-center justify-center rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97]"
                 >
                   Next →
                 </motion.button>
@@ -489,7 +489,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F2F4F5]"
+              className="mb-2 text-[32px] font-extrabold leading-[36px] tracking-[-0.03em] text-[#F5F5F5]"
             >
               What do you
               <br />dress for?
@@ -546,7 +546,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   onClick={() => advance(4)}
-                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97]"
+                  className="mb-10 flex h-14 w-full items-center justify-center rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97]"
                 >
                   Build My Week →
                 </motion.button>

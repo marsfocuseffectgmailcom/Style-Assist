@@ -82,17 +82,21 @@ export default function IncomingItemsScreen() {
 
   return (
     <AppShell>
-      <header className="mb-5 flex items-center gap-3 pt-4">
+      <header className="mb-6 flex items-center gap-3">
         <button
           onClick={() => navigate("/timeline")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8B0B8] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1">
-          <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Incoming Deliveries</h1>
-          <p className="text-xs text-[#6B8490]">{items.length} item{items.length !== 1 ? "s" : ""} tracked</p>
+          <h1 className="text-[20px] font-bold leading-[26px] tracking-[-0.02em] text-[#F5F5F5]">
+            Incoming Deliveries
+          </h1>
+          <p className="text-[12px] leading-[16px] font-medium text-[#9CA3AF]">
+            {items.length} item{items.length !== 1 ? "s" : ""} tracked
+          </p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
@@ -171,17 +175,17 @@ export default function IncomingItemsScreen() {
                 />
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => { setShowForm(false); setForm(blankForm) }}
-                  className="flex-1 rounded-[16px] border border-white/10 py-3 text-sm text-[#AABBC0] transition active:scale-[0.97]"
+                  className="flex h-[52px] flex-1 items-center justify-center rounded-[18px] border border-[rgba(168,176,184,0.28)] text-[15px] font-semibold text-[#F5F5F5] transition-[transform] duration-[160ms] active:scale-[0.97]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !form.name || !form.deliveryDate || !form.storeName}
-                  className="flex-1 rounded-[16px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-3 text-sm font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
+                  className="flex h-14 flex-1 items-center justify-center rounded-[18px] bg-[#3F6F73] text-base font-bold text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97] disabled:opacity-45"
                 >
                   Add Item
                 </button>

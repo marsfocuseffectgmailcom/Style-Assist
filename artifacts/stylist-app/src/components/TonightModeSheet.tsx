@@ -239,11 +239,7 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
         <button
           onClick={handleGetOutfit}
           disabled={!occasion}
-          className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-40"
-          style={{
-            background:  `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-            boxShadow:   "0 4px 20px rgba(63,111,115,0.28)",
-          }}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97] disabled:opacity-45"
         >
           Get my outfit
           <ChevronRight size={16} />

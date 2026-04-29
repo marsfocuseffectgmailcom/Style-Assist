@@ -158,7 +158,7 @@ function OutfitCard({
                   {outfit.name}
                 </h3>
                 <span
-                  className="mt-1.5 inline-block rounded-full px-2.5 py-[3px] text-[10px] font-semibold tracking-wide"
+                  className="mt-1.5 inline-flex h-7 items-center rounded-full px-2.5 text-[12px] font-bold"
                   style={{ color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}` }}
                 >
                   {cfg.label}
@@ -382,7 +382,7 @@ export default function GenerateOutfitScreen() {
             <button
               onClick={handleViewResult}
               disabled={!selected}
-              className="w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.28)] transition active:scale-[0.97] disabled:opacity-50"
+              className="flex h-14 w-full items-center justify-center rounded-[18px] bg-[#3F6F73] text-base font-bold tracking-[-0.01em] text-white shadow-[0_8px_20px_rgba(63,111,115,0.24)] transition-[transform] duration-[160ms] active:scale-[0.97] disabled:opacity-45"
             >
               View outfit →
             </button>
