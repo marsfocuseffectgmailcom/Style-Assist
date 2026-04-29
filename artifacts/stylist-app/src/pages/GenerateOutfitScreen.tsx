@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ThumbsUp,
   ThumbsDown,
+  X,
 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
@@ -83,6 +84,8 @@ const breakdownLabels: Record<string, string> = {
   userPreference:    "Your taste",
   freshness:         "Freshness",
   shoeMatch:         "Shoe fit",
+  bagMatch:          "Bag match",
+  accessories:       "Accessories",
 }
 
 const breakdownMax: Record<string, number> = {
@@ -93,6 +96,8 @@ const breakdownMax: Record<string, number> = {
   userPreference:    10,
   freshness:         5,
   shoeMatch:         10,
+  bagMatch:          4,
+  accessories:       4,
 }
 
 // ─── ScoreMeter ───────────────────────────────────────────────────────────────
@@ -161,9 +166,15 @@ function OutfitCard({
   onSelect:    () => void
   index:       number
 }) {
-  const [showBreakdown, setShowBreakdown] = useState(false)
-  const [showShoeAlts,  setShowShoeAlts]  = useState(false)
-  const cfg    = confidenceConfig[outfit.confidence]
+  const [showBreakdown,  setShowBreakdown]  = useState(false)
+  const [showShoeAlts,   setShowShoeAlts]   = useState(false)
+  const [dismissedIds,   setDismissedIds]   = useState<Set<string>>(new Set())
+
+  const scoreAdjustment = [...dismissedIds].reduce(
+    (sum, id) => sum + (outfit.accessoryScores[id] ?? 0), 0
+  )
+  const displayScore = Math.max(0, Math.min(100, outfit.score - scoreAdjustment))
+  const cfg    = confidenceConfig[displayScore >= 82 ? "high" : displayScore >= 65 ? "safe" : "experimental"]
   const shown  = outfit.items.slice(0, 4)
   const dimmed = anySelected && !selected
 
@@ -213,7 +224,7 @@ function OutfitCard({
                   {cfg.label}
                 </span>
               </div>
-              <ScoreMeter score={outfit.score} color={cfg.ring} />
+              <ScoreMeter score={displayScore} color={cfg.ring} />
             </div>
 
             {outfit.reason && (
@@ -307,6 +318,50 @@ function OutfitCard({
             )
           })}
         </div>
+
+        {/* ── Accessories section ── */}
+        {outfit.accessories.filter((a) => !dismissedIds.has(a.id)).length > 0 && (
+          <div className="mt-3 border-t border-white/[0.06] pt-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5E7580]">
+              Styling additions
+            </p>
+            <div className="space-y-1.5">
+              {outfit.accessories
+                .filter((a) => !dismissedIds.has(a.id))
+                .map((acc) => (
+                  <div key={acc.id} className="flex items-center gap-2">
+                    <div className="h-6 w-6 shrink-0 overflow-hidden rounded-[7px] bg-[#243140]">
+                      <img src={acc.image} alt={acc.name} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-[12px] text-[#AABBC0]">{acc.name}</span>
+                      {outfit.accessoryReasons[acc.id] && (
+                        <span className="text-[10px] text-[#5E7580]">
+                          {outfit.accessoryReasons[acc.id]}
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-semibold"
+                      style={{ backgroundColor: "rgba(127,169,163,0.08)", color: "#7FA9A3" }}
+                    >
+                      {acc.category}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDismissedIds((prev) => new Set([...prev, acc.id]))
+                      }}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[#5E7580] transition hover:bg-white/8 hover:text-[#AABBC0]"
+                      aria-label={`Remove ${acc.name}`}
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
       </button>
 
       {/* ── Expanded insight + confirmation (only when selected) ── */}

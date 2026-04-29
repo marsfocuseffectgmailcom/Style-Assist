@@ -11,7 +11,7 @@ export type OutfitCard = {
 export type WardrobeItem = {
   id: number
   name: string
-  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear"
+  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear" | "Bags" | "Accessories"
   image: string
   color?: string
   colors: string[]
@@ -182,5 +182,91 @@ export const wardrobeItems: WardrobeItem[] = [
     colors: ["blue", "denim"],
     styleTags: ["casual", "relaxed", "everyday", "weekend"],
     seasonTags: ["all-season"],
+  },
+  // ── Bags ──────────────────────────────────────────────────────────────────
+  {
+    id: 12,
+    name: "Black Structured Tote",
+    category: "Bags",
+    image:
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["professional", "polished", "clean", "minimal", "tailored"],
+    seasonTags: ["all-season"],
+    wearCount: 3,
+  },
+  {
+    id: 13,
+    name: "Tan Leather Crossbody",
+    category: "Bags",
+    image:
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+    color: "tan",
+    colors: ["tan", "camel"],
+    styleTags: ["casual", "smart casual", "relaxed", "minimal", "everyday"],
+    seasonTags: ["all-season"],
+    wearCount: 4,
+  },
+  {
+    id: 14,
+    name: "Black Clutch",
+    category: "Bags",
+    image:
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["elegant", "formal", "dressy", "feminine", "polished"],
+    seasonTags: ["all-season"],
+    wearCount: 1,
+  },
+  // ── Accessories ───────────────────────────────────────────────────────────
+  {
+    id: 15,
+    name: "Black Leather Belt",
+    category: "Accessories",
+    image:
+      "https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["tailored", "professional", "polished", "clean", "structured"],
+    seasonTags: ["all-season"],
+    wearCount: 2,
+  },
+  {
+    id: 16,
+    name: "Ivory Silk Scarf",
+    category: "Accessories",
+    image:
+      "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=800&q=80",
+    color: "ivory",
+    colors: ["ivory", "cream"],
+    styleTags: ["elegant", "polished", "feminine", "smart casual", "chic"],
+    seasonTags: ["autumn", "spring", "winter"],
+    wearCount: 1,
+  },
+  {
+    id: 17,
+    name: "Gold Minimal Necklace",
+    category: "Accessories",
+    image:
+      "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&w=800&q=80",
+    color: "gold",
+    colors: ["gold"],
+    styleTags: ["elegant", "minimal", "feminine", "clean", "polished"],
+    seasonTags: ["all-season"],
+    wearCount: 2,
+  },
+  {
+    id: 18,
+    name: "Classic Sunglasses",
+    category: "Accessories",
+    image:
+      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=800&q=80",
+    color: "black",
+    colors: ["black"],
+    styleTags: ["casual", "minimal", "relaxed", "everyday", "clean"],
+    seasonTags: ["spring", "summer"],
+    wearCount: 3,
   },
 ]

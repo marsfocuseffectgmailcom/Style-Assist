@@ -3,7 +3,7 @@ import type { ItemPreferences } from "../hooks/useItemPreferences"
 
 // ─── Item type the engine works with ────────────────────────────────────────
 
-export type NormCategory = "top" | "bottom" | "dress" | "shoes" | "outerwear" | "accessory"
+export type NormCategory = "top" | "bottom" | "dress" | "shoes" | "outerwear" | "accessory" | "bag"
 
 export type ScoredItem = {
   id: string
@@ -515,6 +515,153 @@ export function scoreShoeForContext(
   return eventScore + colourScore + styleScore + seasonScore
 }
 
+// ─── Bag & accessory engine ───────────────────────────────────────────────────
+
+const FORMAL_BAG_TAGS = new Set([
+  "elegant", "formal", "dressy", "polished", "professional", "tailored", "feminine",
+])
+const CASUAL_BAG_TAGS = new Set([
+  "casual", "relaxed", "minimal", "everyday", "smart casual", "simple",
+])
+
+function scoreBag(
+  bag: ScoredItem,
+  shoe: ScoredItem | undefined,
+  eventType: string | undefined,
+): number {
+  const bagTags = bag.styleTags.map((t) => t.toLowerCase())
+
+  // Event match (0-2)
+  let eventScore = 1
+  if (eventType) {
+    if (FORMAL_EVENTS.has(eventType)) {
+      eventScore = bagTags.some((t) => FORMAL_BAG_TAGS.has(t)) ? 2 : 0
+    } else if (CASUAL_EVENTS.has(eventType) || eventType === "holiday" || eventType === "travel") {
+      eventScore = bagTags.some((t) => CASUAL_BAG_TAGS.has(t)) ? 2 : 1
+    } else if (eventType === "party") {
+      eventScore = 1 // both bag styles work for parties
+    }
+  }
+
+  // Color harmony with shoe OR neutral bag (0-2)
+  const bagNeutral = bag.colors.every((c) => NEUTRAL_COLORS.has(c.toLowerCase()))
+  let colorScore = 0
+  if (bagNeutral) {
+    colorScore = 2 // neutral bags always work
+  } else if (shoe) {
+    const shoeColors = shoe.colors.map((c) => c.toLowerCase())
+    colorScore = bag.colors.some((c) => shoeColors.includes(c.toLowerCase())) ? 2 : 0
+  }
+
+  return eventScore + colorScore
+}
+
+function scoreAccessory(
+  accessory: ScoredItem,
+  outfitFamily: string,
+  existingAccCount: number,
+  eventType: string | undefined,
+): number {
+  const accTags = accessory.styleTags.map((t) => t.toLowerCase())
+  const familyTags = STYLE_FAMILIES[outfitFamily] ?? []
+
+  // Style family match (+2 if matches, 0 if not)
+  const styleMatch = accTags.some((t) => familyTags.includes(t)) ? 2 : 0
+
+  // Context mismatch: sporty/casual accessories in a strictly formal context (-1)
+  const isRelaxedAcc = accTags.some((t) => ["sporty", "casual", "relaxed"].includes(t))
+  const isHardFormal = eventType && (eventType === "wedding" || eventType === "work")
+  const contextPenalty = isRelaxedAcc && isHardFormal ? -1 : 0
+
+  // Clutter: second accessory in professional/elegant context gets reduced value (-1)
+  const clutterPenalty =
+    existingAccCount >= 1 && (outfitFamily === "professional" || outfitFamily === "elegant")
+      ? -1
+      : 0
+
+  return styleMatch + contextPenalty + clutterPenalty
+}
+
+function buildBagReason(bag: ScoredItem, eventType: string | undefined): string {
+  const name = bag.name.toLowerCase()
+  if (eventType === "work") return "Structured and work-ready"
+  if (eventType === "dinner" || eventType === "wedding") return "Evening-appropriate carry"
+  if (eventType === "party") return "Polished evening bag"
+  if (name.includes("tote")) return "Practical and well-matched"
+  if (name.includes("clutch")) return "Clean evening carry"
+  if (name.includes("crossbody")) return "Effortless and balanced"
+  return "Completes the look"
+}
+
+function buildAccessoryReason(accessory: ScoredItem): string {
+  const name = accessory.name.toLowerCase()
+  if (name.includes("belt")) return "Defines the silhouette"
+  if (name.includes("scarf")) return "Adds texture and warmth"
+  if (name.includes("necklace") || name.includes("chain") || name.includes("pendant")) return "One light elevation point"
+  if (name.includes("sunglasses") || name.includes("glasses")) return "Clean, relaxed finish"
+  if (name.includes("hat") || name.includes("cap") || name.includes("beanie")) return "Casual top detail"
+  if (name.includes("watch")) return "Understated polish"
+  const tags = accessory.styleTags.map((t) => t.toLowerCase())
+  if (tags.some((t) => ["elegant", "polished"].includes(t))) return "Quiet elevation"
+  if (tags.some((t) => ["casual", "relaxed"].includes(t))) return "Keeps it easy"
+  return "Completes the outfit"
+}
+
+// Returns selected bag + accessories and their per-item score contributions
+function selectAndScoreAccessories(
+  accessoryPool: ScoredItem[],
+  outfitItems: ScoredItem[],
+  outfitFamily: string,
+  eventType: string | undefined,
+): {
+  selected: ScoredItem[]
+  reasons: Record<string, string>
+  scores: Record<string, number>
+  totalBonus: number
+} {
+  const bags        = accessoryPool.filter((i) => i.normCategory === "bag")
+  const accessories = accessoryPool.filter((i) => i.normCategory === "accessory")
+  const shoe        = outfitItems.find((i) => i.normCategory === "shoes")
+
+  const selected: ScoredItem[] = []
+  const reasons: Record<string, string> = {}
+  const scores: Record<string, number>  = {}
+
+  // ── 1. Pick one bag ──────────────────────────────────────────────────────
+  if (bags.length > 0) {
+    const scored = bags
+      .map((b) => ({ bag: b, score: scoreBag(b, shoe, eventType) }))
+      .sort((a, b) => b.score - a.score)
+
+    const best = scored[0]
+    if (best.score >= 2) {
+      selected.push(best.bag)
+      scores[best.bag.id]  = Math.min(best.score, 4) // cap contribution at 4
+      reasons[best.bag.id] = buildBagReason(best.bag, eventType)
+    }
+  }
+
+  // ── 2. Pick 0-2 accessories ──────────────────────────────────────────────
+  const scored = accessories
+    .map((a) => ({ acc: a, score: scoreAccessory(a, outfitFamily, 0, eventType) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+
+  let accCount = 0
+  for (const { acc, score } of scored) {
+    if (accCount >= 2) break
+    const adjustedScore = scoreAccessory(acc, outfitFamily, accCount, eventType)
+    if (adjustedScore <= 0) continue
+    selected.push(acc)
+    scores[acc.id]  = adjustedScore
+    reasons[acc.id] = buildAccessoryReason(acc)
+    accCount++
+  }
+
+  const totalBonus = Object.values(scores).reduce((s, v) => s + v, 0)
+  return { selected, reasons, scores, totalBonus }
+}
+
 // ─── Completeness check ───────────────────────────────────────────────────────
 
 export function isComplete(items: ScoredItem[]): boolean {
@@ -758,6 +905,9 @@ export type RankedOutfit = {
   breakdown: Record<string, number>
   shoeAlternatives: ScoredItem[]
   shoeIsShared: boolean
+  accessories: ScoredItem[]
+  accessoryReasons: Record<string, string>
+  accessoryScores: Record<string, number>
 }
 
 type ScoredCombo = {
@@ -808,7 +958,11 @@ export function rankOutfits(
     itemPreferences?: ItemPreferences
   }
 ): RankedOutfit[] {
-  const combos = buildCombinations(pool)
+  // Separate clothing from bags/accessories — only clothing goes into combos
+  const clothingPool   = pool.filter((i) => i.normCategory !== "bag" && i.normCategory !== "accessory")
+  const accessoryPool  = pool.filter((i) => i.normCategory === "bag" || i.normCategory === "accessory")
+
+  const combos = buildCombinations(clothingPool)
   const seen   = new Set<string>()
   const scored: ScoredCombo[] = []
 
@@ -900,7 +1054,7 @@ export function rankOutfits(
 
   // ── Assign names + insight content ────────────────────────────────────────
   const usedNames  = new Set<string>(opts.usedOutfitNames ?? [])
-  const allShoes   = pool.filter((i) => i.normCategory === "shoes")
+  const allShoes   = clothingPool.filter((i) => i.normCategory === "shoes")
   const shoeIdsInBatch = deduplicated.map(
     (o) => o.items.find((i) => i.normCategory === "shoes")?.id
   )
@@ -920,27 +1074,50 @@ export function rankOutfits(
     const nonShoeItems = outfit.items.filter((i) => i.normCategory !== "shoes")
     const shoeAlternatives = computeShoeAlternatives(shoe, nonShoeItems, allShoes, opts.eventType, opts.dateStr)
 
+    // ── Bag + accessory selection ─────────────────────────────────────────
+    const accResult = selectAndScoreAccessories(
+      accessoryPool,
+      outfit.items,
+      outfit.dominantFamily,
+      opts.eventType,
+    )
+    const finalScore = Math.min(100, outfit.score + accResult.totalBonus)
+    const finalConfidence: RankedOutfit["confidence"] =
+      finalScore >= 82 ? "high" : finalScore >= 65 ? "safe" : "experimental"
+
+    const breakdown = {
+      ...outfit.breakdown,
+      bagMatch:    accResult.scores[accResult.selected.find((i) => i.normCategory === "bag")?.id ?? ""] ?? 0,
+      accessories: Math.max(0, accResult.totalBonus - (accResult.scores[accResult.selected.find((i) => i.normCategory === "bag")?.id ?? ""] ?? 0)),
+    }
+
     const { _key, dominantFamily: _df, colorProfile: _cp, ...rest } = outfit
     return {
       ...rest,
+      score: finalScore,
+      confidence: finalConfidence,
       name,
       tips,
       upgrade,
+      breakdown,
       shoeAlternatives,
       shoeIsShared: shoeIsSharedInBatch(idx),
+      accessories: accResult.selected,
+      accessoryReasons: accResult.reasons,
+      accessoryScores: accResult.scores,
     }
   })
 
   // Gap suggestion when wardrobe is thin
   if (final.length === 0) {
-    const missing = getMissingPiece(pool)
+    const missing = getMissingPiece(clothingPool)
     if (missing) {
       const gapSuggestion = `Add ${missing} to unlock better outfit combinations.`
-      if (pool.length > 0) {
+      if (clothingPool.length > 0) {
         final.push({
           id: Math.random().toString(36).slice(2, 10),
           name: "Best Available",
-          items: pool.slice(0, 3),
+          items: clothingPool.slice(0, 3),
           score: 40,
           confidence: "experimental",
           tags: ["minimal"],
@@ -950,6 +1127,9 @@ export function rankOutfits(
           breakdown: {},
           shoeAlternatives: [],
           shoeIsShared: false,
+          accessories: [],
+          accessoryReasons: {},
+          accessoryScores: {},
         })
       }
     }

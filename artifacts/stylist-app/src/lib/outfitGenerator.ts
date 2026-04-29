@@ -23,6 +23,9 @@ export type GeneratedOutfit = {
   gapSuggestion?: string
   shoeAlternatives: PlannedOutfitItem[]
   shoeIsShared: boolean
+  accessories: PlannedOutfitItem[]
+  accessoryReasons: Record<string, string>
+  accessoryScores: Record<string, number>
 }
 
 // ─── Item normalisation ───────────────────────────────────────────────────────
@@ -33,6 +36,8 @@ function wardrobeToScored(item: WardrobeItem): ScoredItem {
     Bottoms: "bottom",
     Shoes: "shoes",
     Outerwear: "outerwear",
+    Bags: "bag",
+    Accessories: "accessory",
   }
   return {
     id: String(item.id),
@@ -101,6 +106,9 @@ function rankedToGenerated(r: RankedOutfit): GeneratedOutfit {
     gapSuggestion: r.gapSuggestion,
     shoeAlternatives: r.shoeAlternatives.map(scoredToPlannedItem),
     shoeIsShared: r.shoeIsShared,
+    accessories: r.accessories.map(scoredToPlannedItem),
+    accessoryReasons: r.accessoryReasons,
+    accessoryScores: r.accessoryScores,
   }
 }
 
