@@ -2,6 +2,7 @@ import { useState } from "react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { NotificationsProvider } from "./contexts/NotificationsContext"
 import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
+import { BottomNav } from "./components/BottomNav"
 import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
@@ -68,6 +69,7 @@ export default function App() {
       <WardrobePanelProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AppContent />
+          <BottomNav />
         </BrowserRouter>
       </WardrobePanelProvider>
     </NotificationsProvider>

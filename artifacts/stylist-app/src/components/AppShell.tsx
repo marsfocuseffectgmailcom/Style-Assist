@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-import { BottomNav } from "./BottomNav"
 
 type AppShellProps = {
   children: ReactNode
@@ -11,7 +10,6 @@ export function AppShell({ children }: AppShellProps) {
       <div className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
         {children}
       </div>
-      <BottomNav />
     </div>
   )
 }
