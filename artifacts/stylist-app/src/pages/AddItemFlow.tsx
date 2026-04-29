@@ -12,16 +12,16 @@ import type { CapturedItem, FitType, ItemStatus, WeatherTag } from "../hooks/use
 // ─── Design tokens (matching existing system) ─────────────────────────────────
 
 const TOKEN = {
-  card:    "#1A1F2B",
-  elevated:"#151922",
+  card:    "#243140",
+  elevated:"#2A3645",
   border:  "rgba(255,255,255,0.08)",
-  pink:    "#FF4D8D",
-  coral:   "#FF7A5C",
+  pink:    "#3F6F73",
+  coral:   "#7FA9A3",
   gold:    "#C8A96A",
-  teal:    "#4ECFA8",
-  text:    "#F6F3EE",
-  sub:     "#A8AFBE",
-  muted:   "#6F7788",
+  teal:    "#5F8F7F",
+  text:    "#F2F4F5",
+  sub:     "#AABBC0",
+  muted:   "#6B8490",
 }
 
 // ─── AI simulation pools ──────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ function PillSelector<T extends string>({
             className="rounded-full border px-3 py-1.5 text-[12px] font-medium transition active:scale-[0.96]"
             style={{
               borderColor: active ? TOKEN.pink : TOKEN.border,
-              backgroundColor: active ? `rgba(255,77,141,0.12)` : "rgba(255,255,255,0.04)",
+              backgroundColor: active ? `rgba(63,111,115,0.12)` : "rgba(255,255,255,0.04)",
               color: active ? TOKEN.pink : TOKEN.sub,
             }}
           >
@@ -134,8 +134,8 @@ function FieldRow({
   return (
     <div>
       <div className="mb-1.5 flex items-center gap-1.5">
-        <p className="text-[12px] font-semibold uppercase tracking-wider text-[#5A6275]">{label}</p>
-        {hint && <span className="text-[10px] text-[#4A5265]">{hint}</span>}
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-[#5E7580]">{label}</p>
+        {hint && <span className="text-[10px] text-[#4D6A78]">{hint}</span>}
       </div>
       {children}
     </div>
@@ -156,7 +156,7 @@ function TextInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       required={required}
-      className="w-full rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-[14px] text-[#F6F3EE] placeholder-[#5A6275] outline-none transition focus:border-[#FF4D8D]/40 focus:bg-[#FF4D8D]/4"
+      className="w-full rounded-[14px] border border-white/8 bg-white/5 px-4 py-3 text-[14px] text-[#F2F4F5] placeholder-[#5E7580] outline-none transition focus:border-[#3F6F73]/40 focus:bg-[#3F6F73]/4"
     />
   )
 }
@@ -195,18 +195,18 @@ function PhotoSlot({
         onClick={() => fileRef.current?.click()}
         className="relative flex h-[130px] w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[20px] border transition active:scale-[0.97]"
         style={{
-          borderColor: photo ? `rgba(78,207,168,0.35)` : TOKEN.border,
-          backgroundColor: photo ? "rgba(78,207,168,0.06)" : "rgba(255,255,255,0.03)",
+          borderColor: photo ? `rgba(95,143,127,0.35)` : TOKEN.border,
+          backgroundColor: photo ? "rgba(95,143,127,0.06)" : "rgba(255,255,255,0.03)",
         }}
       >
         {photo ? (
           <>
             <img src={photo.url} alt={label} className="absolute inset-0 h-full w-full object-cover opacity-70" />
             <div className="absolute inset-0 bg-black/30" />
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[#4ECFA8]/20">
-              <Check size={16} className="text-[#4ECFA8]" />
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[#5F8F7F]/20">
+              <Check size={16} className="text-[#5F8F7F]" />
             </div>
-            <p className="relative text-[11px] font-semibold text-[#4ECFA8]">Retake</p>
+            <p className="relative text-[11px] font-semibold text-[#5F8F7F]">Retake</p>
           </>
         ) : (
           <>
@@ -216,7 +216,7 @@ function PhotoSlot({
               <p className="text-[10px]" style={{ color: TOKEN.muted }}>{sublabel}</p>
             </div>
             {required && (
-              <span className="absolute right-2 top-2 rounded-full bg-[#FF4D8D]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#FF4D8D]">
+              <span className="absolute right-2 top-2 rounded-full bg-[#3F6F73]/15 px-1.5 py-0.5 text-[9px] font-semibold text-[#3F6F73]">
                 Required
               </span>
             )}
@@ -285,7 +285,7 @@ function TipsStep({ onNext }: { onNext: () => void }) {
         <button
           onClick={onNext}
           className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97]"
-          style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(255,77,141,0.28)" }}
+          style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.28)" }}
         >
           Got it — add a piece <ChevronRight size={16} />
         </button>
@@ -339,7 +339,7 @@ function CaptureStep({
       {/* Tag slot — full width, shorter */}
       <div
         className="mb-3 overflow-hidden rounded-[20px] border"
-        style={{ borderColor: photos.tag ? "rgba(78,207,168,0.35)" : TOKEN.border, backgroundColor: photos.tag ? "rgba(78,207,168,0.06)" : "rgba(255,255,255,0.03)" }}
+        style={{ borderColor: photos.tag ? "rgba(95,143,127,0.35)" : TOKEN.border, backgroundColor: photos.tag ? "rgba(95,143,127,0.06)" : "rgba(255,255,255,0.03)" }}
       >
         <input
           type="file"
@@ -359,16 +359,16 @@ function CaptureStep({
         >
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]"
-            style={{ backgroundColor: photos.tag ? "rgba(78,207,168,0.15)" : "rgba(255,255,255,0.06)" }}
+            style={{ backgroundColor: photos.tag ? "rgba(95,143,127,0.15)" : "rgba(255,255,255,0.06)" }}
           >
             {photos.tag ? (
-              <Check size={18} className="text-[#4ECFA8]" />
+              <Check size={18} className="text-[#5F8F7F]" />
             ) : (
               <Tag size={18} style={{ color: TOKEN.muted }} />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold" style={{ color: photos.tag ? "#4ECFA8" : TOKEN.sub }}>
+            <p className="text-[13px] font-semibold" style={{ color: photos.tag ? "#5F8F7F" : TOKEN.sub }}>
               {photos.tag ? "Tag photo added" : "Tag / care label"}
             </p>
             <p className="text-[11px]" style={{ color: TOKEN.muted }}>
@@ -400,7 +400,7 @@ function CaptureStep({
           onClick={onNext}
           disabled={!canContinue}
           className="w-full rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-40"
-          style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(255,77,141,0.28)" }}
+          style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.28)" }}
         >
           Analyse photos
         </button>
@@ -424,7 +424,7 @@ function AnalyzingStep() {
         animate={{ scale: [1, 1.08, 1] }}
         transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
         className="mb-8 flex h-24 w-24 items-center justify-center rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(255,77,141,0.18), rgba(255,122,92,0.06))" }}
+        style={{ background: "radial-gradient(circle, rgba(63,111,115,0.18), rgba(127,169,163,0.06))" }}
       >
         <Sparkles size={36} style={{ color: TOKEN.pink }} />
       </motion.div>
@@ -500,7 +500,7 @@ function ReviewStep({
 
       <div
         className="mb-5 space-y-4 rounded-[22px] border p-4"
-        style={{ borderColor: "rgba(255,77,141,0.15)", backgroundColor: "rgba(255,77,141,0.04)" }}
+        style={{ borderColor: "rgba(63,111,115,0.15)", backgroundColor: "rgba(63,111,115,0.04)" }}
       >
         <FieldRow label="Category">
           <PillSelector
@@ -639,7 +639,7 @@ function ReviewStep({
                   className="rounded-full border px-3 py-1.5 text-[12px] font-medium transition active:scale-[0.96]"
                   style={{
                     borderColor: active ? TOKEN.teal : TOKEN.border,
-                    backgroundColor: active ? "rgba(78,207,168,0.12)" : "rgba(255,255,255,0.04)",
+                    backgroundColor: active ? "rgba(95,143,127,0.12)" : "rgba(255,255,255,0.04)",
                     color: active ? TOKEN.teal : TOKEN.sub,
                   }}
                 >
@@ -663,7 +663,7 @@ function ReviewStep({
         onClick={onSave}
         disabled={!canSave || saving}
         className="w-full rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
-        style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(255,77,141,0.26)" }}
+        style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.26)" }}
       >
         {saving ? "Saving…" : "Save to wardrobe"}
       </button>
@@ -694,7 +694,7 @@ function DoneStep({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-        style={{ background: "linear-gradient(135deg, #4ECFA8, #2DB890)" }}
+        style={{ background: "linear-gradient(135deg, #5F8F7F, #4A7A6E)" }}
       >
         <Check size={28} className="text-white" />
       </motion.div>
@@ -707,7 +707,7 @@ function DoneStep({
       <button
         onClick={onGoToWardrobe}
         className="mb-3 w-full rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97]"
-        style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(255,77,141,0.28)" }}
+        style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.28)" }}
       >
         View wardrobe
       </button>

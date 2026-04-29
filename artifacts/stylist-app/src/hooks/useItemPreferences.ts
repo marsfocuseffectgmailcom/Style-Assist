@@ -31,9 +31,9 @@ export const FEEL_OPTIONS: { value: FeelPreference; label: string; emoji: string
 // ─── Reach → accent colour map ────────────────────────────────────────────────
 
 export const REACH_COLOR: Record<ReachPreference, string> = {
-  "go-to":      "#4ECFA8",   // teal  — active, confident
+  "go-to":      "#5F8F7F",   // teal  — active, confident
   "sometimes":  "#C8A96A",   // gold  — considered
-  "not-lately": "#A8AFBE",   // sub   — neutral, no negative connotation
+  "not-lately": "#AABBC0",   // sub   — neutral, no negative connotation
 }
 
 // ─── localStorage key ─────────────────────────────────────────────────────────

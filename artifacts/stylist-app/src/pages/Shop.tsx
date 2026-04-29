@@ -58,7 +58,7 @@ export default function Shop() {
           </div>
           <div>
             <h1 className="text-[28px] font-semibold tracking-[-0.3px]">Shop</h1>
-            <p className="text-sm text-[#A8AFBE]">
+            <p className="text-sm text-[#AABBC0]">
               Monetisable wardrobe upgrades and affiliate-ready recommendations
             </p>
           </div>
@@ -67,10 +67,10 @@ export default function Shop() {
 
       <Card
         elevated
-        className="bg-gradient-to-br from-[#3A2922] via-[#241A18] to-[#151922]"
+        className="bg-gradient-to-br from-[#1E3040] via-[#1F2A37] to-[#2A3645]"
       >
         <h2 className="text-[18px] font-semibold">Wardrobe Gap Analysis</h2>
-        <p className="mt-2 text-sm leading-6 text-[#D6D0C8]">
+        <p className="mt-2 text-sm leading-6 text-[#D0D8D5]">
           The smartest purchases are the ones that unlock more outfits — not more clutter
         </p>
 

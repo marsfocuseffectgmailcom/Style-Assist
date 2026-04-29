@@ -32,15 +32,15 @@ const WEATHER_OPTIONS: { id: Weather; label: string }[] = [
 // ─── Design tokens (match app system exactly) ─────────────────────────────────
 
 const T = {
-  elevated: "#151922",
-  card:     "#1A1F2B",
-  pink:     "#FF4D8D",
-  coral:    "#FF7A5C",
+  elevated: "#2A3645",
+  card:     "#243140",
+  pink:     "#3F6F73",
+  coral:    "#7FA9A3",
   gold:     "#C8A96A",
-  teal:     "#4ECFA8",
-  text:     "#F6F3EE",
-  sub:      "#A8AFBE",
-  muted:    "#6F7788",
+  teal:     "#5F8F7F",
+  text:     "#F2F4F5",
+  sub:      "#AABBC0",
+  muted:    "#6B8490",
   border:   "rgba(255,255,255,0.08)",
 }
 
@@ -155,8 +155,8 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
                   onClick={() => setOccasion(occ.id)}
                   className="flex flex-col items-start rounded-[18px] border px-4 py-3.5 text-left transition active:scale-[0.97]"
                   style={{
-                    borderColor:     active ? "rgba(255,77,141,0.40)"  : T.border,
-                    backgroundColor: active ? "rgba(255,77,141,0.07)"  : T.card,
+                    borderColor:     active ? "rgba(63,111,115,0.40)"  : T.border,
+                    backgroundColor: active ? "rgba(63,111,115,0.07)"  : T.card,
                   }}
                 >
                   <span
@@ -178,7 +178,7 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
         <div className="mb-5">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest" style={{ color: T.muted }}>
             Weather
-            <span className="ml-2 normal-case font-normal" style={{ color: "#5A6275" }}>optional</span>
+            <span className="ml-2 normal-case font-normal" style={{ color: "#5E7580" }}>optional</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {WEATHER_OPTIONS.map((w) => {
@@ -206,8 +206,8 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
           onClick={() => setUseGoTo((v) => !v)}
           className="mb-6 flex w-full items-center justify-between rounded-[18px] border px-4 py-3.5 text-left transition active:scale-[0.97]"
           style={{
-            borderColor:     useGoTo ? "rgba(78,207,168,0.30)" : T.border,
-            backgroundColor: useGoTo ? "rgba(78,207,168,0.07)" : T.card,
+            borderColor:     useGoTo ? "rgba(95,143,127,0.30)" : T.border,
+            backgroundColor: useGoTo ? "rgba(95,143,127,0.07)" : T.card,
           }}
         >
           <div className="min-w-0 flex-1 pr-4">
@@ -242,7 +242,7 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
           className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-40"
           style={{
             background:  `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-            boxShadow:   "0 4px 20px rgba(255,77,141,0.28)",
+            boxShadow:   "0 4px 20px rgba(63,111,115,0.28)",
           }}
         >
           Get my outfit

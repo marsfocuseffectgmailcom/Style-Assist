@@ -30,10 +30,10 @@ function formatDate(dateStr: string): string {
 const confidenceConfig = {
   high: {
     label: "High match",
-    color: "#4ECFA8",
-    bg: "rgba(78,207,168,0.10)",
-    border: "rgba(78,207,168,0.22)",
-    ring: "#4ECFA8",
+    color: "#5F8F7F",
+    bg: "rgba(95,143,127,0.10)",
+    border: "rgba(95,143,127,0.22)",
+    ring: "#5F8F7F",
   },
   safe: {
     label: "Safe choice",
@@ -44,10 +44,10 @@ const confidenceConfig = {
   },
   experimental: {
     label: "Bold pick",
-    color: "#FF7A5C",
-    bg: "rgba(255,122,92,0.10)",
-    border: "rgba(255,122,92,0.22)",
-    ring: "#FF7A5C",
+    color: "#7FA9A3",
+    bg: "rgba(127,169,163,0.10)",
+    border: "rgba(127,169,163,0.22)",
+    ring: "#7FA9A3",
   },
 }
 
@@ -104,16 +104,16 @@ function BreakdownRow({ label, value, max }: { label: string; value: number; max
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-3">
-      <span className="w-[116px] shrink-0 text-[11px] text-[#6F7788]">{label}</span>
+      <span className="w-[116px] shrink-0 text-[11px] text-[#6B8490]">{label}</span>
       <div className="flex-1 overflow-hidden rounded-full bg-white/8" style={{ height: 3 }}>
         <motion.div
-          className="h-full rounded-full bg-[#FF4D8D]/60"
+          className="h-full rounded-full bg-[#3F6F73]/60"
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         />
       </div>
-      <span className="w-9 text-right text-[11px] font-semibold tabular-nums text-[#A8AFBE]">
+      <span className="w-9 text-right text-[11px] font-semibold tabular-nums text-[#AABBC0]">
         {value}/{max}
       </span>
     </div>
@@ -137,14 +137,14 @@ function OutfitCard({
     <motion.div
       layout
       className={`w-full overflow-hidden rounded-[24px] border text-left transition-colors ${
-        selected ? "border-[#FF4D8D]/40 bg-[#FF4D8D]/5" : "border-white/8 bg-[#151922]"
+        selected ? "border-[#3F6F73]/40 bg-[#3F6F73]/5" : "border-white/8 bg-[#2A3645]"
       }`}
     >
       {/* ── Tappable header ── */}
       <button onClick={onSelect} className="w-full p-4 text-left">
         <div className="flex items-start gap-3">
           {/* Collage */}
-          <div className="grid h-[78px] w-[78px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[14px] bg-[#1A1F2B]">
+          <div className="grid h-[78px] w-[78px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[14px] bg-[#243140]">
             {shown.map((item, i) => (
               <img key={i} src={item.image} alt={item.name} className="h-full w-full object-cover" />
             ))}
@@ -154,7 +154,7 @@ function OutfitCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-[15px] font-semibold leading-tight text-[#F6F3EE]">
+                <h3 className="truncate text-[15px] font-semibold leading-tight text-[#F2F4F5]">
                   {outfit.name}
                 </h3>
                 <span
@@ -169,13 +169,13 @@ function OutfitCard({
 
             {/* Reason — always visible */}
             {outfit.reason && (
-              <p className="mt-2 text-[12px] leading-relaxed text-[#6F7788]">{outfit.reason}</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-[#6B8490]">{outfit.reason}</p>
             )}
           </div>
 
           {/* Check */}
           {selected && (
-            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF4D8D]">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#3F6F73]">
               <Check size={13} className="text-white" />
             </span>
           )}
@@ -187,7 +187,7 @@ function OutfitCard({
             {outfit.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-white/8 bg-white/5 px-2.5 py-0.5 text-[11px] capitalize text-[#A8AFBE]"
+                className="rounded-full border border-white/8 bg-white/5 px-2.5 py-0.5 text-[11px] capitalize text-[#AABBC0]"
               >
                 {tag}
               </span>
@@ -199,10 +199,10 @@ function OutfitCard({
         <div className="mt-3 space-y-1.5">
           {outfit.items.map((item) => (
             <div key={item.id} className="flex items-center gap-2">
-              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#1A1F2B]">
+              <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
               </div>
-              <span className="flex-1 truncate text-xs text-[#A8AFBE]">{item.name}</span>
+              <span className="flex-1 truncate text-xs text-[#AABBC0]">{item.name}</span>
               {item.source === "suggestion" && (
                 <span className="ml-auto shrink-0 rounded-full bg-[#C8A96A]/15 px-2 py-0.5 text-[9px] font-semibold text-[#C8A96A]">
                   Incoming
@@ -235,16 +235,16 @@ function OutfitCard({
                       <span
                         className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8A96A]/60"
                       />
-                      <span className="text-[13px] leading-relaxed text-[#D4C9B8]">{tip}</span>
+                      <span className="text-[13px] leading-relaxed text-[#D0D8D5]">{tip}</span>
                     </li>
                   ))}
                 </ul>
 
                 {/* Upgrade suggestion */}
                 {outfit.upgrade && (
-                  <div className="mt-3 flex items-start gap-2.5 rounded-[12px] border border-[#FF4D8D]/15 bg-[#FF4D8D]/6 px-3 py-2.5">
-                    <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-[#FF4D8D]" />
-                    <p className="text-[12px] leading-relaxed text-[#F6A8C4]">{outfit.upgrade}</p>
+                  <div className="mt-3 flex items-start gap-2.5 rounded-[12px] border border-[#3F6F73]/15 bg-[#3F6F73]/6 px-3 py-2.5">
+                    <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-[#3F6F73]" />
+                    <p className="text-[12px] leading-relaxed text-[#A8C5C2]">{outfit.upgrade}</p>
                   </div>
                 )}
               </div>
@@ -255,7 +255,7 @@ function OutfitCard({
               <div className="border-t border-white/6 px-4">
                 <button
                   onClick={() => setShowBreakdown((v) => !v)}
-                  className="flex w-full items-center justify-between py-3 text-[12px] text-[#5A6275] transition hover:text-[#A8AFBE]"
+                  className="flex w-full items-center justify-between py-3 text-[12px] text-[#5E7580] transition hover:text-[#AABBC0]"
                 >
                   <span>Score breakdown</span>
                   {showBreakdown ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -325,22 +325,22 @@ export default function GenerateOutfitScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate("/timeline")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
           <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Generate Outfit</h1>
-          <p className="text-xs text-[#6F7788]">{formatDate(date ?? "")}</p>
+          <p className="text-xs text-[#6B8490]">{formatDate(date ?? "")}</p>
         </div>
       </header>
 
       {outfits.length === 0 ? (
         <Card className="py-10 text-center">
-          <Sparkles size={28} className="mx-auto mb-3 text-[#6F7788]" />
-          <p className="text-sm font-medium text-[#A8AFBE]">Not enough wardrobe items yet</p>
-          <p className="mt-1 text-xs text-[#6F7788]">
+          <Sparkles size={28} className="mx-auto mb-3 text-[#6B8490]" />
+          <p className="text-sm font-medium text-[#AABBC0]">Not enough wardrobe items yet</p>
+          <p className="mt-1 text-xs text-[#6B8490]">
             Add more items to your wardrobe to generate outfit combos
           </p>
         </Card>
@@ -351,10 +351,10 @@ export default function GenerateOutfitScreen() {
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#4ECFA8]/8 px-3.5 py-2.5"
+              className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#5F8F7F]/8 px-3.5 py-2.5"
             >
-              <Sparkles size={14} className="shrink-0 text-[#4ECFA8]" />
-              <p className="text-[12px] text-[#4ECFA8]">
+              <Sparkles size={14} className="shrink-0 text-[#5F8F7F]" />
+              <p className="text-[12px] text-[#5F8F7F]">
                 Best outfit scores{" "}
                 <span className="font-bold">{topOutfit.score}/100</span> — tap a card to see
                 full styling notes
@@ -362,7 +362,7 @@ export default function GenerateOutfitScreen() {
             </motion.div>
           )}
 
-          <p className="mb-4 text-[13px] text-[#6F7788]">
+          <p className="mb-4 text-[13px] text-[#6B8490]">
             {outfits.length} suggestion{outfits.length !== 1 ? "s" : ""} ranked by score —
             select one to add to your plan
           </p>
@@ -382,7 +382,7 @@ export default function GenerateOutfitScreen() {
             <button
               onClick={handleViewResult}
               disabled={!selected}
-              className="w-full rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.28)] transition active:scale-[0.97] disabled:opacity-50"
+              className="w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.28)] transition active:scale-[0.97] disabled:opacity-50"
             >
               View outfit →
             </button>

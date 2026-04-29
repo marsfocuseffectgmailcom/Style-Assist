@@ -15,12 +15,12 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div className={`mb-3 flex items-center justify-between ${className}`}>
-      <h3 className="text-[18px] font-semibold text-[#F6F3EE]">{title}</h3>
+      <h3 className="text-[18px] font-semibold text-[#F2F4F5]">{title}</h3>
 
       {actionLabel ? (
         <button
           onClick={onActionClick}
-          className="flex items-center gap-1 text-sm text-[#A8AFBE] transition hover:text-[#F6F3EE]"
+          className="flex items-center gap-1 text-sm text-[#AABBC0] transition hover:text-[#F2F4F5]"
         >
           {actionLabel}
           <ChevronRight size={16} />

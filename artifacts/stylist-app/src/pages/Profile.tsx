@@ -48,7 +48,7 @@ export default function Profile() {
             <h1 className="text-[28px] font-semibold tracking-[-0.3px]">
               Profile
             </h1>
-            <p className="text-sm text-[#A8AFBE]">
+            <p className="text-sm text-[#AABBC0]">
               Personalise your styling experience
             </p>
           </div>
@@ -57,13 +57,13 @@ export default function Profile() {
 
       <Card>
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] text-xl font-bold text-white">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] text-xl font-bold text-white">
             A
           </div>
 
           <div>
             <h2 className="text-[20px] font-semibold">Alex Morgan</h2>
-            <p className="mt-1 text-sm text-[#A8AFBE]">Drape Pro member</p>
+            <p className="mt-1 text-sm text-[#AABBC0]">Drape Pro member</p>
           </div>
         </div>
       </Card>
@@ -77,17 +77,17 @@ export default function Profile() {
               </div>
 
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-[#F6F3EE]">
+                <h3 className="text-sm font-semibold text-[#F2F4F5]">
                   {section.title}
                 </h3>
-                <p className="mt-1 text-sm text-[#A8AFBE]">{section.subtitle}</p>
+                <p className="mt-1 text-sm text-[#AABBC0]">{section.subtitle}</p>
               </div>
 
-              <ChevronRight size={18} className="text-[#6F7788]" />
+              <ChevronRight size={18} className="text-[#6B8490]" />
             </>
           )
 
-          const className = "flex w-full items-center gap-3 rounded-[20px] border border-white/10 bg-[#151922] p-4 text-left transition hover:border-white/15"
+          const className = "flex w-full items-center gap-3 rounded-[20px] border border-white/10 bg-[#2A3645] p-4 text-left transition hover:border-white/15"
 
           return section.href ? (
             <Link key={section.id} to={section.href} className={className}>
@@ -103,20 +103,20 @@ export default function Profile() {
 
       <Card className="mt-5">
         <h3 className="text-[16px] font-semibold">Current Plan</h3>
-        <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
+        <p className="mt-2 text-sm leading-6 text-[#AABBC0]">
           You have access to unlimited wardrobe items, all outfit variations,
           styling insights, and smart shopping recommendations
         </p>
 
         <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
           <div className="rounded-[18px] bg-white/5 p-3">
-            <p className="text-[#6F7788]">Plan</p>
-            <p className="mt-1 font-semibold text-[#F6F3EE]">Drape Pro</p>
+            <p className="text-[#6B8490]">Plan</p>
+            <p className="mt-1 font-semibold text-[#F2F4F5]">Drape Pro</p>
           </div>
 
           <div className="rounded-[18px] bg-white/5 p-3">
-            <p className="text-[#6F7788]">Billing</p>
-            <p className="mt-1 font-semibold text-[#F6F3EE]">$4.99 / month</p>
+            <p className="text-[#6B8490]">Billing</p>
+            <p className="mt-1 font-semibold text-[#F2F4F5]">$4.99 / month</p>
           </div>
         </div>
 

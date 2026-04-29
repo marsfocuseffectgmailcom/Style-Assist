@@ -30,11 +30,11 @@ const categoryImages: Record<Category, string> = {
 }
 
 const deliveryStatusConfig = (days: number) => {
-  if (days < 0) return { label: "Arrived", color: "#4ECFA8", bg: "rgba(78,207,168,0.12)" }
-  if (days === 0) return { label: "Today", color: "#4ECFA8", bg: "rgba(78,207,168,0.12)" }
-  if (days <= 3) return { label: `${days}d away`, color: "#FF7A5C", bg: "rgba(255,122,92,0.12)" }
+  if (days < 0) return { label: "Arrived", color: "#5F8F7F", bg: "rgba(95,143,127,0.12)" }
+  if (days === 0) return { label: "Today", color: "#5F8F7F", bg: "rgba(95,143,127,0.12)" }
+  if (days <= 3) return { label: `${days}d away`, color: "#7FA9A3", bg: "rgba(127,169,163,0.12)" }
   if (days <= 7) return { label: `${days}d away`, color: "#C8A96A", bg: "rgba(200,169,106,0.12)" }
-  return { label: `${days}d away`, color: "#A8AFBE", bg: "rgba(168,175,190,0.08)" }
+  return { label: `${days}d away`, color: "#AABBC0", bg: "rgba(170,187,192,0.08)" }
 }
 
 function formatDate(dateStr: string): string {
@@ -85,18 +85,18 @@ export default function IncomingItemsScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate("/timeline")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1">
           <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Incoming Deliveries</h1>
-          <p className="text-xs text-[#6F7788]">{items.length} item{items.length !== 1 ? "s" : ""} tracked</p>
+          <p className="text-xs text-[#6B8490]">{items.length} item{items.length !== 1 ? "s" : ""} tracked</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FF4D8D]/15 text-[#FF4D8D] transition hover:bg-[#FF4D8D]/25"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3F6F73]/15 text-[#3F6F73] transition hover:bg-[#3F6F73]/25"
           aria-label="Add item"
         >
           <Plus size={18} />
@@ -112,29 +112,29 @@ export default function IncomingItemsScreen() {
             className="overflow-hidden"
           >
             <Card className="mb-5 space-y-3">
-              <h3 className="text-[14px] font-semibold text-[#F6F3EE]">Add Incoming Item</h3>
+              <h3 className="text-[14px] font-semibold text-[#F2F4F5]">Add Incoming Item</h3>
 
               <div>
-                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6F7788]">
+                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6B8490]">
                   Item name
                 </label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. White Linen Blazer"
-                  className="w-full rounded-[14px] border border-white/10 bg-[#1A1F2B] px-4 py-3 text-sm text-[#F6F3EE] placeholder-[#4A5167] outline-none focus:border-[#FF4D8D]/40"
+                  className="w-full rounded-[14px] border border-white/10 bg-[#243140] px-4 py-3 text-sm text-[#F2F4F5] placeholder-[#4D6A78] outline-none focus:border-[#3F6F73]/40"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6F7788]">
+                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6B8490]">
                   Category
                 </label>
                 <div className="relative">
                   <select
                     value={form.category}
                     onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
-                    className="w-full appearance-none rounded-[14px] border border-white/10 bg-[#1A1F2B] px-4 py-3 text-sm text-[#F6F3EE] outline-none focus:border-[#FF4D8D]/40"
+                    className="w-full appearance-none rounded-[14px] border border-white/10 bg-[#243140] px-4 py-3 text-sm text-[#F2F4F5] outline-none focus:border-[#3F6F73]/40"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>
@@ -142,24 +142,24 @@ export default function IncomingItemsScreen() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6F7788]" />
+                  <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#6B8490]" />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6F7788]">
+                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6B8490]">
                   Store / Brand
                 </label>
                 <input
                   value={form.storeName}
                   onChange={(e) => setForm((f) => ({ ...f, storeName: e.target.value }))}
                   placeholder="e.g. ASOS, Zara"
-                  className="w-full rounded-[14px] border border-white/10 bg-[#1A1F2B] px-4 py-3 text-sm text-[#F6F3EE] placeholder-[#4A5167] outline-none focus:border-[#FF4D8D]/40"
+                  className="w-full rounded-[14px] border border-white/10 bg-[#243140] px-4 py-3 text-sm text-[#F2F4F5] placeholder-[#4D6A78] outline-none focus:border-[#3F6F73]/40"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6F7788]">
+                <label className="mb-1 block text-[11px] uppercase tracking-[0.08em] text-[#6B8490]">
                   Estimated delivery date
                 </label>
                 <input
@@ -167,21 +167,21 @@ export default function IncomingItemsScreen() {
                   min={minDate}
                   value={form.deliveryDate}
                   onChange={(e) => setForm((f) => ({ ...f, deliveryDate: e.target.value }))}
-                  className="w-full rounded-[14px] border border-white/10 bg-[#1A1F2B] px-4 py-3 text-sm text-[#F6F3EE] outline-none focus:border-[#FF4D8D]/40"
+                  className="w-full rounded-[14px] border border-white/10 bg-[#243140] px-4 py-3 text-sm text-[#F2F4F5] outline-none focus:border-[#3F6F73]/40"
                 />
               </div>
 
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => { setShowForm(false); setForm(blankForm) }}
-                  className="flex-1 rounded-[16px] border border-white/10 py-3 text-sm text-[#A8AFBE] transition active:scale-[0.97]"
+                  className="flex-1 rounded-[16px] border border-white/10 py-3 text-sm text-[#AABBC0] transition active:scale-[0.97]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !form.name || !form.deliveryDate || !form.storeName}
-                  className="flex-1 rounded-[16px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-3 text-sm font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
+                  className="flex-1 rounded-[16px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-3 text-sm font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
                 >
                   Add Item
                 </button>
@@ -193,14 +193,14 @@ export default function IncomingItemsScreen() {
 
       {sorted.length === 0 ? (
         <Card className="py-12 text-center">
-          <Package size={32} className="mx-auto mb-3 text-[#6F7788]" />
-          <p className="text-sm font-medium text-[#A8AFBE]">No incoming deliveries</p>
-          <p className="mt-1 text-xs text-[#6F7788]">
+          <Package size={32} className="mx-auto mb-3 text-[#6B8490]" />
+          <p className="text-sm font-medium text-[#AABBC0]">No incoming deliveries</p>
+          <p className="mt-1 text-xs text-[#6B8490]">
             Add items you&apos;ve ordered so we can include them in outfit suggestions after they arrive
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="mt-4 rounded-[14px] bg-[#FF4D8D]/15 px-5 py-2.5 text-sm font-semibold text-[#FF4D8D]"
+            className="mt-4 rounded-[14px] bg-[#3F6F73]/15 px-5 py-2.5 text-sm font-semibold text-[#3F6F73]"
           >
             Add First Item
           </button>
@@ -216,17 +216,17 @@ export default function IncomingItemsScreen() {
                 <motion.div
                   key={item.id}
                   layout
-                  className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-[#151922] p-3"
+                  className="flex items-center gap-3 rounded-[20px] border border-white/8 bg-[#2A3645] p-3"
                 >
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#1A1F2B]">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#243140]">
                     <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#F6F3EE]">{item.name}</p>
-                    <p className="mt-0.5 text-xs text-[#6F7788]">{item.storeName}</p>
+                    <p className="truncate text-sm font-semibold text-[#F2F4F5]">{item.name}</p>
+                    <p className="mt-0.5 text-xs text-[#6B8490]">{item.storeName}</p>
                     <div className="mt-1.5 flex items-center gap-2">
-                      <span className="text-xs text-[#A8AFBE]">Arrives {formatDate(item.deliveryDate)}</span>
+                      <span className="text-xs text-[#AABBC0]">Arrives {formatDate(item.deliveryDate)}</span>
                       <span
                         className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                         style={{ color: status.color, backgroundColor: status.bg }}
@@ -238,7 +238,7 @@ export default function IncomingItemsScreen() {
 
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6F7788] transition hover:bg-white/5 hover:text-[#FF7A5C]"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B8490] transition hover:bg-white/5 hover:text-[#7FA9A3]"
                     aria-label="Remove"
                   >
                     <Trash2 size={15} />
@@ -249,7 +249,7 @@ export default function IncomingItemsScreen() {
           </div>
 
           <Card className="mt-5 border-dashed border-[#C8A96A]/25 bg-[#C8A96A]/5">
-            <p className="text-[13px] text-[#A8AFBE]">
+            <p className="text-[13px] text-[#AABBC0]">
               <span className="font-semibold text-[#C8A96A]">How it works:</span> Incoming items are automatically
               included in outfit suggestions once their delivery date has passed.
             </p>

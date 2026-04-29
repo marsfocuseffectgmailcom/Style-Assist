@@ -17,8 +17,8 @@ export function Card({
     "rounded-[24px] border border-white/10 p-4"
 
   const backgroundClasses = gradient
-    ? "bg-gradient-to-b from-[#1A1F2B] to-[#12161F]"
-    : "bg-[#151922]"
+    ? "bg-gradient-to-b from-[#243140] to-[#1C2A37]"
+    : "bg-[#2A3645]"
 
   const shadowClasses = elevated
     ? "shadow-[0_10px_30px_rgba(0,0,0,0.28)]"

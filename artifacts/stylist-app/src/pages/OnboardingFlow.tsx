@@ -38,8 +38,8 @@ const PREVIEW_DAYS = [
     ],
     label: "Clean & Classic",
     badge: "High match",
-    badgeColor: "#4ECFA8",
-    badgeBg: "rgba(78,207,168,0.12)",
+    badgeColor: "#5F8F7F",
+    badgeBg: "rgba(95,143,127,0.12)",
   },
   {
     day: "Tue",
@@ -64,8 +64,8 @@ const PREVIEW_DAYS = [
     ],
     label: "Quiet Luxury",
     badge: "High match",
-    badgeColor: "#4ECFA8",
-    badgeBg: "rgba(78,207,168,0.12)",
+    badgeColor: "#5F8F7F",
+    badgeBg: "rgba(95,143,127,0.12)",
   },
   {
     day: "Thu",
@@ -90,8 +90,8 @@ const PREVIEW_DAYS = [
     ],
     label: "Smart Casual",
     badge: "High match",
-    badgeColor: "#4ECFA8",
-    badgeBg: "rgba(78,207,168,0.12)",
+    badgeColor: "#5F8F7F",
+    badgeBg: "rgba(95,143,127,0.12)",
   },
   {
     day: "Sat",
@@ -103,8 +103,8 @@ const PREVIEW_DAYS = [
     ],
     label: "Tonal Moment",
     badge: "Bold pick",
-    badgeColor: "#FF7A5C",
-    badgeBg: "rgba(255,122,92,0.12)",
+    badgeColor: "#7FA9A3",
+    badgeBg: "rgba(127,169,163,0.12)",
   },
   {
     day: "Sun",
@@ -200,7 +200,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
   }
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden bg-[#0A0C10]">
+    <div className="fixed inset-0 z-[100] overflow-hidden bg-[#141E2A]">
       <AnimatePresence mode="wait" custom={dir}>
         {step === 0 && (
           <motion.div
@@ -218,7 +218,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ scale: 0.7, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-              className="mb-6 flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-[#FF4D8D] to-[#FF7A5C] shadow-[0_0_40px_rgba(255,77,141,0.4)]"
+              className="mb-6 flex h-20 w-20 items-center justify-center rounded-[28px] bg-gradient-to-br from-[#3F6F73] to-[#7FA9A3] shadow-[0_0_40px_rgba(63,111,115,0.4)]"
             >
               <Sparkles size={36} className="text-white" />
             </motion.div>
@@ -227,7 +227,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.5 }}
-              className="mb-2 text-[13px] font-semibold uppercase tracking-[0.15em] text-[#FF4D8D]"
+              className="mb-2 text-[13px] font-semibold uppercase tracking-[0.15em] text-[#3F6F73]"
             >
               Style Assist
             </motion.p>
@@ -236,11 +236,11 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.55 }}
-              className="text-[38px] font-bold leading-[1.1] tracking-[-1px] text-[#F6F3EE]"
+              className="text-[38px] font-bold leading-[1.1] tracking-[-1px] text-[#F2F4F5]"
             >
               Your outfits,
               <br />
-              <span className="bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] bg-clip-text text-transparent">
                 already planned.
               </span>
             </motion.h1>
@@ -249,7 +249,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 0.5 }}
-              className="mt-4 text-[15px] leading-relaxed text-[#6F7788]"
+              className="mt-4 text-[15px] leading-relaxed text-[#6B8490]"
             >
               Plan weeks ahead using your wardrobe and incoming deliveries.
               Never wonder what to wear again.
@@ -265,7 +265,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === 0 ? "w-6 bg-[#FF4D8D]" : "w-1.5 bg-white/20"
+                    i === 0 ? "w-6 bg-[#3F6F73]" : "w-1.5 bg-white/20"
                   }`}
                 />
               ))}
@@ -289,7 +289,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#FF4D8D]"
+                className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#3F6F73]"
               >
                 Here&apos;s your week
               </motion.p>
@@ -297,7 +297,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-[28px] font-bold tracking-[-0.5px] text-[#F6F3EE]"
+                className="text-[28px] font-bold tracking-[-0.5px] text-[#F2F4F5]"
               >
                 Outfits planned,
                 <br />zero effort.
@@ -313,9 +313,9 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                         initial={{ opacity: 0, x: 24, scale: 0.97 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-[#151922] p-2.5"
+                        className="flex items-center gap-3 rounded-[18px] border border-white/8 bg-[#2A3645] p-2.5"
                       >
-                        <div className="grid h-[48px] w-[48px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[11px] bg-[#1A1F2B]">
+                        <div className="grid h-[48px] w-[48px] shrink-0 grid-cols-2 gap-0.5 overflow-hidden rounded-[11px] bg-[#243140]">
                           {day.images.map((src, j) => (
                             <img
                               key={j}
@@ -327,7 +327,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6F7788]">
+                            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B8490]">
                               {day.day}
                             </span>
                             <span
@@ -337,7 +337,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                               {day.badge}
                             </span>
                           </div>
-                          <p className="truncate text-[13px] font-semibold text-[#F6F3EE]">
+                          <p className="truncate text-[13px] font-semibold text-[#F2F4F5]">
                             {day.label}
                           </p>
                         </div>
@@ -353,7 +353,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               animate={{ opacity: visibleDays >= 3 ? 1 : 0 }}
               className="flex-shrink-0 px-6 pb-10 text-center"
             >
-              <p className="text-[13px] text-[#4A5167]">Tap anywhere to continue</p>
+              <p className="text-[13px] text-[#4D6A78]">Tap anywhere to continue</p>
             </motion.div>
 
             <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 gap-2">
@@ -361,7 +361,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === 1 ? "w-6 bg-[#FF4D8D]" : "w-1.5 bg-white/20"
+                    i === 1 ? "w-6 bg-[#3F6F73]" : "w-1.5 bg-white/20"
                   }`}
                 />
               ))}
@@ -383,7 +383,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-1 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#FF4D8D]"
+              className="mb-1 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#3F6F73]"
             >
               Step 1 of 2
             </motion.p>
@@ -391,7 +391,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F6F3EE]"
+              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F2F4F5]"
             >
               What&apos;s your style?
             </motion.h2>
@@ -399,7 +399,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="mb-7 text-[15px] text-[#6F7788]"
+              className="mb-7 text-[15px] text-[#6B8490]"
             >
               Pick up to 3 — tap to select
             </motion.p>
@@ -419,8 +419,8 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                     whileTap={{ scale: 0.95 }}
                     className={`relative flex h-[58px] items-center justify-center rounded-[18px] border text-[15px] font-semibold transition ${
                       active
-                        ? "border-[#FF4D8D]/50 bg-gradient-to-br from-[#FF4D8D]/15 to-[#FF7A5C]/10 text-[#F6F3EE]"
-                        : "border-white/10 bg-[#151922] text-[#A8AFBE]"
+                        ? "border-[#3F6F73]/50 bg-gradient-to-br from-[#3F6F73]/15 to-[#7FA9A3]/10 text-[#F2F4F5]"
+                        : "border-white/10 bg-[#2A3645] text-[#AABBC0]"
                     }`}
                   >
                     {chip.label}
@@ -428,7 +428,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#FF4D8D]"
+                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#3F6F73]"
                       >
                         <Check size={11} className="text-white" />
                       </motion.span>
@@ -447,7 +447,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   onClick={() => advance(3)}
-                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.30)] transition active:scale-[0.97]"
+                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97]"
                 >
                   Next →
                 </motion.button>
@@ -459,7 +459,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === 2 ? "w-6 bg-[#FF4D8D]" : "w-1.5 bg-white/20"
+                    i === 2 ? "w-6 bg-[#3F6F73]" : "w-1.5 bg-white/20"
                   }`}
                 />
               ))}
@@ -481,7 +481,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-1 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#FF4D8D]"
+              className="mb-1 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#3F6F73]"
             >
               Step 2 of 2
             </motion.p>
@@ -489,7 +489,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F6F3EE]"
+              className="mb-2 text-[30px] font-bold tracking-[-0.5px] text-[#F2F4F5]"
             >
               What do you
               <br />dress for?
@@ -498,7 +498,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="mb-7 text-[15px] text-[#6F7788]"
+              className="mb-7 text-[15px] text-[#6B8490]"
             >
               Pick up to 3 — tap to select
             </motion.p>
@@ -518,8 +518,8 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                     whileTap={{ scale: 0.95 }}
                     className={`relative flex h-[58px] items-center justify-center rounded-[18px] border text-[15px] font-semibold transition ${
                       active
-                        ? "border-[#FF4D8D]/50 bg-gradient-to-br from-[#FF4D8D]/15 to-[#FF7A5C]/10 text-[#F6F3EE]"
-                        : "border-white/10 bg-[#151922] text-[#A8AFBE]"
+                        ? "border-[#3F6F73]/50 bg-gradient-to-br from-[#3F6F73]/15 to-[#7FA9A3]/10 text-[#F2F4F5]"
+                        : "border-white/10 bg-[#2A3645] text-[#AABBC0]"
                     }`}
                   >
                     {chip.label}
@@ -527,7 +527,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#FF4D8D]"
+                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#3F6F73]"
                       >
                         <Check size={11} className="text-white" />
                       </motion.span>
@@ -546,7 +546,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   onClick={() => advance(4)}
-                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.30)] transition active:scale-[0.97]"
+                  className="mb-10 w-full rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[16px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97]"
                 >
                   Build My Week →
                 </motion.button>
@@ -558,7 +558,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                 <div
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === 3 ? "w-6 bg-[#FF4D8D]" : "w-1.5 bg-white/20"
+                    i === 3 ? "w-6 bg-[#3F6F73]" : "w-1.5 bg-white/20"
                   }`}
                 />
               ))}
@@ -582,8 +582,8 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
               transition={{ repeat: genDone ? 0 : Infinity, duration: 1.8, ease: "easeInOut" }}
               className={`mb-8 flex h-24 w-24 items-center justify-center rounded-full transition-colors duration-500 ${
                 genDone
-                  ? "bg-[#4ECFA8]/20"
-                  : "bg-gradient-to-br from-[#FF4D8D]/20 to-[#FF7A5C]/20"
+                  ? "bg-[#5F8F7F]/20"
+                  : "bg-gradient-to-br from-[#3F6F73]/20 to-[#7FA9A3]/20"
               }`}
             >
               {genDone ? (
@@ -592,14 +592,14 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
-                  <Check size={40} className="text-[#4ECFA8]" />
+                  <Check size={40} className="text-[#5F8F7F]" />
                 </motion.div>
               ) : (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
                 >
-                  <Sparkles size={40} className="text-[#FF4D8D]" />
+                  <Sparkles size={40} className="text-[#3F6F73]" />
                 </motion.div>
               )}
             </motion.div>
@@ -612,11 +612,11 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                 >
-                  <h2 className="text-[26px] font-bold tracking-[-0.5px] text-[#F6F3EE]">
+                  <h2 className="text-[26px] font-bold tracking-[-0.5px] text-[#F2F4F5]">
                     Building your
                     <br />first week…
                   </h2>
-                  <p className="mt-3 text-[15px] text-[#6F7788]">
+                  <p className="mt-3 text-[15px] text-[#6B8490]">
                     Finding your best combinations
                   </p>
                   <div className="mt-6 flex justify-center gap-1.5">
@@ -630,7 +630,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                           delay: i * 0.2,
                           ease: "easeInOut",
                         }}
-                        className="h-2 w-2 rounded-full bg-[#FF4D8D]"
+                        className="h-2 w-2 rounded-full bg-[#3F6F73]"
                       />
                     ))}
                   </div>
@@ -641,11 +641,11 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <h2 className="text-[26px] font-bold tracking-[-0.5px] text-[#F6F3EE]">
+                  <h2 className="text-[26px] font-bold tracking-[-0.5px] text-[#F2F4F5]">
                     Your week
                     <br />is ready.
                   </h2>
-                  <p className="mt-3 text-[15px] text-[#6F7788]">
+                  <p className="mt-3 text-[15px] text-[#6B8490]">
                     7 outfits planned — opening your timeline
                   </p>
                 </motion.div>

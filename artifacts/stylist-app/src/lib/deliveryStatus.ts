@@ -18,11 +18,11 @@ export function getDeliveryStatus(dateStr: string): DeliveryStatus {
 export function deliveryStatusColor(status: DeliveryStatus): string {
   switch (status) {
     case "Safe delivery":
-      return "#4ECFA8"
+      return "#5F8F7F"
     case "Risky delivery":
       return "#C8A96A"
     case "Too late":
-      return "#FF7A5C"
+      return "#7FA9A3"
   }
 }
 

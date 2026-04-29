@@ -45,7 +45,7 @@ export default function Home() {
     <AppShell>
       <header className="mb-6 flex items-start justify-between pt-4">
         <div>
-          <p className="text-base text-[#A8AFBE]">Good morning,</p>
+          <p className="text-base text-[#AABBC0]">Good morning,</p>
           <h1 className="text-[34px] font-bold leading-none tracking-[-0.5px]">Alex</h1>
         </div>
         <NotificationBell />
@@ -53,7 +53,7 @@ export default function Home() {
 
       <button
         onClick={() => navigate("/timeline")}
-        className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.28)] transition active:scale-[0.97]"
+        className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.28)] transition active:scale-[0.97]"
       >
         <CalendarDays size={17} />
         Plan My Month
@@ -61,7 +61,7 @@ export default function Home() {
 
       <button
         onClick={() => navigate("/timeline")}
-        className="mb-5 h-11 w-full rounded-[18px] border border-white/10 bg-white/5 text-sm text-[#F6F3EE] transition active:scale-[0.98]"
+        className="mb-5 h-11 w-full rounded-[18px] border border-white/10 bg-white/5 text-sm text-[#F2F4F5] transition active:scale-[0.98]"
       >
         Open Timeline
       </button>
@@ -71,11 +71,11 @@ export default function Home() {
           {nextDelivery && (
             <button
               onClick={() => navigate("/incoming-items")}
-              className="rounded-[20px] border border-white/8 bg-[#151922] p-3 text-left transition active:scale-[0.97]"
+              className="rounded-[20px] border border-white/8 bg-[#2A3645] p-3 text-left transition active:scale-[0.97]"
             >
               <Package size={16} className="mb-2 text-[#C8A96A]" />
-              <p className="text-xs text-[#6F7788]">Next delivery</p>
-              <p className="mt-0.5 truncate text-[13px] font-semibold text-[#F6F3EE]">
+              <p className="text-xs text-[#6B8490]">Next delivery</p>
+              <p className="mt-0.5 truncate text-[13px] font-semibold text-[#F2F4F5]">
                 {nextDelivery.name}
               </p>
               <p className="text-[11px] text-[#C8A96A]">
@@ -88,14 +88,14 @@ export default function Home() {
           {nextEvent && (
             <button
               onClick={() => navigate("/plan-ahead")}
-              className="rounded-[20px] border border-white/8 bg-[#151922] p-3 text-left transition active:scale-[0.97]"
+              className="rounded-[20px] border border-white/8 bg-[#2A3645] p-3 text-left transition active:scale-[0.97]"
             >
-              <CalendarDays size={16} className="mb-2 text-[#FF4D8D]" />
-              <p className="text-xs text-[#6F7788]">Next event</p>
-              <p className="mt-0.5 truncate text-[13px] font-semibold text-[#F6F3EE]">
+              <CalendarDays size={16} className="mb-2 text-[#3F6F73]" />
+              <p className="text-xs text-[#6B8490]">Next event</p>
+              <p className="mt-0.5 truncate text-[13px] font-semibold text-[#F2F4F5]">
                 {nextEvent.name}
               </p>
-              <p className="text-[11px] text-[#FF4D8D]">
+              <p className="text-[11px] text-[#3F6F73]">
                 {daysUntil(nextEvent.date) === 0 ? "Today" : `${daysUntil(nextEvent.date)}d away`}
               </p>
             </button>
@@ -108,13 +108,13 @@ export default function Home() {
           <div className="mb-3 flex items-start justify-between">
             <div>
               <h2 className="text-[18px] font-semibold">Today&apos;s Look</h2>
-              <p className="text-sm text-[#A8AFBE]">{todayOutfit.name}</p>
+              <p className="text-sm text-[#AABBC0]">{todayOutfit.name}</p>
             </div>
             <span
               className="rounded-full px-3 py-1 text-xs font-semibold"
               style={{
-                color: todayOutfit.confidence === "high" ? "#4ECFA8" : todayOutfit.confidence === "safe" ? "#C8A96A" : "#FF7A5C",
-                backgroundColor: todayOutfit.confidence === "high" ? "rgba(78,207,168,0.12)" : todayOutfit.confidence === "safe" ? "rgba(200,169,106,0.12)" : "rgba(255,122,92,0.12)",
+                color: todayOutfit.confidence === "high" ? "#5F8F7F" : todayOutfit.confidence === "safe" ? "#C8A96A" : "#7FA9A3",
+                backgroundColor: todayOutfit.confidence === "high" ? "rgba(95,143,127,0.12)" : todayOutfit.confidence === "safe" ? "rgba(200,169,106,0.12)" : "rgba(127,169,163,0.12)",
               }}
             >
               {todayOutfit.confidence === "high" ? "High match" : todayOutfit.confidence === "safe" ? "Safe" : "Bold pick"}
@@ -130,7 +130,7 @@ export default function Home() {
           <div className="space-y-2">
             <button
               onClick={() => navigate("/timeline")}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] text-sm font-semibold text-white transition active:scale-[0.97]"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] text-sm font-semibold text-white transition active:scale-[0.97]"
             >
               View on Timeline <ChevronRight size={15} />
             </button>
@@ -147,7 +147,7 @@ export default function Home() {
         <Card elevated gradient className="mb-5 rounded-[28px]">
           <div className="mb-3">
             <h2 className="text-[18px] font-semibold">Today&apos;s Look</h2>
-            <p className="text-sm text-[#A8AFBE]">Smart casual</p>
+            <p className="text-sm text-[#AABBC0]">Smart casual</p>
           </div>
 
           <motion.div
@@ -165,7 +165,7 @@ export default function Home() {
           <div className="space-y-2">
             <button
               onClick={() => navigate("/timeline")}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] text-sm font-semibold text-white transition active:scale-[0.97]"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] text-sm font-semibold text-white transition active:scale-[0.97]"
             >
               <Sparkles size={15} />
               Generate Today&apos;s Look
@@ -203,11 +203,11 @@ export default function Home() {
             <h3 className="text-[16px] font-semibold">
               You haven&apos;t worn 6 items in 90 days
             </h3>
-            <p className="mt-1 text-sm text-[#A8AFBE]">
+            <p className="mt-1 text-sm text-[#AABBC0]">
               Rediscover pieces already in your wardrobe
             </p>
           </div>
-          <button className="rounded-full bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] px-3 py-2 text-xs font-semibold text-white">
+          <button className="rounded-full bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] px-3 py-2 text-xs font-semibold text-white">
             Style Them
           </button>
         </div>
@@ -217,7 +217,7 @@ export default function Home() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-[16px] font-semibold">Daily Styling Insight</h3>
-            <p className="mt-2 text-sm leading-6 text-[#A8AFBE]">
+            <p className="mt-2 text-sm leading-6 text-[#AABBC0]">
               Try tonal dressing today — layering similar shades creates a cleaner silhouette and
               makes the whole look feel more intentional
             </p>

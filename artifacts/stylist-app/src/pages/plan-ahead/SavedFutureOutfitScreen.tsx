@@ -29,7 +29,7 @@ const statusConfig: Record<
 > = {
   not_purchased: {
     label: "Not purchased",
-    color: "#6F7788",
+    color: "#6B8490",
     bg: "bg-white/5",
     icon: <Package size={13} />,
   },
@@ -41,8 +41,8 @@ const statusConfig: Record<
   },
   arrived: {
     label: "Arrived",
-    color: "#4ECFA8",
-    bg: "bg-[#4ECFA8]/10",
+    color: "#5F8F7F",
+    bg: "bg-[#5F8F7F]/10",
     icon: <CheckCircle2 size={13} />,
   },
 }
@@ -59,10 +59,10 @@ export default function SavedFutureOutfitScreen() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center gap-4 pt-20 text-center">
-          <p className="text-[#A8AFBE]">No outfit saved for this event yet.</p>
+          <p className="text-[#AABBC0]">No outfit saved for this event yet.</p>
           <button
             onClick={() => navigate(`/plan-ahead/${eventId}/builder`)}
-            className="rounded-full bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] px-5 py-2.5 text-sm font-semibold text-white"
+            className="rounded-full bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] px-5 py-2.5 text-sm font-semibold text-white"
           >
             Build Outfit
           </button>
@@ -90,7 +90,7 @@ export default function SavedFutureOutfitScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate(`/plan-ahead/${eventId}`)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
@@ -102,35 +102,35 @@ export default function SavedFutureOutfitScreen() {
               {event.name}
             </h1>
           </div>
-          <p className="text-xs text-[#6F7788]">{formatEventDate(event.date)}</p>
+          <p className="text-xs text-[#6B8490]">{formatEventDate(event.date)}</p>
         </div>
       </header>
 
       {isComplete ? (
-        <Card className="mb-5 bg-gradient-to-br from-[#0F2820] to-[#151922] text-center py-4">
+        <Card className="mb-5 bg-gradient-to-br from-[#1A2D3A] to-[#2A3645] text-center py-4">
           <p className="text-xl">🎉</p>
-          <p className="mt-2 text-[15px] font-semibold text-[#4ECFA8]">
+          <p className="mt-2 text-[15px] font-semibold text-[#5F8F7F]">
             Your outfit is now complete
           </p>
-          <p className="mt-1 text-xs text-[#A8AFBE]">
+          <p className="mt-1 text-xs text-[#AABBC0]">
             Every piece has arrived. You're ready.
           </p>
         </Card>
       ) : (
         <Card className="mb-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-[#F6F3EE]">Outfit progress</p>
-            <p className="text-sm font-semibold text-[#F6F3EE]">
+            <p className="text-sm font-medium text-[#F2F4F5]">Outfit progress</p>
+            <p className="text-sm font-semibold text-[#F2F4F5]">
               {arrivedCount} / {totalCount} arrived
             </p>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#FF4D8D] to-[#4ECFA8] transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-[#3F6F73] to-[#5F8F7F] transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <p className="mt-2 text-xs text-[#6F7788]">
+          <p className="mt-2 text-xs text-[#6B8490]">
             Tap any item to update its delivery status
           </p>
         </Card>
@@ -145,9 +145,9 @@ export default function SavedFutureOutfitScreen() {
               <button
                 key={item.id}
                 onClick={() => handleCycleStatus(item.id, item.purchaseStatus)}
-                className="overflow-hidden rounded-[20px] border border-white/8 bg-[#151922] text-left transition active:scale-[0.97]"
+                className="overflow-hidden rounded-[20px] border border-white/8 bg-[#2A3645] text-left transition active:scale-[0.97]"
               >
-                <div className="relative h-[110px] overflow-hidden bg-[#11151C]">
+                <div className="relative h-[110px] overflow-hidden bg-[#1C2A37]">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -162,8 +162,8 @@ export default function SavedFutureOutfitScreen() {
                   </div>
                 </div>
                 <div className="p-2">
-                  <p className="truncate text-xs font-medium text-[#F6F3EE]">{item.name}</p>
-                  <p className="mt-0.5 text-[10px] text-[#6F7788]">{item.category}</p>
+                  <p className="truncate text-xs font-medium text-[#F2F4F5]">{item.name}</p>
+                  <p className="mt-0.5 text-[10px] text-[#6B8490]">{item.category}</p>
                 </div>
               </button>
             )
@@ -178,16 +178,16 @@ export default function SavedFutureOutfitScreen() {
             {wardrobeItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 rounded-[16px] border border-white/8 bg-[#151922] p-3"
+                className="flex items-center gap-3 rounded-[16px] border border-white/8 bg-[#2A3645] p-3"
               >
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#11151C]">
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#1C2A37]">
                   <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#F6F3EE]">{item.name}</p>
-                  <p className="text-xs text-[#6F7788]">{item.category}</p>
+                  <p className="text-sm font-medium text-[#F2F4F5]">{item.name}</p>
+                  <p className="text-xs text-[#6B8490]">{item.category}</p>
                 </div>
-                <div className="ml-auto flex items-center gap-1 rounded-full bg-[#4ECFA8]/10 px-2 py-1 text-[10px] font-medium text-[#4ECFA8]">
+                <div className="ml-auto flex items-center gap-1 rounded-full bg-[#5F8F7F]/10 px-2 py-1 text-[10px] font-medium text-[#5F8F7F]">
                   <CheckCircle2 size={11} />
                   Ready
                 </div>
@@ -207,14 +207,14 @@ export default function SavedFutureOutfitScreen() {
                 <button
                   key={item.id}
                   onClick={() => handleCycleStatus(item.id, item.purchaseStatus)}
-                  className="flex w-full items-center gap-3 rounded-[16px] border border-white/8 bg-[#151922] p-3 text-left transition active:scale-[0.98]"
+                  className="flex w-full items-center gap-3 rounded-[16px] border border-white/8 bg-[#2A3645] p-3 text-left transition active:scale-[0.98]"
                 >
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#11151C]">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-[#1C2A37]">
                     <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-[#F6F3EE]">{item.name}</p>
-                    <p className="text-xs text-[#6F7788]">{item.price}</p>
+                    <p className="truncate text-sm font-medium text-[#F2F4F5]">{item.name}</p>
+                    <p className="text-xs text-[#6B8490]">{item.price}</p>
                   </div>
                   <div
                     className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium ${config.bg}`}
@@ -227,7 +227,7 @@ export default function SavedFutureOutfitScreen() {
               )
             })}
           </div>
-          <p className="mt-3 text-center text-xs text-[#6F7788]">
+          <p className="mt-3 text-center text-xs text-[#6B8490]">
             Tap an item to cycle its status
           </p>
         </section>

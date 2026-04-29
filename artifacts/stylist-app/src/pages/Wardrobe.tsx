@@ -31,7 +31,7 @@ function statusDot(status: CapturedItem["status"] | undefined) {
   if (!status || status === "Clean") return null
   const cfg: Record<string, { label: string; color: string }> = {
     "In wash": { label: "In wash", color: "#C8A96A" },
-    "On loan": { label: "On loan", color: "#FF7A5C" },
+    "On loan": { label: "On loan", color: "#7FA9A3" },
   }
   return cfg[status] ?? null
 }
@@ -86,16 +86,16 @@ export default function Wardrobe() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-[28px] font-semibold tracking-[-0.3px]">Wardrobe</h1>
-            <p className="mt-1 text-sm text-[#A8AFBE]">
+            <p className="mt-1 text-sm text-[#AABBC0]">
               {totalCount} item{totalCount !== 1 ? "s" : ""}
               {newCount > 0 && (
-                <span className="ml-1.5 text-[#4ECFA8]">· {newCount} added by you</span>
+                <span className="ml-1.5 text-[#5F8F7F]">· {newCount} added by you</span>
               )}
             </p>
           </div>
           <button
             onClick={() => navigate("/wardrobe/add")}
-            className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+            className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
             aria-label="Add item"
           >
             <Camera size={18} />
@@ -126,7 +126,7 @@ export default function Wardrobe() {
 
         {filteredItems.length === 0 ? (
           <div className="mt-8 text-center">
-            <p className="text-sm text-[#6F7788]">No items found.</p>
+            <p className="text-sm text-[#6B8490]">No items found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3">
@@ -146,10 +146,10 @@ export default function Wardrobe() {
                       image:    item.image,
                     })
                   }
-                  className="overflow-hidden rounded-[20px] border border-white/8 bg-[#171C25] text-left transition active:scale-[0.97]"
+                  className="overflow-hidden rounded-[20px] border border-white/8 bg-[#202E3E] text-left transition active:scale-[0.97]"
                 >
                   {/* Image area */}
-                  <div className="relative h-[110px] overflow-hidden bg-[#11151C]">
+                  <div className="relative h-[110px] overflow-hidden bg-[#1C2A37]">
                     {item.image ? (
                       <img
                         src={item.image}
@@ -157,8 +157,8 @@ export default function Wardrobe() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[#1A1F2B]">
-                        <Camera size={20} className="text-[#3A4255]" />
+                      <div className="flex h-full w-full items-center justify-center bg-[#243140]">
+                        <Camera size={20} className="text-[#2E4055]" />
                       </div>
                     )}
 
@@ -169,7 +169,7 @@ export default function Wardrobe() {
                     )}
 
                     {item.isCapture && (
-                      <div className="absolute left-2 top-2 rounded-full bg-[#4ECFA8]/25 px-1.5 py-0.5 text-[9px] font-semibold text-[#4ECFA8]">
+                      <div className="absolute left-2 top-2 rounded-full bg-[#5F8F7F]/25 px-1.5 py-0.5 text-[9px] font-semibold text-[#5F8F7F]">
                         New
                       </div>
                     )}
@@ -177,9 +177,9 @@ export default function Wardrobe() {
 
                   {/* Text + indicators */}
                   <div className="p-2">
-                    <p className="truncate text-xs font-medium text-[#F6F3EE]">{item.name}</p>
+                    <p className="truncate text-xs font-medium text-[#F2F4F5]">{item.name}</p>
                     <div className="mt-1 flex items-center gap-1">
-                      <p className="text-[11px] text-[#6F7788]">{item.category}</p>
+                      <p className="text-[11px] text-[#6B8490]">{item.category}</p>
                       {dot && (
                         <span className="text-[10px]" style={{ color: dot.color }}>
                           · {dot.label}
@@ -207,8 +207,8 @@ export default function Wardrobe() {
       {/* Floating add button */}
       <button
         onClick={() => navigate("/wardrobe/add")}
-        className="fixed bottom-24 right-[max(24px,calc((100vw-430px)/2+24px))] flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_8px_24px_rgba(255,92,130,0.28)] transition active:scale-[0.98]"
-        style={{ background: "linear-gradient(to right, #FF4D8D, #FF7A5C)" }}
+        className="fixed bottom-24 right-[max(24px,calc((100vw-430px)/2+24px))] flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_8px_24px_rgba(63,111,115,0.28)] transition active:scale-[0.98]"
+        style={{ background: "linear-gradient(to right, #3F6F73, #7FA9A3)" }}
         aria-label="Add clothing item"
       >
         <Plus size={24} />

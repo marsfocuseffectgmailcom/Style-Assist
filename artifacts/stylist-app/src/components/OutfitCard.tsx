@@ -18,7 +18,7 @@ export function OutfitCard({
   ...props
 }: OutfitCardProps) {
   const outerClasses = selected
-    ? "bg-gradient-to-br from-[#FF4D8D] via-[#C8A96A] to-[#FF7A5C] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_24px_rgba(255,92,130,0.18)]"
+    ? "bg-gradient-to-br from-[#3F6F73] via-[#C8A96A] to-[#7FA9A3] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_24px_rgba(63,111,115,0.18)]"
     : "bg-transparent"
 
   const imageHeight = compact ? "h-[110px]" : "h-[120px]"
@@ -28,8 +28,8 @@ export function OutfitCard({
       className={`min-w-[128px] rounded-[20px] p-[1px] ${outerClasses} ${className}`}
       {...props}
     >
-      <div className="h-full rounded-[20px] border border-white/8 bg-[#171C25] p-2">
-        <div className={`mb-2 overflow-hidden rounded-[16px] bg-[#11151C] ${imageHeight}`}>
+      <div className="h-full rounded-[20px] border border-white/8 bg-[#202E3E] p-2">
+        <div className={`mb-2 overflow-hidden rounded-[16px] bg-[#1C2A37] ${imageHeight}`}>
           <img
             src={image}
             alt={title}
@@ -38,8 +38,8 @@ export function OutfitCard({
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-[#F6F3EE]">{title}</h3>
-          <p className="text-xs text-[#A8AFBE]">{subtitle}</p>
+          <h3 className="text-sm font-semibold text-[#F2F4F5]">{title}</h3>
+          <p className="text-xs text-[#AABBC0]">{subtitle}</p>
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ const navItems = [
 
 export function BottomNav() {
   return (
-    <div className="fixed bottom-3 left-1/2 z-50 w-[calc(100%-24px)] max-w-[382px] -translate-x-1/2 rounded-[28px] border border-white/10 bg-[#141820]/90 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+    <div className="fixed bottom-3 left-1/2 z-50 w-[calc(100%-24px)] max-w-[382px] -translate-x-1/2 rounded-[28px] border border-white/10 bg-[#1E2B3A]/90 px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
       <div className="flex items-center justify-between">
         {navItems.map(({ label, to, icon: Icon }) => (
           <NavLink
@@ -20,7 +20,7 @@ export function BottomNav() {
             end={to === "/"}
             className={({ isActive }) =>
               `flex min-w-[56px] flex-col items-center gap-1 transition ${
-                isActive ? "text-[#FF4D8D]" : "text-[#6F7788]"
+                isActive ? "text-[#3F6F73]" : "text-[#6B8490]"
               }`
             }
           >

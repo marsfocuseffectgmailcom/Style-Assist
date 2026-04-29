@@ -62,7 +62,7 @@ export default function ProductSuggestionsScreen() {
     return (
       <AppShell>
         <div className="flex h-full items-center justify-center pt-20">
-          <button onClick={() => navigate("/plan-ahead")} className="text-sm text-[#FF4D8D]">
+          <button onClick={() => navigate("/plan-ahead")} className="text-sm text-[#3F6F73]">
             Back to Plan Ahead
           </button>
         </div>
@@ -87,30 +87,30 @@ export default function ProductSuggestionsScreen() {
       <div
         className={`flex items-center gap-3 rounded-[20px] border p-3 transition ${
           disabled
-            ? "border-white/5 bg-[#111519] opacity-50"
+            ? "border-white/5 bg-[#1C2A37] opacity-50"
             : isAdded
-              ? "border-[#FF4D8D]/40 bg-[#FF4D8D]/8"
-              : "border-white/10 bg-[#151922]"
+              ? "border-[#3F6F73]/40 bg-[#3F6F73]/8"
+              : "border-white/10 bg-[#2A3645]"
         }`}
       >
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#11151C]">
+        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-[#1C2A37]">
           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-semibold text-[#F6F3EE]">{item.name}</h4>
-          <p className="mt-0.5 text-xs uppercase tracking-[0.1em] text-[#6F7788]">
+          <h4 className="truncate text-sm font-semibold text-[#F2F4F5]">{item.name}</h4>
+          <p className="mt-0.5 text-xs uppercase tracking-[0.1em] text-[#6B8490]">
             {item.brand}
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-[#F6F3EE]">{item.price}</p>
+            <p className="text-sm font-medium text-[#F2F4F5]">{item.price}</p>
             {disabled ? (
-              <span className="flex items-center gap-1 rounded-full bg-[#FF7A5C]/15 px-2 py-0.5 text-[10px] font-medium text-[#FF7A5C]">
+              <span className="flex items-center gap-1 rounded-full bg-[#7FA9A3]/15 px-2 py-0.5 text-[10px] font-medium text-[#7FA9A3]">
                 <Clock size={10} />
                 Won&apos;t arrive in time
               </span>
             ) : (
-              <span className="rounded-full bg-[#4ECFA8]/12 px-2 py-0.5 text-[10px] font-medium text-[#4ECFA8]">
+              <span className="rounded-full bg-[#5F8F7F]/12 px-2 py-0.5 text-[10px] font-medium text-[#5F8F7F]">
                 Arrives ~{arrivalLabel}
               </span>
             )}
@@ -122,8 +122,8 @@ export default function ProductSuggestionsScreen() {
             onClick={() => handleToggle(item)}
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-[0.95] ${
               isAdded
-                ? "border-[#FF4D8D]/40 bg-[#FF4D8D]/20 text-[#FF78A8]"
-                : "border-white/10 bg-white/5 text-[#A8AFBE] hover:bg-white/10"
+                ? "border-[#3F6F73]/40 bg-[#3F6F73]/20 text-[#5F8F8A]"
+                : "border-white/10 bg-white/5 text-[#AABBC0] hover:bg-white/10"
             }`}
             aria-label={isAdded ? "Remove from outfit" : "Add to outfit"}
           >
@@ -139,14 +139,14 @@ export default function ProductSuggestionsScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate(`/plan-ahead/${eventId}`)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
           <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Shop the Gaps</h1>
-          <p className="text-xs text-[#6F7788]">Curated for {event.name}</p>
+          <p className="text-xs text-[#6B8490]">Curated for {event.name}</p>
         </div>
       </header>
 
@@ -159,7 +159,7 @@ export default function ProductSuggestionsScreen() {
           <p className="text-sm font-semibold" style={{ color: overallColor }}>
             {overallStatus}
           </p>
-          <p className="text-xs text-[#6F7788]">
+          <p className="text-xs text-[#6B8490]">
             {overallStatus === "Safe delivery" && "Plenty of time — shop at your own pace"}
             {overallStatus === "Risky delivery" && "Order soon — standard delivery may be tight"}
             {overallStatus === "Too late" && "Express delivery only — check at checkout"}
@@ -183,7 +183,7 @@ export default function ProductSuggestionsScreen() {
       {tooLate.length > 0 && (
         <section className="mt-6">
           <SectionHeader title="Won't arrive in time" />
-          <p className="mb-3 text-xs text-[#6F7788]">
+          <p className="mb-3 text-xs text-[#6B8490]">
             Based on standard delivery windows — these items cannot reach you before the event.
           </p>
           <div className="space-y-3">
@@ -196,7 +196,7 @@ export default function ProductSuggestionsScreen() {
 
       {viable.length === 0 && tooLate.length === 0 && (
         <Card className="text-center py-8">
-          <p className="text-sm text-[#A8AFBE]">No suggestions available for this event.</p>
+          <p className="text-sm text-[#AABBC0]">No suggestions available for this event.</p>
         </Card>
       )}
 

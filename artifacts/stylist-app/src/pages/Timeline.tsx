@@ -44,14 +44,14 @@ function isToday(dateStr: string): boolean {
 }
 
 const confidenceLabel: Record<string, { label: string; color: string; bg: string }> = {
-  high: { label: "High match", color: "#4ECFA8", bg: "rgba(78,207,168,0.12)" },
+  high: { label: "High match", color: "#5F8F7F", bg: "rgba(95,143,127,0.12)" },
   safe: { label: "Safe", color: "#C8A96A", bg: "rgba(200,169,106,0.12)" },
-  experimental: { label: "Bold pick", color: "#FF7A5C", bg: "rgba(255,122,92,0.12)" },
+  experimental: { label: "Bold pick", color: "#7FA9A3", bg: "rgba(127,169,163,0.12)" },
 }
 
 function OutfitCollage({ items }: { items: { image: string; name: string }[] }) {
   const shown = items.slice(0, 4)
-  if (shown.length === 0) return <div className="h-full w-full bg-[#1A1F2B]" />
+  if (shown.length === 0) return <div className="h-full w-full bg-[#243140]" />
   if (shown.length === 1) {
     return <img src={shown[0].image} alt={shown[0].name} className="h-full w-full object-cover" />
   }
@@ -81,11 +81,11 @@ function DatePickerSheet({ title, excludeDate, onSelect, onClose }: DatePickerSh
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="relative max-h-[70vh] overflow-y-auto rounded-t-[28px] bg-[#151922] px-5 pb-10 pt-5"
+        className="relative max-h-[70vh] overflow-y-auto rounded-t-[28px] bg-[#2A3645] px-5 pb-10 pt-5"
       >
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-[16px] font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-[#6F7788]">
+          <button onClick={onClose} className="text-[#6B8490]">
             <X size={18} />
           </button>
         </div>
@@ -98,11 +98,11 @@ function DatePickerSheet({ title, excludeDate, onSelect, onClose }: DatePickerSh
                 onClick={() => onSelect(d)}
                 className="flex w-full items-center justify-between rounded-[16px] border border-white/8 bg-white/5 px-4 py-3 text-left transition active:scale-[0.98]"
               >
-                <span className="text-sm font-medium text-[#F6F3EE]">
+                <span className="text-sm font-medium text-[#F2F4F5]">
                   {weekday} {day} {month}
                 </span>
                 {isToday(d) && (
-                  <span className="rounded-full bg-[#FF4D8D]/15 px-2 py-0.5 text-[10px] font-semibold text-[#FF4D8D]">
+                  <span className="rounded-full bg-[#3F6F73]/15 px-2 py-0.5 text-[10px] font-semibold text-[#3F6F73]">
                     Today
                   </span>
                 )}
@@ -135,7 +135,7 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-[24px] border p-4 ${
-        today ? "border-[#FF4D8D]/30 bg-[#151922]" : "border-white/8 bg-[#151922]"
+        today ? "border-[#3F6F73]/30 bg-[#2A3645]" : "border-white/8 bg-[#2A3645]"
       }`}
     >
       <div className="mb-3 flex items-start justify-between">
@@ -143,19 +143,19 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
           <div className="flex items-center gap-2">
             <span
               className={`text-[13px] font-semibold uppercase tracking-[0.06em] ${
-                today ? "text-[#FF4D8D]" : "text-[#6F7788]"
+                today ? "text-[#3F6F73]" : "text-[#6B8490]"
               }`}
             >
               {weekday}
             </span>
             {today && (
-              <span className="rounded-full bg-[#FF4D8D]/15 px-2 py-0.5 text-[10px] font-semibold text-[#FF4D8D]">
+              <span className="rounded-full bg-[#3F6F73]/15 px-2 py-0.5 text-[10px] font-semibold text-[#3F6F73]">
                 Today
               </span>
             )}
           </div>
-          <p className="text-[22px] font-bold leading-none tracking-[-0.5px] text-[#F6F3EE]">
-            {day} <span className="text-[16px] font-medium text-[#A8AFBE]">{month}</span>
+          <p className="text-[22px] font-bold leading-none tracking-[-0.5px] text-[#F2F4F5]">
+            {day} <span className="text-[16px] font-medium text-[#AABBC0]">{month}</span>
           </p>
         </div>
         {event && (
@@ -168,12 +168,12 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
       {outfit ? (
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[16px] bg-[#1A1F2B]">
+            <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[16px] bg-[#243140]">
               <OutfitCollage items={outfit.items} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#F6F3EE]">{outfit.name}</p>
-              <p className="mt-0.5 text-xs text-[#6F7788]">
+              <p className="truncate text-sm font-semibold text-[#F2F4F5]">{outfit.name}</p>
+              <p className="mt-0.5 text-xs text-[#6B8490]">
                 {outfit.items.length} piece{outfit.items.length !== 1 ? "s" : ""}
               </p>
               <div className="mt-1.5">
@@ -193,21 +193,21 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
           <div className="flex gap-2">
             <button
               onClick={onDuplicate}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#A8AFBE] transition active:scale-[0.97]"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#AABBC0] transition active:scale-[0.97]"
             >
               <Copy size={13} />
               Copy
             </button>
             <button
               onClick={onMove}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#A8AFBE] transition active:scale-[0.97]"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#AABBC0] transition active:scale-[0.97]"
             >
               <MoveRight size={13} />
               Move
             </button>
             <button
               onClick={onRemove}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#FF7A5C] transition active:scale-[0.97]"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-[14px] border border-white/8 bg-white/5 py-2 text-[12px] text-[#7FA9A3] transition active:scale-[0.97]"
             >
               <Trash2 size={13} />
               Remove
@@ -219,8 +219,8 @@ function DayCard({ dateStr, outfit, event, onGenerate, onRemove, onDuplicate, on
           onClick={onGenerate}
           className="flex w-full items-center justify-between rounded-[16px] border border-dashed border-white/15 bg-white/3 px-4 py-3 transition active:scale-[0.98] hover:border-white/25"
         >
-          <span className="text-sm text-[#6F7788]">No outfit planned yet</span>
-          <span className="flex items-center gap-1 text-[12px] font-medium text-[#FF4D8D]">
+          <span className="text-sm text-[#6B8490]">No outfit planned yet</span>
+          <span className="flex items-center gap-1 text-[12px] font-medium text-[#3F6F73]">
             Generate <ChevronRight size={14} />
           </span>
         </button>
@@ -280,18 +280,18 @@ export default function Timeline() {
     <AppShell>
       <header className="mb-5 flex items-start justify-between pt-4">
         <div>
-          <p className="text-sm text-[#A8AFBE]">Your outfits,</p>
+          <p className="text-sm text-[#AABBC0]">Your outfits,</p>
           <h1 className="text-[28px] font-bold leading-none tracking-[-0.5px]">already handled.</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate("/incoming-items")}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F6F3EE]"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#F2F4F5]"
             aria-label="Incoming items"
           >
             <Package size={18} />
             {incomingItems.length > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#FF4D8D] text-[9px] font-bold">
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#3F6F73] text-[9px] font-bold">
                 {incomingItems.length}
               </span>
             )}
@@ -303,7 +303,7 @@ export default function Timeline() {
       <button
         onClick={handlePlanMonth}
         disabled={planningMonth}
-        className="mb-5 flex w-full items-center justify-center gap-2 rounded-[20px] bg-gradient-to-r from-[#FF4D8D] to-[#FF7A5C] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(255,77,141,0.30)] transition active:scale-[0.97] disabled:opacity-70"
+        className="mb-5 flex w-full items-center justify-center gap-2 rounded-[20px] bg-gradient-to-r from-[#3F6F73] to-[#7FA9A3] py-4 text-[15px] font-semibold text-white shadow-[0_4px_20px_rgba(63,111,115,0.30)] transition active:scale-[0.97] disabled:opacity-70"
       >
         {planningMonth ? (
           <>
@@ -326,21 +326,21 @@ export default function Timeline() {
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 rounded-[16px] bg-[#4ECFA8]/12 px-4 py-3 text-sm font-medium text-[#4ECFA8]"
+          className="mb-4 rounded-[16px] bg-[#5F8F7F]/12 px-4 py-3 text-sm font-medium text-[#5F8F7F]"
         >
           Your month is planned — outfits ready for 28 days.
         </motion.div>
       )}
 
-      <div className="mb-5 flex gap-1.5 rounded-[18px] border border-white/8 bg-[#0F1115] p-1">
+      <div className="mb-5 flex gap-1.5 rounded-[18px] border border-white/8 bg-[#1F2A37] p-1">
         {([1, 2, 4] as Range[]).map((r) => (
           <button
             key={r}
             onClick={() => setRange(r)}
             className={`flex-1 rounded-[14px] py-2 text-[13px] font-semibold transition ${
               range === r
-                ? "bg-[#1A1F2B] text-[#F6F3EE] shadow-sm"
-                : "text-[#6F7788]"
+                ? "bg-[#243140] text-[#F2F4F5] shadow-sm"
+                : "text-[#6B8490]"
             }`}
           >
             {r === 1 ? "1 Week" : r === 2 ? "2 Weeks" : "4 Weeks"}
@@ -349,7 +349,7 @@ export default function Timeline() {
       </div>
 
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[13px] text-[#6F7788]">
+        <p className="text-[13px] text-[#6B8490]">
           {days.filter((d) => outfits[d]).length} of {days.length} days planned
         </p>
         <button
@@ -399,17 +399,17 @@ export default function Timeline() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0F1115]/90 backdrop-blur-lg"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1F2A37]/90 backdrop-blur-lg"
           >
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#FF4D8D]/20 to-[#FF7A5C]/20"
+              className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#3F6F73]/20 to-[#7FA9A3]/20"
             >
-              <CalendarDays size={36} className="text-[#FF4D8D]" />
+              <CalendarDays size={36} className="text-[#3F6F73]" />
             </motion.div>
-            <p className="text-[20px] font-semibold text-[#F6F3EE]">Planning your month…</p>
-            <p className="mt-2 text-sm text-[#6F7788]">Building outfit combos from your wardrobe</p>
+            <p className="text-[20px] font-semibold text-[#F2F4F5]">Planning your month…</p>
+            <p className="mt-2 text-sm text-[#6B8490]">Building outfit combos from your wardrobe</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -421,7 +421,7 @@ export default function Timeline() {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
       onClick={() => setShowTonightMode(true)}
-      className="fixed bottom-[88px] right-4 z-40 flex items-center gap-2 rounded-full bg-[#1A1F2B] px-4 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-[#C8A96A]/25 text-[#F6F3EE] transition active:scale-[0.96] hover:border-[#C8A96A]/50"
+      className="fixed bottom-[88px] right-4 z-40 flex items-center gap-2 rounded-full bg-[#243140] px-4 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-[#C8A96A]/25 text-[#F2F4F5] transition active:scale-[0.96] hover:border-[#C8A96A]/50"
       aria-label="Tonight Mode"
     >
       <Moon size={15} className="text-[#C8A96A]" />

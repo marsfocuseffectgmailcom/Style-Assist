@@ -13,25 +13,25 @@ import type { PlannedOutfitItem, TimelineOutfit } from "../lib/types"
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 
 const T = {
-  bg:       "#0F1115",
-  elevated: "#151922",
-  card:     "#1A1F2B",
-  pink:     "#FF4D8D",
-  coral:    "#FF7A5C",
+  bg:       "#1F2A37",
+  elevated: "#2A3645",
+  card:     "#243140",
+  pink:     "#3F6F73",
+  coral:    "#7FA9A3",
   gold:     "#C8A96A",
-  teal:     "#4ECFA8",
-  text:     "#F6F3EE",
-  sub:      "#A8AFBE",
-  muted:    "#6F7788",
+  teal:     "#5F8F7F",
+  text:     "#F2F4F5",
+  sub:      "#AABBC0",
+  muted:    "#6B8490",
   border:   "rgba(255,255,255,0.08)",
 }
 
 // ─── Confidence labels ─────────────────────────────────────────────────────────
 
 const confidenceConfig = {
-  high:         { label: "High match",  color: T.teal,  bg: "rgba(78,207,168,0.10)",   border: "rgba(78,207,168,0.22)"   },
+  high:         { label: "High match",  color: T.teal,  bg: "rgba(95,143,127,0.10)",   border: "rgba(95,143,127,0.22)"   },
   safe:         { label: "Safe choice", color: T.gold,  bg: "rgba(200,169,106,0.10)",  border: "rgba(200,169,106,0.22)"  },
-  experimental: { label: "Bold pick",   color: "#FF7A5C", bg: "rgba(255,122,92,0.10)", border: "rgba(255,122,92,0.22)" },
+  experimental: { label: "Bold pick",   color: "#7FA9A3", bg: "rgba(127,169,163,0.10)", border: "rgba(127,169,163,0.22)" },
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ function ItemCard({ item, index }: { item: PlannedOutfitItem; index: number }) {
       style={{ borderColor: T.border, backgroundColor: T.card }}
     >
       {/* Photo */}
-      <div className="relative h-[140px] w-full overflow-hidden bg-[#11151C]">
+      <div className="relative h-[140px] w-full overflow-hidden bg-[#1C2A37]">
         {item.image ? (
           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
         ) : (
@@ -112,7 +112,7 @@ function ItemCard({ item, index }: { item: PlannedOutfitItem; index: number }) {
         <div className="mt-2">
           <span
             className="inline-block rounded-full px-2 py-[3px] text-[10px] font-semibold"
-            style={{ backgroundColor: "rgba(255,77,141,0.10)", color: T.pink, border: "1px solid rgba(255,77,141,0.20)" }}
+            style={{ backgroundColor: "rgba(63,111,115,0.10)", color: T.pink, border: "1px solid rgba(63,111,115,0.20)" }}
           >
             {role}
           </span>
@@ -259,7 +259,7 @@ function PlanLaterSheet({
                 className="flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-50"
                 style={{
                   background: `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-                  boxShadow: "0 4px 20px rgba(255,77,141,0.28)",
+                  boxShadow: "0 4px 20px rgba(63,111,115,0.28)",
                 }}
               >
                 <Check size={16} />
@@ -448,7 +448,7 @@ export default function OutfitResultScreen() {
                     className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full"
                     style={{ backgroundColor: `${T.pink}80` }}
                   />
-                  <span className="text-[13px] leading-[1.65]" style={{ color: "#D4C9B8" }}>
+                  <span className="text-[13px] leading-[1.65]" style={{ color: "#D0D8D5" }}>
                     {tip}
                   </span>
                 </li>
@@ -470,7 +470,7 @@ export default function OutfitResultScreen() {
             </p>
           </div>
           <div className="px-4 py-3.5">
-            <p className="text-[13px] leading-[1.65]" style={{ color: "#D4C9B8" }}>
+            <p className="text-[13px] leading-[1.65]" style={{ color: "#D0D8D5" }}>
               {styleTip}
             </p>
           </div>
@@ -500,10 +500,10 @@ export default function OutfitResultScreen() {
       {outfit.upgrade && !styleTip && (
         <div
           className="mb-5 flex items-start gap-3 rounded-[18px] px-4 py-3.5"
-          style={{ backgroundColor: "rgba(255,77,141,0.06)", border: "1px solid rgba(255,77,141,0.14)" }}
+          style={{ backgroundColor: "rgba(63,111,115,0.06)", border: "1px solid rgba(63,111,115,0.14)" }}
         >
           <Sparkles size={13} className="mt-0.5 shrink-0" style={{ color: T.pink }} />
-          <p className="text-[12px] leading-relaxed" style={{ color: "#F6A8C4" }}>
+          <p className="text-[12px] leading-relaxed" style={{ color: "#A8C5C2" }}>
             {outfit.upgrade}
           </p>
         </div>
@@ -517,7 +517,7 @@ export default function OutfitResultScreen() {
           className="mb-3 flex w-full items-center justify-center gap-2 rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97]"
           style={{
             background: `linear-gradient(to right, ${T.pink}, ${T.coral})`,
-            boxShadow: "0 4px 20px rgba(255,77,141,0.28)",
+            boxShadow: "0 4px 20px rgba(63,111,115,0.28)",
           }}
         >
           <Check size={16} />

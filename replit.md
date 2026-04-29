@@ -32,7 +32,7 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 ### AI Fashion Stylist — `artifacts/stylist-app`
 
 - **Preview path**: `/`
-- **Description**: "Style Assist" (internal name Drape) — AI-powered personal stylist app, mobile-first dark UI (pink #FF4D8D / coral #FF7A5C / gold #C8A96A on near-black #0F1115). Australian app (AUD currency).
+- **Description**: "Style Assist" (internal name Drape) — AI-powered personal stylist app, mobile-first dark UI (teal #3F6F73 / soft teal #7FA9A3 / gold #C8A96A on navy #1F2A37). Australian app (AUD currency).
 - **Key features**:
   - Wardrobe manager — 11 items enriched with `colors[]`, `styleTags[]`, `seasonTags[]`
   - Style profile (gender, height, sizes, fabric preferences)
@@ -56,7 +56,12 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - `src/contexts/NotificationsContext.tsx`
   - `src/pages/GenerateOutfitScreen.tsx` — score meter, Stylist notes panel, breakdown expand
   - `src/pages/FirstExperienceFlow.tsx`
-- **Design tokens**: base `#0F1115`, elevated `#151922`, card `#1A1F2B`, text `#F6F3EE`, no blue vars
+- **Design tokens** (unified navy system):
+  - Backgrounds: base `#1F2A37`, elevated `#2A3645`, card `#243140`, deepest `#1C2A37`
+  - Accent primary: `#3F6F73` (teal), secondary: `#7FA9A3` (light teal)
+  - Success: `#5F8F7F`, Warning/Gold: `#C8A96A`, Error: `#B86B6B`
+  - Text: primary `#F2F4F5`, sub `#AABBC0`, muted `#6B8490`, dim `#5E7580`
+  - Rules: minimal/calm, accent used sparingly, no neon or bright colors
 - **localStorage keys**: `style-assist-onboarded`, `style-assist-timeline`, `style-assist-incoming-items`, `style-assist-planned-events`, `style-assist-notifications`, `style-assist-fte-done`, `style-assist-preferences`, `style-assist-recent-items`
 - **Australian seasons**: summer=Dec-Feb, autumn=Mar-May, winter=Jun-Aug, spring=Sep-Nov
 - **Confidence thresholds**: ≥82=high (teal), 65-81=safe (gold), 50-64=experimental (coral), <50 excluded

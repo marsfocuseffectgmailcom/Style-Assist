@@ -71,7 +71,7 @@ export default function FutureOutfitBuilderScreen() {
     return (
       <AppShell>
         <div className="flex h-full items-center justify-center pt-20">
-          <button onClick={() => navigate("/plan-ahead")} className="text-sm text-[#FF4D8D]">
+          <button onClick={() => navigate("/plan-ahead")} className="text-sm text-[#3F6F73]">
             Back to Plan Ahead
           </button>
         </div>
@@ -84,14 +84,14 @@ export default function FutureOutfitBuilderScreen() {
       <header className="mb-5 flex items-center gap-3 pt-4">
         <button
           onClick={() => navigate(`/plan-ahead/${eventId}`)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#A8AFBE] transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0] transition hover:bg-white/10"
           aria-label="Back"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
           <h1 className="text-[20px] font-semibold tracking-[-0.3px]">Build Outfit</h1>
-          <p className="text-xs text-[#6F7788]">Select from your wardrobe · {selectedIds.size} chosen</p>
+          <p className="text-xs text-[#6B8490]">Select from your wardrobe · {selectedIds.size} chosen</p>
         </div>
       </header>
 
@@ -119,26 +119,26 @@ export default function FutureOutfitBuilderScreen() {
                 key={item.id}
                 onClick={() => toggleItem(item)}
                 className={`overflow-hidden rounded-[20px] border text-left transition active:scale-[0.97] ${
-                  isSelected ? "border-[#FF4D8D]/60" : "border-white/8"
-                } bg-[#151922]`}
+                  isSelected ? "border-[#3F6F73]/60" : "border-white/8"
+                } bg-[#2A3645]`}
               >
-                <div className="relative h-[100px] overflow-hidden bg-[#11151C]">
+                <div className="relative h-[100px] overflow-hidden bg-[#1C2A37]">
                   <img
                     src={item.image}
                     alt={item.name}
                     className="h-full w-full object-cover"
                   />
                   {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#FF4D8D]/25">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF4D8D]">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#3F6F73]/25">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#3F6F73]">
                         <Check size={14} className="text-white" />
                       </div>
                     </div>
                   )}
                 </div>
                 <div className="p-2">
-                  <p className="truncate text-xs font-medium text-[#F6F3EE]">{item.name}</p>
-                  <p className="mt-0.5 text-[10px] text-[#6F7788]">{item.category}</p>
+                  <p className="truncate text-xs font-medium text-[#F2F4F5]">{item.name}</p>
+                  <p className="mt-0.5 text-[10px] text-[#6B8490]">{item.category}</p>
                 </div>
               </button>
             )
