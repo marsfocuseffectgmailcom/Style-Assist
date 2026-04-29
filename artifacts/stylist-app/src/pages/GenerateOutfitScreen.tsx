@@ -12,16 +12,24 @@ import {
   ThumbsUp,
   ThumbsDown,
   X,
+  Sun,
+  Cloud,
+  CloudRain,
+  Wind,
+  Snowflake,
 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { useStylePreferences } from "../hooks/useStylePreferences"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
+import { useWeather } from "../hooks/useWeather"
 import { wardrobeItems } from "../lib/mockData"
 import { generateOutfits } from "../lib/outfitGenerator"
 import type { GeneratedOutfit } from "../lib/outfitGenerator"
 import type { TimelineOutfit } from "../lib/types"
+import { applyWeatherAdaptation } from "../lib/weatherAdaptation"
+import type { WeatherData } from "../lib/weatherAdaptation"
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-AU", {
@@ -151,31 +159,56 @@ function BreakdownRow({ label, value, max }: { label: string; value: number; max
   )
 }
 
+// ─── WeatherIcon ─────────────────────────────────────────────────────────────
+
+function WeatherIcon({ weather, size = 14 }: { weather: WeatherData; size?: number }) {
+  if (weather.rain)                 return <CloudRain size={size} />
+  if (weather.condition === "hot")  return <Sun       size={size} />
+  if (weather.condition === "cold") return <Snowflake size={size} />
+  if (weather.wind)                 return <Wind      size={size} />
+  return <Cloud size={size} />
+}
+
+function weatherColor(weather: WeatherData): string {
+  if (weather.rain)                 return "#5E8FBE"
+  if (weather.condition === "hot")  return "#D4924A"
+  if (weather.condition === "cold") return "#8AAEC0"
+  if (weather.wind)                 return "#8AAEC0"
+  return "#7FA9A3"
+}
+
 // ─── OutfitCard ───────────────────────────────────────────────────────────────
 
 function OutfitCard({
   outfit,
+  originalOutfit,
+  weatherAdaptations,
   selected,
   anySelected,
   onSelect,
   index,
 }: {
-  outfit:      GeneratedOutfit
-  selected:    boolean
-  anySelected: boolean
-  onSelect:    () => void
-  index:       number
+  outfit:              GeneratedOutfit
+  originalOutfit:      GeneratedOutfit
+  weatherAdaptations:  string[]
+  selected:            boolean
+  anySelected:         boolean
+  onSelect:            () => void
+  index:               number
 }) {
-  const [showBreakdown,  setShowBreakdown]  = useState(false)
-  const [showShoeAlts,   setShowShoeAlts]   = useState(false)
-  const [dismissedIds,   setDismissedIds]   = useState<Set<string>>(new Set())
+  const [showBreakdown,    setShowBreakdown]    = useState(false)
+  const [showShoeAlts,     setShowShoeAlts]     = useState(false)
+  const [dismissedIds,     setDismissedIds]     = useState<Set<string>>(new Set())
+  const [weatherOverridden, setWeatherOverridden] = useState(false)
+
+  const activeOutfit = weatherOverridden ? originalOutfit : outfit
 
   const scoreAdjustment = [...dismissedIds].reduce(
-    (sum, id) => sum + (outfit.accessoryScores[id] ?? 0), 0
+    (sum, id) => sum + (activeOutfit.accessoryScores[id] ?? 0), 0
   )
-  const displayScore = Math.max(0, Math.min(100, outfit.score - scoreAdjustment))
+  const displayScore = Math.max(0, Math.min(100, activeOutfit.score - scoreAdjustment))
   const cfg    = confidenceConfig[displayScore >= 82 ? "high" : displayScore >= 65 ? "safe" : "experimental"]
-  const shown  = outfit.items.slice(0, 4)
+  const shown  = activeOutfit.items.slice(0, 4)
   const dimmed = anySelected && !selected
 
   return (
@@ -215,7 +248,7 @@ function OutfitCard({
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <h3 className="truncate text-[15px] font-semibold leading-tight text-[#F2F4F5]">
-                  {outfit.name}
+                  {activeOutfit.name}
                 </h3>
                 <span
                   className="mt-1.5 inline-flex h-7 items-center rounded-full px-2.5 text-[12px] font-bold"
@@ -227,8 +260,8 @@ function OutfitCard({
               <ScoreMeter score={displayScore} color={cfg.ring} />
             </div>
 
-            {outfit.reason && (
-              <p className="mt-2 text-[12px] leading-relaxed text-[#6B8490]">{outfit.reason}</p>
+            {activeOutfit.reason && (
+              <p className="mt-2 text-[12px] leading-relaxed text-[#6B8490]">{activeOutfit.reason}</p>
             )}
           </div>
 
@@ -243,9 +276,9 @@ function OutfitCard({
         </div>
 
         {/* Tags */}
-        {outfit.tags.length > 0 && (
+        {activeOutfit.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {outfit.tags.slice(0, 3).map((tag) => (
+            {activeOutfit.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="rounded-full border border-white/8 bg-white/5 px-2.5 py-0.5 text-[11px] capitalize text-[#AABBC0]"
@@ -256,11 +289,51 @@ function OutfitCard({
           </div>
         )}
 
+        {/* ── Weather adaptation badge ── */}
+        {weatherAdaptations.length > 0 && (
+          <motion.div
+            layout
+            className="mt-2.5 flex items-center gap-2 rounded-[11px] px-2.5 py-1.5"
+            style={
+              weatherOverridden
+                ? { backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }
+                : { backgroundColor: "rgba(94,143,190,0.10)",  border: "1px solid rgba(94,143,190,0.18)" }
+            }
+          >
+            {weatherOverridden ? (
+              <>
+                <span className="flex-1 text-[11px] text-[#5E7580]">Weather adaptation off</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setWeatherOverridden(false) }}
+                  className="shrink-0 text-[10px] font-semibold text-[#7FA9A3]"
+                >
+                  Restore
+                </button>
+              </>
+            ) : (
+              <>
+                <CloudRain size={11} className="shrink-0 text-[#5E8FBE]" />
+                <span className="flex-1 text-[11px] text-[#5E8FBE]">
+                  {weatherAdaptations.length === 1
+                    ? weatherAdaptations[0]
+                    : `${weatherAdaptations.length} weather adjustments made`}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setWeatherOverridden(true) }}
+                  className="shrink-0 text-[10px] font-semibold text-[#5E8FBE] opacity-70 hover:opacity-100"
+                >
+                  Revert
+                </button>
+              </>
+            )}
+          </motion.div>
+        )}
+
         {/* Item list */}
         <div className="mt-3 space-y-1.5">
-          {outfit.items.map((item) => {
+          {activeOutfit.items.map((item) => {
             const isShoe = item.category === "Shoes"
-            const hasAlts = isShoe && outfit.shoeAlternatives.length > 0
+            const hasAlts = isShoe && activeOutfit.shoeAlternatives.length > 0
             return (
               <div key={item.id}>
                 <div className="flex items-center gap-2">
@@ -285,7 +358,7 @@ function OutfitCard({
 
                 {/* Inline shoe alternatives */}
                 <AnimatePresence>
-                  {isShoe && showShoeAlts && outfit.shoeAlternatives.length > 0 && (
+                  {isShoe && showShoeAlts && activeOutfit.shoeAlternatives.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
@@ -301,7 +374,7 @@ function OutfitCard({
                           Also works with this outfit
                         </p>
                         <div className="space-y-1.5">
-                          {outfit.shoeAlternatives.map((alt) => (
+                          {activeOutfit.shoeAlternatives.map((alt) => (
                             <div key={alt.id} className="flex items-center gap-2">
                               <div className="h-7 w-7 shrink-0 overflow-hidden rounded-[8px] bg-[#243140]">
                                 <img src={alt.image} alt={alt.name} className="h-full w-full object-cover" />
@@ -320,13 +393,13 @@ function OutfitCard({
         </div>
 
         {/* ── Accessories section ── */}
-        {outfit.accessories.filter((a) => !dismissedIds.has(a.id)).length > 0 && (
+        {activeOutfit.accessories.filter((a) => !dismissedIds.has(a.id)).length > 0 && (
           <div className="mt-3 border-t border-white/[0.06] pt-3">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5E7580]">
               Styling additions
             </p>
             <div className="space-y-1.5">
-              {outfit.accessories
+              {activeOutfit.accessories
                 .filter((a) => !dismissedIds.has(a.id))
                 .map((acc) => (
                   <div key={acc.id} className="flex items-center gap-2">
@@ -335,9 +408,9 @@ function OutfitCard({
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="block truncate text-[12px] text-[#AABBC0]">{acc.name}</span>
-                      {outfit.accessoryReasons[acc.id] && (
+                      {activeOutfit.accessoryReasons[acc.id] && (
                         <span className="text-[10px] text-[#5E7580]">
-                          {outfit.accessoryReasons[acc.id]}
+                          {activeOutfit.accessoryReasons[acc.id]}
                         </span>
                       )}
                     </div>
@@ -375,13 +448,13 @@ function OutfitCard({
             className="overflow-hidden"
           >
             {/* Stylist notes */}
-            {outfit.tips.length > 0 && (
+            {activeOutfit.tips.length > 0 && (
               <div className="border-t border-white/6 px-4 pb-4 pt-3">
                 <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-[#C8A96A]">
                   Stylist notes
                 </p>
                 <ul className="space-y-2">
-                  {outfit.tips.map((tip, i) => (
+                  {activeOutfit.tips.map((tip, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <span className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#C8A96A]/60" />
                       <span className="text-[13px] leading-relaxed text-[#D0D8D5]">{tip}</span>
@@ -389,17 +462,17 @@ function OutfitCard({
                   ))}
                 </ul>
 
-                {outfit.upgrade && (
+                {activeOutfit.upgrade && (
                   <div className="mt-3 flex items-start gap-2.5 rounded-[12px] border border-[#3F6F73]/15 bg-[#3F6F73]/6 px-3 py-2.5">
                     <ArrowUpRight size={14} className="mt-0.5 shrink-0 text-[#3F6F73]" />
-                    <p className="text-[12px] leading-relaxed text-[#A8C5C2]">{outfit.upgrade}</p>
+                    <p className="text-[12px] leading-relaxed text-[#A8C5C2]">{activeOutfit.upgrade}</p>
                   </div>
                 )}
               </div>
             )}
 
             {/* Score breakdown toggle */}
-            {outfit.breakdown && Object.keys(outfit.breakdown).length > 0 && (
+            {activeOutfit.breakdown && Object.keys(activeOutfit.breakdown).length > 0 && (
               <div className="border-t border-white/6 px-4">
                 <button
                   onClick={() => setShowBreakdown((v) => !v)}
@@ -418,13 +491,13 @@ function OutfitCard({
                       className="space-y-2 overflow-hidden pb-4"
                     >
                       {Object.entries(breakdownLabels).map(([key, label]) => {
-                        const val = outfit.breakdown?.[key]
+                        const val = activeOutfit.breakdown?.[key]
                         if (val === undefined) return null
                         return <BreakdownRow key={key} label={label} value={val} max={breakdownMax[key]} />
                       })}
-                      {outfit.gapSuggestion && (
+                      {activeOutfit.gapSuggestion && (
                         <p className="mt-2 rounded-[10px] bg-[#C8A96A]/8 px-3 py-2 text-[11px] leading-relaxed text-[#C8A96A]">
-                          💡 {outfit.gapSuggestion}
+                          💡 {activeOutfit.gapSuggestion}
                         </p>
                       )}
                     </motion.div>
@@ -458,6 +531,7 @@ export default function GenerateOutfitScreen() {
   const { items: incomingItems }                      = useIncomingItems()
   const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
   const { saveOutfit }                                = useTimelineOutfits()
+  const { weather, weatherEnabled, toggleWeather }    = useWeather(date)
 
   // ── Seen-outfit tracking refs (mutable, no re-render) ──────────────────────
   const seenSignatures = useRef<Set<string>>(new Set())
@@ -495,6 +569,17 @@ export default function GenerateOutfitScreen() {
   const [saved,  setSaved]  = useState(false)
 
   const anySelected = selected !== null
+
+  // ── Weather adaptation ─────────────────────────────────────────────────────
+  const adaptedOutfitData = useMemo(() => {
+    if (!weather || !weatherEnabled) {
+      return currentOutfits.map((o) => ({ outfit: o, adaptations: [] as string[], weatherNote: "" }))
+    }
+    return currentOutfits.map((o) => {
+      const result = applyWeatherAdaptation(o, weather, wardrobeItems)
+      return { outfit: result.outfit, adaptations: result.adaptations, weatherNote: result.weatherNote }
+    })
+  }, [currentOutfits, weather, weatherEnabled])
 
   // Register the initial batch into seen sets once
   useEffect(() => {
@@ -594,22 +679,57 @@ export default function GenerateOutfitScreen() {
 
   return (
     <AppShell>
-      <header className="mb-5 flex items-center gap-3 pt-4">
-        <button
-          onClick={() => navigate("/timeline")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0]"
-          aria-label="Back"
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div>
-          <h1 className="text-[20px] font-bold leading-[26px] tracking-[-0.02em] text-[#F5F5F5]">
-            Choose an outfit
-          </h1>
-          <p className="text-[12px] leading-[16px] font-medium text-[#6B8490]">
-            {formatDate(date ?? "")}
-          </p>
+      <header className="mb-4 pt-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/timeline")}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-[#AABBC0]"
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-[20px] font-bold leading-[26px] tracking-[-0.02em] text-[#F5F5F5]">
+              Choose an outfit
+            </h1>
+            <p className="text-[12px] leading-[16px] font-medium text-[#6B8490]">
+              {formatDate(date ?? "")}
+            </p>
+          </div>
         </div>
+
+        {/* ── Weather bar ── */}
+        {weather && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="mt-3 flex items-center justify-between rounded-[14px] px-3.5 py-2.5"
+            style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <div className="flex items-center gap-2" style={{ color: weatherColor(weather) }}>
+              <WeatherIcon weather={weather} size={14} />
+              <span className="text-[12px] font-medium" style={{ color: weatherColor(weather) }}>
+                {weather.label}
+              </span>
+            </div>
+            <button
+              onClick={toggleWeather}
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition"
+              style={
+                weatherEnabled
+                  ? { backgroundColor: "rgba(94,143,190,0.15)", color: "#5E8FBE" }
+                  : { backgroundColor: "rgba(255,255,255,0.05)", color: "#5E7580" }
+              }
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: weatherEnabled ? "#5E8FBE" : "#5E7580" }}
+              />
+              {weatherEnabled ? "Weather on" : "Weather off"}
+            </button>
+          </motion.div>
+        )}
       </header>
 
       {currentOutfits.length === 0 && !isReshuffling ? (
@@ -667,16 +787,21 @@ export default function GenerateOutfitScreen() {
                 initial={false}
                 className="space-y-3 pb-4 pt-1"
               >
-                {currentOutfits.map((outfit, i) => (
-                  <OutfitCard
-                    key={outfit.id}
-                    outfit={outfit}
-                    selected={selected === outfit.id}
-                    anySelected={anySelected}
-                    onSelect={() => setSelected(outfit.id)}
-                    index={i}
-                  />
-                ))}
+                {currentOutfits.map((originalOutfit, i) => {
+                  const data = adaptedOutfitData[i] ?? { outfit: originalOutfit, adaptations: [] }
+                  return (
+                    <OutfitCard
+                      key={originalOutfit.id}
+                      outfit={data.outfit}
+                      originalOutfit={originalOutfit}
+                      weatherAdaptations={data.adaptations}
+                      selected={selected === originalOutfit.id}
+                      anySelected={anySelected}
+                      onSelect={() => setSelected(originalOutfit.id)}
+                      index={i}
+                    />
+                  )
+                })}
               </motion.div>
             )}
           </AnimatePresence>
