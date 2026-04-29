@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Sparkles, CalendarDays, Layers, RefreshCw, PackagePlus } from "lucide-react"
+import { ArrowLeft, Sparkles, CalendarDays, Layers, RefreshCw, PackagePlus, Bookmark, Shirt, Package } from "lucide-react"
 import { wardrobeItems } from "../lib/mockData"
 import type { WardrobeItem } from "../lib/mockData"
 
@@ -125,6 +125,51 @@ const ANCHORS: Record<string, Anchor> = {
 }
 
 const THIRD_PILL: Record<string, string> = { Shoes: "Different layer" }
+
+// ─── Purchase suggestion data ──────────────────────────────────────────────────
+// Triggered at phase ≥ 2 (after 2 reshuffles). Gap-fillers preferred.
+// Items are genuinely missing from the mock wardrobe and unlock real variant combos.
+
+type SuggestType = "gap-filler" | "enhancer" | "occasion"
+
+type SuggestionItem = {
+  id:         string
+  name:       string
+  descriptor: string    // short material/style note
+  reason:     string    // why it fits this wardrobe
+  type:       SuggestType
+  unlocks:    number
+  icon:       "shirt" | "package"
+}
+
+const SUGGESTIONS: Record<string, SuggestionItem[]> = {
+  Tops: [
+    { id:"st1", name:"Ankle Boots",        descriptor:"Black leather, block heel",          reason:"Bridges the gap between your sneakers and heels",         type:"gap-filler", unlocks:6, icon:"package" },
+    { id:"st2", name:"White Overshirt",    descriptor:"Relaxed fit, cotton-linen blend",    reason:"A versatile layer your tops are currently missing",        type:"enhancer",   unlocks:4, icon:"shirt"   },
+  ],
+  Bottoms: [
+    { id:"sb1", name:"Ankle Boots",        descriptor:"Tan suede or black leather",         reason:"Your trousers have no mid-occasion shoe option",           type:"gap-filler", unlocks:5, icon:"package" },
+    { id:"sb2", name:"Fine-knit Turtleneck", descriptor:"Ivory or camel, merino blend",    reason:"A refined base layer for any bottom you own",              type:"enhancer",   unlocks:4, icon:"shirt"   },
+  ],
+  Outerwear: [
+    { id:"so1", name:"Ankle Boots",        descriptor:"Black leather, pointed or block heel", reason:"Expands your coat into more occasions and settings",     type:"gap-filler", unlocks:5, icon:"package" },
+    { id:"so2", name:"Slim White T-Shirt", descriptor:"Clean cotton, fitted cut",           reason:"A cleaner base layer under your outerwear",                type:"gap-filler", unlocks:4, icon:"shirt"   },
+  ],
+  Shoes: [
+    { id:"ssh1", name:"Wide-Leg Trousers", descriptor:"Camel or stone, fluid fabric",       reason:"A modern silhouette your shoes deserve",                   type:"gap-filler", unlocks:6, icon:"package" },
+    { id:"ssh2", name:"Fine-Knit Polo",    descriptor:"Ivory or navy, relaxed cut",         reason:"A refined top to build looks around your shoes",           type:"enhancer",   unlocks:3, icon:"shirt"   },
+  ],
+  Dress: [
+    { id:"sd1", name:"Long Cardigan",      descriptor:"Oatmeal or charcoal, open-front",    reason:"A soft layer to transition your dress across seasons",     type:"gap-filler", unlocks:5, icon:"shirt"   },
+    { id:"sd2", name:"Block Heel Mules",   descriptor:"Tan or ivory leather",               reason:"A less formal heel option for daytime wear",               type:"occasion",   unlocks:4, icon:"package" },
+  ],
+}
+
+const SUGGEST_TYPE_CFG: Record<SuggestType, { label: string; color: string; bg: string }> = {
+  "gap-filler": { label: "Gap filler", color: T.teal,  bg: "rgba(63,111,115,0.12)"  },
+  "enhancer":   { label: "Enhancer",   color: T.coral, bg: "rgba(127,169,163,0.12)" },
+  "occasion":   { label: "Occasion",   color: T.gold,  bg: "rgba(200,169,106,0.12)" },
+}
 
 // Phase thresholds (number of pairs added to history)
 const PHASE2_AT = 2   // history.size ≥ 2 → exploring
@@ -392,6 +437,109 @@ function FeedbackBanner({ msg, kind }: { msg: string; kind: string }) {
     >
       <Icon size={12} style={{ color }} />
       <span style={{ fontSize: 12, fontWeight: 600, color: T.sub }}>{msg}</span>
+    </motion.div>
+  )
+}
+
+// ─── Purchase suggestion components ───────────────────────────────────────────
+
+function SuggestionCard({ item }: { item: SuggestionItem }) {
+  const [saved, setSaved] = useState(false)
+  const cfg  = SUGGEST_TYPE_CFG[item.type]
+  const Icon = item.icon === "shirt" ? Shirt : Package
+
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: 18,
+      background: T.card, border: `1px solid ${T.border}`,
+      display: "flex", alignItems: "flex-start", gap: 12,
+    }}>
+      {/* Icon swatch */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+        background: cfg.bg,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Icon size={20} style={{ color: cfg.color }} />
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-0.15px" }}>
+            {item.name}
+          </p>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99,
+            background: cfg.bg, color: cfg.color, letterSpacing: "0.03em",
+          }}>
+            {cfg.label.toUpperCase()}
+          </span>
+        </div>
+        <p style={{ fontSize: 11, color: T.muted, marginBottom: 5 }}>{item.descriptor}</p>
+        <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4 }}>{item.reason}</p>
+        {/* Value line */}
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 9 }}>
+          <Sparkles size={11} style={{ color: T.gold }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.gold }}>
+            Unlocks {item.unlocks} new outfit combinations
+          </span>
+        </div>
+      </div>
+
+      {/* Save / bookmark */}
+      <motion.button
+        whileTap={{ scale: 0.88 }}
+        onClick={() => setSaved((s) => !s)}
+        style={{
+          width: 34, height: 34, borderRadius: 99, border: "none", cursor: "pointer",
+          flexShrink: 0, marginTop: -2,
+          background: saved ? `${T.teal}20` : "rgba(255,255,255,0.05)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "background 0.18s",
+        }}
+      >
+        <Bookmark
+          size={14}
+          style={{ color: saved ? T.teal : T.muted }}
+          fill={saved ? T.teal : "none"}
+        />
+      </motion.button>
+    </div>
+  )
+}
+
+function SuggestionSection({ category }: { category: string }) {
+  const items = SUGGESTIONS[category] ?? SUGGESTIONS.Tops
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      style={{ padding: "28px 18px 0" }}
+    >
+      {/* Visual separator */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{ flex: 1, height: 1, background: T.border }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: "0.1em" }}>SMART PICKS</span>
+        <div style={{ flex: 1, height: 1, background: T.border }} />
+      </div>
+
+      {/* Header */}
+      <p style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-0.2px", marginBottom: 5 }}>
+        You've explored your best looks
+      </p>
+      <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 16 }}>
+        These items fill a gap in your current wardrobe — each one unlocks several more combinations with what you already own.
+      </p>
+
+      {/* Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map((item) => (
+          <SuggestionCard key={item.id} item={item} />
+        ))}
+      </div>
     </motion.div>
   )
 }
@@ -677,6 +825,13 @@ export default function FirstOutfitReveal() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* ── Purchase suggestions — unlocked after 2 reshuffles ── */}
+      <AnimatePresence>
+        {phase >= 2 && (
+          <SuggestionSection key="suggestions" category={state.category} />
+        )}
+      </AnimatePresence>
 
       {/* ── What to do next ── */}
       <motion.div
