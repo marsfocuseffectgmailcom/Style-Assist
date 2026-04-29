@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, Sparkles, CalendarDays, Layers, RefreshCw, PackagePlus, Bookmark, Shirt, Package } from "lucide-react"
 import { wardrobeItems } from "../lib/mockData"
 import type { WardrobeItem } from "../lib/mockData"
+import { track } from "../hooks/useAnalytics"
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -490,7 +491,7 @@ function SuggestionCard({ item }: { item: SuggestionItem }) {
       {/* Save / bookmark */}
       <motion.button
         whileTap={{ scale: 0.88 }}
-        onClick={() => setSaved((s) => !s)}
+        onClick={() => setSaved((s) => { if (!s) track("purchase_clicked", { item: item.name, screen: "first-outfit" }); return !s })}
         style={{
           width: 34, height: 34, borderRadius: 99, border: "none", cursor: "pointer",
           flexShrink: 0, marginTop: -2,
@@ -575,9 +576,13 @@ export default function FirstOutfitReveal() {
 
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
+  // ── Analytics ──────────────────────────────────────────────────────────────
+  const suggShownRef = useRef(false)
+
   // ── Reshuffle ──────────────────────────────────────────────────────────────
 
   function reshuffle(dir?: VarDir) {
+    track("reshuffle_used", { dir: dir ?? activeDir ?? "none", category: state!.category })
     const nextDir = dir ?? activeDir ?? null
 
     // Record current pair in history
@@ -611,9 +616,13 @@ export default function FirstOutfitReveal() {
       kind = "direction"
     }
 
-    // Commit state
+    // Commit state + fire analytics
     setHistory(newHistory)
     setPhase(newPhase)
+    if (newPhase >= 2 && phase < 2 && !suggShownRef.current) {
+      track("purchase_suggestion_shown", { screen: "first-outfit" })
+      suggShownRef.current = true
+    }
     if (dir !== undefined) setActiveDir(dir)
 
     if (result) {

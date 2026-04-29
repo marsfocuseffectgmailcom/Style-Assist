@@ -1,4 +1,4 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
@@ -39,6 +39,13 @@ const profileSections = [
     title: "Removed Items",
     subtitle: "View and restore items you've removed",
     href: "/profile/removed-items",
+  },
+  {
+    id: 6,
+    icon: <BarChart2 size={18} className="text-[#3F6F73]" />,
+    title: "Retention Dashboard",
+    subtitle: "Day 1/7 retention, DAU, acceptance rate",
+    href: "/profile/analytics",
   },
 ]
 

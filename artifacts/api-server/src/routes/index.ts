@@ -4,6 +4,7 @@ import wardrobeRouter from "./wardrobe";
 import profileRouter from "./profile";
 import stylistRouter from "./stylist";
 import shopRouter from "./shop";
+import analyticsRouter from "./analytics";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(wardrobeRouter);
 router.use(profileRouter);
 router.use(stylistRouter);
 router.use("/shop", shopRouter);
+router.use(analyticsRouter);
 
 export default router;

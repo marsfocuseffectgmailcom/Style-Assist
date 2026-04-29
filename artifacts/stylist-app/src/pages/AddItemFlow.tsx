@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type CSSProperties } from "react"
 import { useNavigate } from "react-router-dom"
+import { track } from "../hooks/useAnalytics"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowLeft, Camera, Upload, Check, ChevronRight,
@@ -1104,6 +1105,7 @@ export default function AddItemFlow() {
       addedAt:         new Date().toISOString(),
     }
     addItem(item)
+    track("item_added", { category: detected.category, colour: detected.colour })
     navigate("/first-outfit", {
       state: {
         photo:    photos.front?.url ?? null,

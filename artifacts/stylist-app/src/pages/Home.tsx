@@ -4,8 +4,9 @@ import {
   Bookmark, Shirt, ArrowLeftRight,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { track } from "../hooks/useAnalytics"
 import { AppShell } from "../components/AppShell"
 import { Card } from "../components/Card"
 import { NotificationBell } from "../components/NotificationCenter"
@@ -243,6 +244,13 @@ function HomeSuggestionCard({ item }: { item: HomeSuggestion }) {
   const [saved, setSaved] = useState(false)
   const Icon = item.icon === "shirt" ? Shirt : Package
 
+  function handleBookmark() {
+    setSaved((s) => {
+      if (!s) track("purchase_clicked", { item: item.name, screen: "home" })
+      return !s
+    })
+  }
+
   return (
     <div style={{
       padding: "14px 16px", borderRadius: 18,
@@ -277,7 +285,7 @@ function HomeSuggestionCard({ item }: { item: HomeSuggestion }) {
 
       <motion.button
         whileTap={{ scale: 0.88 }}
-        onClick={() => setSaved((s) => !s)}
+        onClick={handleBookmark}
         style={{
           width: 34, height: 34, borderRadius: 99, border: "none", cursor: "pointer",
           flexShrink: 0, marginTop: -2,
@@ -328,10 +336,23 @@ export default function Home() {
   const [showTonightMode, setShowTonightMode] = useState(false)
 
   const showSuggestions = altCount >= 2
+
+  // ── Analytics instrumentation ────────────────────────────────────────────────
+  const suggShownRef = useRef(false)
+
+  useEffect(() => { track("outfit_viewed") }, [])
+
+  useEffect(() => {
+    if (showSuggestions && !suggShownRef.current) {
+      track("purchase_suggestion_shown", { screen: "home" })
+      suggShownRef.current = true
+    }
+  }, [showSuggestions])
   const outfitItems     = resolveItems(currentIds)
   const occasion        = OCCASION_STYLE[dailyDef.occasionTag] ?? OCCASION_STYLE.Casual
 
   function handleWearThis() {
+    track("outfit_accepted", { outfit: dailyDef.name })
     setWornToday(true)
     setWornConfirm(true)
     setTimeout(() => setWornConfirm(false), 3000)
