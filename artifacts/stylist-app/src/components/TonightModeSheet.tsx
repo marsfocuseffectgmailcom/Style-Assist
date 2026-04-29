@@ -215,7 +215,7 @@ export function TonightModeSheet({ onClose }: TonightModeSheetProps) {
               Use a go-to item
             </p>
             <p className="mt-0.5 text-[11px]" style={{ color: T.muted }}>
-              Anchor the outfit around a piece you reach for often
+              Built around a piece you reach for often
             </p>
           </div>
 

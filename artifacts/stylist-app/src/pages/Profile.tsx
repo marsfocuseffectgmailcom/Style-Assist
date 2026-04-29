@@ -107,42 +107,42 @@ const profileSections = [
     id: 1,
     icon: <Ruler size={18} className="text-[#C8A96A]" />,
     title: "Body Profile",
-    subtitle: "Height, sizing, and fit preferences",
+    subtitle: "Height, sizing, and fit",
     href: "/profile/body",
   },
   {
     id: 2,
     icon: <Shirt size={18} className="text-[#C8A96A]" />,
     title: "Style Preferences",
-    subtitle: "Colours, fabrics, and styling direction",
+    subtitle: "Colours, fabrics, and direction",
     href: "/profile/style",
   },
   {
     id: 3,
     icon: <CreditCard size={18} className="text-[#C8A96A]" />,
     title: "Subscription",
-    subtitle: "Manage Drape Pro and billing",
+    subtitle: "Your plan and payment",
     href: "/profile/subscription",
   },
   {
     id: 4,
     icon: <Heart size={18} className="text-[#C8A96A]" />,
     title: "Saved Products",
-    subtitle: "View your wishlist and shopping picks",
+    subtitle: "Saved picks",
     href: "/saved-products",
   },
   {
     id: 5,
     icon: <Archive size={18} className="text-[#A8B0B8]" />,
     title: "Removed Items",
-    subtitle: "View and restore items you've removed",
+    subtitle: "Items you've put aside",
     href: "/profile/removed-items",
   },
   {
     id: 6,
     icon: <BarChart2 size={18} className="text-[#3F6F73]" />,
-    title: "Retention Dashboard",
-    subtitle: "Day 1/7 retention, DAU, acceptance rate",
+    title: "Usage Stats",
+    subtitle: "How you're using the app",
     href: "/profile/analytics",
   },
 ]
@@ -161,7 +161,7 @@ export default function Profile() {
               Profile
             </h1>
             <p className="text-[15px] leading-[22px] text-[#A8B0B8]">
-              Personalise your styling experience
+              Your style, your settings
             </p>
           </div>
         </div>
@@ -241,8 +241,7 @@ export default function Profile() {
       <Card>
         <h3 className="text-[17px] font-bold leading-[22px]">Current Plan</h3>
         <p className="mt-2 text-[15px] leading-[22px] text-[#A8B0B8]">
-          Unlimited wardrobe items, all outfit variations, styling insights, and smart shopping
-          recommendations
+          Every feature. No limits.
         </p>
 
         <div className="my-4 grid grid-cols-2 gap-4">

@@ -724,7 +724,7 @@ export default function Home() {
                 You've explored your best looks
               </p>
               <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 14 }}>
-                These two items fill genuine gaps and unlock more combinations with what you already own.
+                These would unlock more combinations from what you already own.
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -753,9 +753,9 @@ export default function Home() {
         <Card>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <h3 className="text-[17px] font-bold leading-[22px]">Daily Styling Insight</h3>
+              <h3 className="text-[17px] font-bold leading-[22px]">Today's tip</h3>
               <p className="mt-2 text-[15px] leading-[22px] text-[#A8B0B8]">
-                Try tonal dressing today — layering similar shades creates a cleaner silhouette and makes the whole look feel more intentional.
+                Try tonal dressing — similar shades together make a look feel intentional without extra effort.
               </p>
             </div>
             <div className="mt-0.5 text-[#C8A96A]">

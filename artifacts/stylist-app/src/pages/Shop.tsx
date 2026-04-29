@@ -59,7 +59,7 @@ export default function Shop() {
           <div>
             <h1 className="text-[28px] font-semibold tracking-[-0.3px]">Shop</h1>
             <p className="text-sm text-[#AABBC0]">
-              Monetisable wardrobe upgrades and affiliate-ready recommendations
+              Items that unlock more from what you own
             </p>
           </div>
         </div>
@@ -69,9 +69,9 @@ export default function Shop() {
         elevated
         className="bg-gradient-to-br from-[#1E3040] via-[#1F2A37] to-[#2A3645]"
       >
-        <h2 className="text-[18px] font-semibold">Wardrobe Gap Analysis</h2>
+        <h2 className="text-[18px] font-semibold">What's missing</h2>
         <p className="mt-2 text-sm leading-6 text-[#D0D8D5]">
-          The smartest purchases are the ones that unlock more outfits — not more clutter
+          Buy what unlocks more. Not what adds clutter.
         </p>
 
         <div className="mt-4">
@@ -97,10 +97,10 @@ export default function Shop() {
       </section>
 
       <section className="mt-6">
-        <SectionHeader title="Wardrobe Gaps" />
+        <SectionHeader title="Gaps to fill" />
         <div className="space-y-3">
           {loading ? (
-            <Card>Loading wardrobe gaps...</Card>
+            <Card>Looking at your wardrobe...</Card>
           ) : error ? (
             <Card>{error}</Card>
           ) : (
@@ -117,18 +117,18 @@ export default function Shop() {
 
       <section className="mt-6">
         <SectionHeader
-          title={selectedGap ? "Products For Selected Gap" : "Recommended Products"}
+          title={selectedGap ? "Options for this gap" : "Suggested picks"}
           actionLabel={selectedGap ? "Clear filter" : undefined}
           onActionClick={selectedGap ? () => setSelectedGap(null) : undefined}
         />
 
         <div className="space-y-3">
           {gapLoading ? (
-            <Card>Loading products...</Card>
+            <Card>Finding options...</Card>
           ) : gapError ? (
             <Card>{gapError}</Card>
           ) : visibleProducts.length === 0 ? (
-            <Card>No products found</Card>
+            <Card>Nothing found</Card>
           ) : (
             visibleProducts.map((product) => (
               <ProductCard

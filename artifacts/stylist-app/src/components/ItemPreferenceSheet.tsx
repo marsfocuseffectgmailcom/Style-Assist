@@ -281,9 +281,9 @@ export function ItemPreferenceSheet({ item, onClose, onPermanentDelete }: Props)
                     }}
                   >
                     <p className="text-[12px] leading-[18px] text-[#6B8490]">
-                      {pref.reach === "go-to" && "We'll factor this in when building outfits — pieces you reach for often make great anchors."}
-                      {pref.reach === "sometimes" && "We'll suggest this when it's the right fit for the occasion, colour palette, or weather."}
-                      {pref.reach === "not-lately" && "We'll occasionally bring this back when it works well — and explain exactly why it belongs in the outfit."}
+                      {pref.reach === "go-to" && "We'll prioritise this when building outfits."}
+                      {pref.reach === "sometimes" && "We'll include this when it fits the occasion."}
+                      {pref.reach === "not-lately" && "We'll bring this back when it works well."}
                     </p>
                   </motion.div>
                 )}

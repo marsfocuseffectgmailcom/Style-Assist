@@ -390,7 +390,7 @@ export default function OutfitResultScreen() {
           <p className="mt-0.5 text-[12px]" style={{ color: T.muted }}>
             {isTonight
               ? "This will work — no overthinking needed."
-              : "Built from your wardrobe, styled for the moment."}
+              : "Ready from what you own."}
           </p>
         </div>
       </header>

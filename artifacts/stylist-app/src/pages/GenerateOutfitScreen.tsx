@@ -738,9 +738,9 @@ export default function GenerateOutfitScreen() {
       {currentOutfits.length === 0 && !isReshuffling ? (
         <Card className="py-10 text-center">
           <Sparkles size={28} className="mx-auto mb-3 text-[#6B8490]" />
-          <p className="text-sm font-medium text-[#AABBC0]">Not enough wardrobe items yet</p>
+          <p className="text-sm font-medium text-[#AABBC0]">Add your first item</p>
           <p className="mt-1 text-xs text-[#6B8490]">
-            Add more items to your wardrobe to generate outfit combos
+            We'll start once you have a few pieces to work with.
           </p>
         </Card>
       ) : (
