@@ -19,8 +19,7 @@ export function PrimaryButton({
         "flex h-14 items-center justify-center rounded-[18px] bg-[#3F6F73] px-5",
         "text-base font-bold tracking-[-0.01em] text-white",
         "shadow-[0_8px_20px_rgba(63,111,115,0.24)]",
-        "transition-[transform,opacity] duration-[160ms] ease-[ease]",
-        "active:scale-[0.97] disabled:opacity-45",
+        "disabled:opacity-45",
         fullWidth ? "w-full" : "",
         className,
       ].join(" ")}

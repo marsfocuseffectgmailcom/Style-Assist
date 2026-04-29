@@ -19,8 +19,7 @@ export function SecondaryButton({
         "flex h-[52px] items-center justify-center rounded-[18px] bg-transparent px-5",
         "border border-[rgba(168,176,184,0.28)]",
         "text-[15px] font-semibold text-[#F5F5F5]",
-        "transition-[transform,opacity] duration-[160ms] ease-[ease]",
-        "active:scale-[0.97] disabled:opacity-45",
+        "disabled:opacity-45",
         fullWidth ? "w-full" : "",
         className,
       ].join(" ")}

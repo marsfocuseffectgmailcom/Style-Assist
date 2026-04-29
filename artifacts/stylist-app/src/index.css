@@ -15,6 +15,7 @@ body,
   min-height: 100%;
   margin: 0;
   background: #1F2A37;
+  overflow-x: hidden;
 }
 
 body {
@@ -33,4 +34,31 @@ input {
 img {
   display: block;
   max-width: 100%;
+}
+
+/* ── Remove default tap flash on mobile ────────────────────────────────── */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Global button press interaction ──────────────────────────────────── */
+/*
+  Specificity: button:not(:disabled) = [0,1,1] — higher than any Tailwind
+  utility class [0,1,0], so this rule wins the cascade without !important.
+  Using transform (not the standalone `scale` property) for maximum
+  browser compatibility; framer-motion motion.* elements manage transforms
+  via inline styles which override CSS rules regardless.
+*/
+button:not(:disabled),
+a[role="button"] {
+  transition-property: transform, filter, opacity;
+  transition-duration: 140ms;
+  transition-timing-function: ease-out;
+}
+
+button:not(:disabled):active,
+a[role="button"]:active {
+  transform: scale(0.97);
+  filter: brightness(0.93);
 }
