@@ -511,9 +511,12 @@ function OutfitCard({
               className="border-t border-[#3F6F73]/15 px-4 py-3"
               style={{ backgroundColor: "rgba(63,111,115,0.04)" }}
             >
-              <p className="text-[14px] font-semibold text-[#F5F5F5]">You're set.</p>
+              <div className="flex items-center gap-2">
+                <Check size={13} className="shrink-0 text-[#3F6F73]" />
+                <p className="text-[14px] font-semibold text-[#F5F5F5]">You're set.</p>
+              </div>
               <p className="mt-0.5 text-[12px] leading-[18px] text-[#6B8490]">
-                You can still switch to another option anytime.
+                This is a strong match for today. You can still switch anytime.
               </p>
             </div>
           </motion.div>
@@ -743,24 +746,35 @@ export default function GenerateOutfitScreen() {
       ) : (
         <>
           {/* Top score banner */}
-          {topOutfit && topOutfit.score >= 65 && !isReshuffling && (
+          {topOutfit && !isReshuffling && (
             <motion.div
               key={batchKey}
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 flex items-center gap-2 rounded-[14px] bg-[#5F8F7F]/8 px-3.5 py-2.5"
+              className="mb-4 flex items-center gap-2 rounded-[14px] px-3.5 py-2.5"
+              style={
+                topOutfit.score >= 82
+                  ? { backgroundColor: "rgba(95,143,127,0.08)" }
+                  : { backgroundColor: "rgba(200,169,106,0.06)" }
+              }
             >
-              <Sparkles size={14} className="shrink-0 text-[#5F8F7F]" />
-              <p className="text-[12px] text-[#5F8F7F]">
-                Best outfit scores{" "}
-                <span className="font-bold">{topOutfit.score}/100</span> — tap to see full styling notes
+              <Sparkles size={14} className="shrink-0" style={{ color: topOutfit.score >= 82 ? "#5F8F7F" : "#C8A96A" }} />
+              <p className="text-[12px]" style={{ color: topOutfit.score >= 82 ? "#5F8F7F" : "#C8A96A" }}>
+                {topOutfit.score >= 82 ? (
+                  <>This works. Scored <span className="font-bold">{topOutfit.score}/100</span> — tap a card for styling notes</>
+                ) : (
+                  <>Solid options for today — scored <span className="font-bold">{topOutfit.score}/100</span>, tap to see why</>
+                )}
               </p>
             </motion.div>
           )}
 
           <p className="mb-4 text-[13px] text-[#6B8490]">
-            {currentOutfits.length} suggestion{currentOutfits.length !== 1 ? "s" : ""} —{" "}
-            {isReshuffledBatch ? "reshuffled for you" : "tap one to see why it works"}
+            {isReshuffledBatch
+              ? `${currentOutfits.length} option${currentOutfits.length !== 1 ? "s" : ""} — reshuffled for you`
+              : currentOutfits.every((o) => o.score >= 65)
+              ? `${currentOutfits.length} strong option${currentOutfits.length !== 1 ? "s" : ""} — all good choices`
+              : `${currentOutfits.length} suggestion${currentOutfits.length !== 1 ? "s" : ""} — tap one to see why it works`}
           </p>
 
           {/* ── Card list with keyed AnimatePresence for batch swap animation ── */}
@@ -873,9 +887,9 @@ export default function GenerateOutfitScreen() {
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-[16px] border border-white/6 bg-white/3 px-4 py-4 text-center"
                 >
-                  <p className="text-[13px] font-semibold text-[#AABBC0]">No better options yet</p>
+                  <p className="text-[13px] font-semibold text-[#AABBC0]">You've seen your strongest options</p>
                   <p className="mt-1 text-[12px] leading-[18px] text-[#5E7580]">
-                    Add more wardrobe items to improve suggestions.
+                    These are the best combinations from your wardrobe.
                   </p>
                 </motion.div>
               ) : (

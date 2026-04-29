@@ -463,9 +463,31 @@ export default function Home() {
                     <Check size={22} style={{ color: T.teal }} />
                   </div>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-0.2px" }}>
-                      You're set for today.
-                    </p>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {wornConfirm ? (
+                        <motion.p
+                          key="works"
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          style={{ fontSize: 15, fontWeight: 800, color: T.teal, letterSpacing: "-0.2px" }}
+                        >
+                          This works.
+                        </motion.p>
+                      ) : (
+                        <motion.p
+                          key="set"
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.2 }}
+                          style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-0.2px" }}
+                        >
+                          You're set for today.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                     <p style={{ fontSize: 13, color: T.muted }}>{dailyDef.name} is locked in</p>
                   </div>
                 </div>
