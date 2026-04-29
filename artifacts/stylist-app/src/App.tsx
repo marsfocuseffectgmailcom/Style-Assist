@@ -48,28 +48,31 @@ function AppContent() {
   }
 
   return (
-    <Routes>
-      <Route path="/"                             element={<Home />} />
-      <Route path="/stylist"                      element={<Stylist />} />
-      <Route path="/wardrobe"                     element={<Wardrobe />} />
-      <Route path="/wardrobe/add"                 element={<AddItemFlow />} />
-      <Route path="/shop"                         element={<Shop />} />
-      <Route path="/profile"                      element={<Profile />} />
-      <Route path="/profile/analytics"            element={<Analytics />} />
-      <Route path="/saved-products"               element={<SavedProducts />} />
-      <Route path="/timeline"                     element={<Timeline />} />
-      <Route path="/timeline/generate/:date"      element={<GenerateOutfitScreen />} />
-      <Route path="/timeline/outfit-result"       element={<OutfitResultScreen />} />
-      <Route path="/incoming-items"               element={<IncomingItemsScreen />} />
-      <Route path="/profile/removed-items"        element={<RemovedItemsScreen />} />
-      <Route path="/first-outfit"                 element={<FirstOutfitReveal />} />
-      <Route path="/plan-ahead"                   element={<PlanAheadScreen />} />
-      <Route path="/plan-ahead/new"               element={<EventSetupScreen />} />
-      <Route path="/plan-ahead/:eventId"          element={<OutfitTimelineScreen />} />
-      <Route path="/plan-ahead/:eventId/builder"  element={<FutureOutfitBuilderScreen />} />
-      <Route path="/plan-ahead/:eventId/suggestions" element={<ProductSuggestionsScreen />} />
-      <Route path="/plan-ahead/:eventId/complete" element={<SavedFutureOutfitScreen />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/"                               element={<Home />} />
+        <Route path="/stylist"                        element={<Stylist />} />
+        <Route path="/wardrobe"                       element={<Wardrobe />} />
+        <Route path="/wardrobe/add"                   element={<AddItemFlow />} />
+        <Route path="/shop"                           element={<Shop />} />
+        <Route path="/profile"                        element={<Profile />} />
+        <Route path="/profile/analytics"              element={<Analytics />} />
+        <Route path="/saved-products"                 element={<SavedProducts />} />
+        <Route path="/timeline"                       element={<Timeline />} />
+        <Route path="/timeline/generate/:date"        element={<GenerateOutfitScreen />} />
+        <Route path="/timeline/outfit-result"         element={<OutfitResultScreen />} />
+        <Route path="/incoming-items"                 element={<IncomingItemsScreen />} />
+        <Route path="/profile/removed-items"          element={<RemovedItemsScreen />} />
+        <Route path="/first-outfit"                   element={<FirstOutfitReveal />} />
+        <Route path="/plan-ahead"                     element={<PlanAheadScreen />} />
+        <Route path="/plan-ahead/new"                 element={<EventSetupScreen />} />
+        <Route path="/plan-ahead/:eventId"            element={<OutfitTimelineScreen />} />
+        <Route path="/plan-ahead/:eventId/builder"    element={<FutureOutfitBuilderScreen />} />
+        <Route path="/plan-ahead/:eventId/suggestions" element={<ProductSuggestionsScreen />} />
+        <Route path="/plan-ahead/:eventId/complete"   element={<SavedFutureOutfitScreen />} />
+      </Routes>
+      <BottomNav />
+    </>
   )
 }
 
@@ -79,7 +82,6 @@ export default function App() {
       <WardrobePanelProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AppContent />
-          <BottomNav />
         </BrowserRouter>
       </WardrobePanelProvider>
     </NotificationsProvider>

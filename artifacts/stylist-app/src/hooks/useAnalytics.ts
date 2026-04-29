@@ -22,6 +22,7 @@ export const analyticsUserId = getOrCreateUserId()
 
 export type TrackableEvent =
   | "app_open"
+  | "onboarding_completed"
   | "outfit_viewed"
   | "outfit_accepted"
   | "reshuffle_used"

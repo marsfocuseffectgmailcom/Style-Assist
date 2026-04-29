@@ -14,7 +14,6 @@ import { OutfitCard } from "../components/OutfitCard"
 import { TonightModeSheet } from "../components/TonightModeSheet"
 import { outfitCards, wardrobeItems } from "../lib/mockData"
 import type { WardrobeItem } from "../lib/mockData"
-import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { usePlannedEvents } from "../hooks/usePlannedEvents"
 
@@ -311,7 +310,6 @@ export default function Home() {
   const greeting  = isMorning ? "Good morning," : isEvening ? "Good evening," : "Good afternoon,"
 
   const today = now.toISOString().slice(0, 10)
-  const { outfits }          = useTimelineOutfits()
   const { items: incoming }  = useIncomingItems()
   const { events }           = usePlannedEvents()
 

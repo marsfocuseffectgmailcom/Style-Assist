@@ -6,6 +6,7 @@ import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useIncomingItems } from "../hooks/useIncomingItems"
 import { wardrobeItems } from "../lib/mockData"
 import { generateMonthPlan } from "../lib/outfitGenerator"
+import { track } from "../hooks/useAnalytics"
 
 const STYLE_CHIPS = [
   { id: "minimal", label: "Minimal" },
@@ -148,7 +149,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
 
   useEffect(() => {
     if (step === 0) {
-      const t = setTimeout(() => advance(1), 2600)
+      const t = setTimeout(() => advance(1), 1800)
       return () => clearTimeout(t)
     }
   }, [step])
@@ -172,11 +173,15 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
       const t1 = setTimeout(() => {
         bulkFill(outfits)
         setGenDone(true)
-      }, 1500)
+      }, 1200)
       const t2 = setTimeout(() => {
-        navigate("/timeline")
+        track("onboarding_completed", {
+          styles: [...selectedStyles],
+          events: [...selectedEvents],
+        })
+        navigate("/")
         onComplete()
-      }, 2600)
+      }, 2000)
       return () => { clearTimeout(t1); clearTimeout(t2) }
     }
   }, [step])

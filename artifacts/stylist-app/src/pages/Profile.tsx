@@ -1,8 +1,16 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2 } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw } from "lucide-react"
 import { Link } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
 import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
+
+const ONBOARDING_KEY = "style-assist-onboarded"
+
+function resetApp() {
+  localStorage.removeItem(ONBOARDING_KEY)
+  localStorage.removeItem("style-assist-timeline")
+  window.location.reload()
+}
 
 const profileSections = [
   {
@@ -116,6 +124,25 @@ export default function Profile() {
           )
         })}
       </section>
+
+      {/* ── Tester tools ── */}
+      <Card className="mb-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5">
+            <RotateCcw size={15} className="text-[#6B8490]" />
+          </div>
+          <div>
+            <h3 className="text-[14px] font-semibold text-[#F5F5F5]">Tester Tools</h3>
+            <p className="text-[12px] text-[#6B8490]">For testing and feedback sessions</p>
+          </div>
+        </div>
+        <button
+          onClick={resetApp}
+          className="w-full rounded-[14px] border border-white/8 bg-white/4 py-3 text-[13px] font-semibold text-[#AABBC0] transition-[transform] duration-[160ms] active:scale-[0.97]"
+        >
+          Restart onboarding
+        </button>
+      </Card>
 
       {/* ── Current plan ── */}
       <Card>
