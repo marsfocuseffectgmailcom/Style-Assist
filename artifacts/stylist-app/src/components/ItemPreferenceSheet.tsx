@@ -109,10 +109,23 @@ export function ItemPreferenceSheet({ item, onClose }: Props) {
               <div className="mb-3 flex items-center justify-between">
                 <button
                   onClick={onClose}
-                  className="flex h-[44px] w-[44px] items-center justify-center rounded-full bg-white/6 text-[#A8B0B8] transition-[background-color] duration-[160ms] hover:bg-white/12 active:bg-white/16"
                   aria-label="Close panel"
+                  className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full transition-[opacity] duration-[160ms] active:opacity-70"
+                  style={{
+                    background: [
+                      "repeating-linear-gradient(45deg,  rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 0, transparent 4px)",
+                      "repeating-linear-gradient(-45deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 0, transparent 4px)",
+                      "#1F2A37",
+                    ].join(", "),
+                    boxShadow: [
+                      "inset 0 1px 3px rgba(0,0,0,0.45)",
+                      "inset 0 -1px 1px rgba(255,255,255,0.05)",
+                      "0 1px 3px rgba(0,0,0,0.30)",
+                    ].join(", "),
+                    color: "#E8DFC8",
+                  }}
                 >
-                  <X size={16} />
+                  <X size={16} strokeWidth={2.25} />
                 </button>
                 {/* Subtle drag-hint bar */}
                 <div className="h-[3px] w-8 rounded-full bg-white/15" />
