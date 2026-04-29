@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react"
+import { useRef, useState, useCallback, useEffect, type CSSProperties } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -172,7 +172,7 @@ function PhotoPickerSheet({
   onLibrary: () => void
   onClose:   () => void
 }) {
-  const sheetBtnBase: React.CSSProperties = {
+  const sheetBtnBase: CSSProperties = {
     width: "100%",
     padding: "15px 16px",
     borderRadius: 16,
@@ -518,14 +518,7 @@ function CaptureStep({
       </div>
 
       <div className="mt-auto">
-        <button
-          onClick={onNext}
-          disabled={!canContinue}
-          className="w-full rounded-[20px] py-4 text-[15px] font-semibold text-white transition active:scale-[0.97] disabled:opacity-40"
-          style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.28)" }}
-        >
-          Analyse photos
-        </button>
+        <AnalyseButton canContinue={canContinue} onNext={onNext} />
         {!canContinue && (
           <p className="mt-2 text-center text-[12px]" style={{ color: TOKEN.muted }}>
             Add a front photo to continue
@@ -536,120 +529,235 @@ function CaptureStep({
   )
 }
 
-// ─── STEP: Analyzing ─────────────────────────────────────────────────────────
+function AnalyseButton({ canContinue, onNext }: { canContinue: boolean; onNext: () => void }) {
+  const [loading, setLoading] = useState(false)
 
-const ANALYZING_MESSAGES = [
-  "Reading your colours and texture…",
-  "Understanding your style…",
-  "Finding patterns and details…",
-  "Placing this in your wardrobe…",
-]
-
-function AnalyzingStep({ photoUrl }: { photoUrl: string | null }) {
-  const [msgIndex, setMsgIndex] = useState(0)
-
-  useEffect(() => {
-    const id = setInterval(() => setMsgIndex((i) => (i + 1) % ANALYZING_MESSAGES.length), 800)
-    return () => clearInterval(id)
-  }, [])
+  async function handleTap() {
+    if (!canContinue || loading) return
+    setLoading(true)
+    await new Promise((r) => setTimeout(r, 420))
+    onNext()
+  }
 
   return (
-    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, overflow: "hidden", minHeight: "72vh" }}>
+    <motion.button
+      onClick={handleTap}
+      disabled={!canContinue}
+      animate={loading ? { scale: 0.97 } : { scale: 1 }}
+      transition={{ duration: 0.14 }}
+      className="w-full rounded-[20px] py-4 text-[15px] font-semibold text-white disabled:opacity-40"
+      style={{ background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, boxShadow: "0 4px 20px rgba(63,111,115,0.28)" }}
+    >
+      {loading ? (
+        <motion.span
+          animate={{ opacity: [0.55, 1, 0.55] }}
+          transition={{ repeat: Infinity, duration: 1.1 }}
+        >
+          Understanding your item…
+        </motion.span>
+      ) : (
+        "Analyse photos"
+      )}
+    </motion.button>
+  )
+}
 
-      {/* User's photo — blurred, dimmed backdrop */}
+// ─── STEP: Analyzing ─────────────────────────────────────────────────────────
+
+const SCANNING_PHRASES = [
+  "Identifying shape…",
+  "Reading fabric…",
+  "Understanding how it fits…",
+]
+
+function AnalyzingStep({
+  photoUrl,
+  detected,
+  onEditDetails,
+  onSeeOutfits,
+}: {
+  photoUrl:      string | null
+  detected:      Detected | null
+  onEditDetails: () => void
+  onSeeOutfits:  () => void
+}) {
+  const [stage, setStage]           = useState<"scanning" | "reveal">("scanning")
+  const [phraseIndex, setPhraseIndex] = useState(0)
+
+  useEffect(() => {
+    const phraseId = setInterval(() => setPhraseIndex((i) => i + 1), 500)
+    const revealId = setTimeout(() => {
+      clearInterval(phraseId)
+      setStage("reveal")
+    }, 1500)
+    return () => { clearInterval(phraseId); clearTimeout(revealId) }
+  }, [])
+
+  const tags = detected
+    ? [detected.category, detected.colour, detected.style, detected.occasion]
+    : []
+
+  const pillStyle: CSSProperties = {
+    fontSize: 13, fontWeight: 600,
+    padding: "5px 13px", borderRadius: 999,
+    background: "rgba(255,255,255,0.13)",
+    color: "#F2F4F5",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    border: "1px solid rgba(255,255,255,0.15)",
+  }
+
+  return (
+    /* Full-screen fixed takeover */
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.28 }}
+      style={{ position: "fixed", inset: 0, zIndex: 200, overflow: "hidden", background: "#1F2A37" }}
+    >
+      {/* ── Hero photo ── */}
       {photoUrl && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          style={{
-            position: "absolute", inset: 0,
-            backgroundImage: `url(${photoUrl})`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            filter: "blur(36px) saturate(0.45)",
-            transform: "scale(1.18)",
+        <motion.img
+          src={photoUrl}
+          alt="Your item"
+          animate={{
+            filter:     stage === "reveal" ? "brightness(0.72)" : "brightness(0.48)",
+            scale:      stage === "reveal" ? 1 : 1.04,
           }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         />
       )}
-      {/* Gradient overlay so text stays crisp */}
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(31,42,55,0.82), rgba(31,42,55,0.92))" }} />
 
-      {/* ── Content ── */}
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {/* Gradient vignette — always present, deepens toward bottom */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, rgba(31,42,55,0.15) 0%, rgba(31,42,55,0.55) 45%, rgba(31,42,55,0.96) 75%, #1F2A37 100%)",
+      }} />
 
-        {/* Dual rotating rings + centre glow */}
-        <div style={{ position: "relative", width: 132, height: 132, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 44 }}>
-          {/* Outer ring */}
+      {/* ── SCANNING stage ── */}
+      <AnimatePresence>
+        {stage === "scanning" && (
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 3.2, ease: "linear" }}
-            style={{
-              position: "absolute", inset: 0, borderRadius: "50%",
-              border: "1.5px solid transparent",
-              borderTopColor: TOKEN.pink,
-              borderRightColor: "rgba(63,111,115,0.28)",
-            }}
-          />
-          {/* Inner ring — opposite direction */}
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ repeat: Infinity, duration: 5.5, ease: "linear" }}
-            style={{
-              position: "absolute", inset: 14, borderRadius: "50%",
-              border: "1px solid transparent",
-              borderTopColor: TOKEN.coral,
-              borderLeftColor: "rgba(127,169,163,0.22)",
-            }}
-          />
-          {/* Breathe glow */}
-          <motion.div
-            animate={{ scale: [1, 1.22, 1], opacity: [0.35, 0.75, 0.35] }}
-            transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
-            style={{
-              position: "absolute", inset: 28, borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(63,111,115,0.45), transparent)",
-            }}
-          />
-          <Sparkles size={30} style={{ color: TOKEN.coral }} />
-        </div>
+            key="scanning"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
+          >
+            {/* Light sweep */}
+            <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
+              <motion.div
+                animate={{ x: ["-115%", "115%", "-115%", "115%"] }}
+                transition={{ duration: 1.45, times: [0, 0.42, 0.43, 0.88], ease: "easeInOut" }}
+                style={{
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(108deg, transparent 28%, rgba(255,255,255,0.08) 50%, transparent 72%)",
+                }}
+              />
+            </div>
 
-        {/* Headline */}
-        <motion.h2
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.48 }}
-          style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.6px", marginBottom: 14, textAlign: "center", lineHeight: 1.15 }}
-        >
-          Reading your style
-        </motion.h2>
+            {/* Cycling phrase — centred on screen */}
+            <div style={{ height: 30, overflow: "hidden", padding: "0 32px" }}>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={phraseIndex}
+                  initial={{ opacity: 0, y: 11 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -11 }}
+                  transition={{ duration: 0.21 }}
+                  style={{ fontSize: 20, fontWeight: 700, color: "#F2F4F5", textAlign: "center", letterSpacing: "-0.3px" }}
+                >
+                  {SCANNING_PHRASES[Math.min(phraseIndex, SCANNING_PHRASES.length - 1)]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Cycling insight phrase */}
-        <div style={{ height: 22, marginBottom: 44, overflow: "hidden", minWidth: 260 }}>
-          <AnimatePresence mode="wait">
+      {/* ── REVEAL stage ── */}
+      <AnimatePresence>
+        {stage === "reveal" && (
+          <motion.div
+            key="reveal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45 }}
+            style={{
+              position: "absolute", bottom: 0, left: 0, right: 0,
+              padding: "0 22px 48px",
+              display: "flex", flexDirection: "column", alignItems: "flex-start",
+            }}
+          >
+            {/* Detected tags */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+              {tags.map((tag, i) => (
+                <motion.span
+                  key={tag}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.075, duration: 0.34, ease: "easeOut" }}
+                  style={pillStyle}
+                >
+                  {tag}
+                </motion.span>
+              ))}
+            </div>
+
+            {/* Confidence message */}
             <motion.p
-              key={msgIndex}
-              initial={{ opacity: 0, y: 9 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -9 }}
-              transition={{ duration: 0.26 }}
-              style={{ fontSize: 14, color: TOKEN.sub, textAlign: "center" }}
+              transition={{ delay: 0.32, duration: 0.4 }}
+              style={{ fontSize: 18, fontWeight: 800, color: "#F2F4F5", marginBottom: 6, letterSpacing: "-0.3px", lineHeight: 1.25 }}
             >
-              {ANALYZING_MESSAGES[msgIndex]}
+              This will work well with items in your wardrobe
             </motion.p>
-          </AnimatePresence>
-        </div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.46, duration: 0.35 }}
+              style={{ fontSize: 13, color: TOKEN.sub, marginBottom: 28 }}
+            >
+              We found some great matches for you
+            </motion.p>
 
-        {/* Progress bar */}
-        <div style={{ width: 210, height: 2, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-          <motion.div
-            initial={{ width: "0%" }}
-            animate={{ width: "93%" }}
-            transition={{ duration: 2.65, ease: [0.18, 0.82, 0.38, 1] }}
-            style={{ height: "100%", background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`, borderRadius: 99 }}
-          />
-        </div>
-      </div>
-    </div>
+            {/* Action buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.52, duration: 0.4 }}
+              style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}
+            >
+              <button
+                onClick={onSeeOutfits}
+                style={{
+                  width: "100%", padding: "16px",
+                  borderRadius: 20, border: "none", cursor: "pointer",
+                  background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`,
+                  boxShadow: "0 4px 24px rgba(63,111,115,0.38)",
+                  fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: "-0.1px",
+                }}
+              >
+                See outfits
+              </button>
+              <button
+                onClick={onEditDetails}
+                style={{
+                  width: "100%", padding: "15px",
+                  borderRadius: 20, border: "1px solid rgba(255,255,255,0.11)", cursor: "pointer",
+                  background: "rgba(255,255,255,0.05)",
+                  fontSize: 15, fontWeight: 600, color: TOKEN.sub,
+                }}
+              >
+                Edit details
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
@@ -951,12 +1059,52 @@ export default function AddItemFlow() {
 
   function goCapture() { setPhase("capture") }
 
-  async function goAnalyzing() {
-    setPhase("analyzing")
-    await new Promise((r) => setTimeout(r, 2800))
+  function goAnalyzing() {
     const det = simulateDetection()
     setDetected(det)
-    setPhase("review")
+    setPhase("analyzing")
+  }
+
+  async function handleQuickSave() {
+    if (!detected) return
+    let frontUrl = ""
+    if (photos.front?.file) frontUrl = await compressImage(photos.front.file)
+    let backUrl: string | undefined
+    if (photos.back?.file)  backUrl  = await compressImage(photos.back.file)
+    let tagUrl: string | undefined
+    if (photos.tag?.file)   tagUrl   = await compressImage(photos.tag.file, 300)
+
+    const categoryMap: Record<string, CapturedItem["category"]> = {
+      Tops: "Tops", Bottoms: "Bottoms", Shoes: "Shoes", Outerwear: "Outerwear", Dress: "Dress",
+    }
+    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+    const autoName = `${cap(detected.colour)} ${detected.category}`
+
+    const item: CapturedItem = {
+      id:              `captured-${Date.now()}`,
+      name:            autoName,
+      category:        categoryMap[detected.category] ?? "Tops",
+      image:           frontUrl || photos.front?.url || "",
+      backPhoto:       backUrl,
+      tagPhoto:        tagUrl,
+      colors:          [detected.colour],
+      styleTags:       [detected.style.toLowerCase(), detected.occasion.toLowerCase()],
+      seasonTags:      detected.season === "All season" ? ["all-season"] : [detected.season.toLowerCase()],
+      wearCount:       0,
+      aiCategory:      detected.category,
+      aiColour:        detected.colour,
+      aiPattern:       detected.pattern,
+      aiStyle:         detected.style,
+      aiMaterialGuess: detected.materialGuess,
+      aiSeason:        detected.season,
+      aiOccasion:      detected.occasion,
+      material:        detected.materialGuess,
+      weatherSuitability: ["All weather"],
+      status:          "Clean",
+      addedAt:         new Date().toISOString(),
+    }
+    addItem(item)
+    navigate("/generate")
   }
 
   async function handleSave() {
@@ -1076,7 +1224,14 @@ export default function AddItemFlow() {
             <CaptureStep photos={photos} setPhotos={setPhotos} onNext={goAnalyzing} />
           )}
 
-          {phase === "analyzing" && <AnalyzingStep photoUrl={photos.front?.url ?? null} />}
+          {phase === "analyzing" && detected && (
+            <AnalyzingStep
+              photoUrl={photos.front?.url ?? null}
+              detected={detected}
+              onEditDetails={() => setPhase("review")}
+              onSeeOutfits={handleQuickSave}
+            />
+          )}
 
           {phase === "review" && detected && (
             <ReviewStep
