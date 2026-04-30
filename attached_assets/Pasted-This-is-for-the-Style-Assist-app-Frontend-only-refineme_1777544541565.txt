@@ -1,0 +1,49 @@
+This is for the Style Assist app.
+
+Frontend-only refinement pass. Do not redesign the visual system. Do not change the app name. Do not change the premium styling, emotional tone system, tonight mode, wardrobe UI, or outfit result screen unless required for logic.
+
+Priority 1: Connect outfit generation to the user's actual wardrobe.
+Home screen and GenerateOutfitScreen must stop using mock wardrobe data when real wardrobe items exist.
+Use the wardrobe items the user has added/captured.
+If wardrobe is empty, show the existing empty wardrobe state and guide the user to add their first item.
+If wardrobe has items, outfit generation should build from those items only.
+Keep fallback demo data only for development/demo mode, never as the default user experience.
+
+Priority 2: Add app-level error boundaries.
+Add a reusable ErrorBoundary component.
+Wrap the main app routes/screens so a component crash shows a calm premium fallback screen instead of a blank white page.
+Fallback copy should feel like Style Assist:
+“Something didn’t load properly.”
+“Your wardrobe is safe. Please try again.”
+Include a Try Again button.
+
+Priority 3: Remove or neutralise fake profile metrics.
+Any hardcoded DAU, retention, acceptance rate, or fake analytics must be removed from user-facing UI.
+Replace with either:
+- real user wardrobe stats, such as number of saved items, outfits generated, saved looks
+or
+- hide the section until real backend analytics exist.
+
+Priority 4: Add loading, empty, and offline states.
+Add graceful states for:
+- no wardrobe items
+- outfit generation loading
+- failed outfit generation
+- no internet connection
+- image/item loading failure
+Keep the wording calm, premium, and helpful.
+
+Priority 5: Accessibility polish.
+Add aria-labels or accessible labels to all key buttons, tabs, icon buttons, wardrobe item cards, save buttons, generate buttons, and navigation controls.
+Do not visually change the interface unless needed.
+
+Important:
+Do not add backend.
+Do not add payment.
+Do not add real shop checkout.
+Do not add native camera yet.
+Do not introduce new mock data.
+Do not break existing flows.
+
+Goal:
+Make the frontend feel more stable, real, and MVP-ready before backend/native conversion.

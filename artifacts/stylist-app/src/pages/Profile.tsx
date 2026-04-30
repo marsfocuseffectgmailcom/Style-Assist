@@ -6,6 +6,7 @@ import { PrimaryButton } from "../components/PrimaryButton"
 import { Card } from "../components/Card"
 import { usePersonalisation } from "../lib/usePersonalisation"
 import type { StyleDirection } from "../lib/usePersonalisation"
+import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
@@ -148,6 +149,29 @@ const profileSections = [
 ]
 
 export default function Profile() {
+  const { items: capturedItems } = useWardrobeCapture()
+
+  const itemCount   = capturedItems.length
+  const outfitCount = (() => {
+    try {
+      const raw = localStorage.getItem("style-assist-timeline")
+      if (!raw) return 0
+      return Object.keys(JSON.parse(raw) as Record<string, unknown>).length
+    } catch {
+      return 0
+    }
+  })()
+
+  const activeSince = (() => {
+    const oldest = capturedItems
+      .map((i) => i.addedAt ?? "")
+      .filter(Boolean)
+      .sort()[0]
+    if (!oldest) return null
+    const d = new Date(oldest)
+    return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" })
+  })()
+
   return (
     <AppShell>
       {/* ── Header ── */}
@@ -167,15 +191,32 @@ export default function Profile() {
         </div>
       </header>
 
-      {/* ── Identity card ── */}
+      {/* ── Wardrobe summary card ── */}
       <Card className="mb-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full bg-[#3F6F73] text-xl font-bold text-white">
-            A
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-[14px] bg-white/5 p-3 text-center">
+            <p className="text-[22px] font-extrabold tracking-[-0.04em] text-[#F5F5F5]">
+              {itemCount}
+            </p>
+            <p className="text-[11px] font-medium text-[#6B8490] leading-tight mt-0.5">
+              {itemCount === 1 ? "item" : "items"}
+            </p>
           </div>
-          <div>
-            <h2 className="text-[17px] font-bold leading-[22px]">Alex Morgan</h2>
-            <p className="mt-1 text-[15px] leading-[22px] text-[#A8B0B8]">Drape Pro member</p>
+          <div className="rounded-[14px] bg-white/5 p-3 text-center">
+            <p className="text-[22px] font-extrabold tracking-[-0.04em] text-[#F5F5F5]">
+              {outfitCount}
+            </p>
+            <p className="text-[11px] font-medium text-[#6B8490] leading-tight mt-0.5">
+              {outfitCount === 1 ? "outfit" : "outfits"}
+            </p>
+          </div>
+          <div className="rounded-[14px] bg-white/5 p-3 text-center">
+            <p className="text-[22px] font-extrabold tracking-[-0.04em] text-[#F5F5F5]">
+              {activeSince ?? "—"}
+            </p>
+            <p className="text-[11px] font-medium text-[#6B8490] leading-tight mt-0.5">
+              since
+            </p>
           </div>
         </div>
       </Card>

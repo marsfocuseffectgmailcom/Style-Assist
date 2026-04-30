@@ -1,7 +1,7 @@
 import {
   Sparkles, Package, CalendarDays, ChevronRight, Moon,
   Check, RefreshCw, Compass, Cloud, Sun, CloudRain,
-  Bookmark, Shirt, ArrowLeftRight,
+  Bookmark, Shirt, ArrowLeftRight, Plus,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useMemo, useEffect, useRef } from "react"
@@ -18,8 +18,12 @@ import { useIncomingItems } from "../hooks/useIncomingItems"
 import { usePlannedEvents } from "../hooks/usePlannedEvents"
 import { usePersonalisation } from "../lib/usePersonalisation"
 import { PersonalisationHint, ItemUsagePill } from "../components/PersonalisationHint"
+import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
+import { useStylePreferences } from "../hooks/useStylePreferences"
+import { generateOutfits } from "../lib/outfitGenerator"
+import { capturedToWardrobeItem } from "../lib/capturedToWardrobe"
 
-// ─── Design tokens ──────────────────────────────────────────────────────────
+// ─── Design tokens ───────────────────────────────────────────────────────────
 
 const T = {
   bg:     "#1F2A37",
@@ -34,8 +38,7 @@ const T = {
   muted:  "#6B8490",
 }
 
-// ─── Daily outfit definitions ────────────────────────────────────────────────
-// Deterministic: keyed by day-of-week (0=Sun…6=Sat).
+// ─── Daily outfit definitions (demo / empty-wardrobe fallback) ───────────────
 
 type DailyOutfitDef = {
   name:        string
@@ -55,7 +58,7 @@ const DAILY_OUTFITS: DailyOutfitDef[] = [
   { name: "Saturday easy",     vibe: "Off duty",        occasionTag: "Weekend", itemIds: [10, 4, 7],    reason: "The classic off-duty formula. High contrast, minimal effort, and entirely reliable." },
 ]
 
-// ─── Weather mock ────────────────────────────────────────────────────────────
+// ─── Weather mock ─────────────────────────────────────────────────────────────
 
 type WeatherData = { Icon: typeof Cloud; temp: string; desc: string; note: string }
 
@@ -67,41 +70,23 @@ function getMockWeather(): WeatherData {
   return                         { Icon: Cloud,     temp: "12°C", desc: "Overcast",       note: "a layer is worth it" }
 }
 
-// ─── Swap alternatives ───────────────────────────────────────────────────────
-// Maps item id → list of alternative item ids in the same category.
+// ─── Swap alternatives (mock only) ───────────────────────────────────────────
 
 const SWAP_ALTS: Record<number, number[]> = {
-  1:  [3],      // Brown Blazer ↔ Black Coat
-  2:  [10],     // Cream Knit ↔ Black T-Shirt
-  3:  [1],      // Black Coat ↔ Brown Blazer
-  4:  [5, 6],   // Blue Denim ↔ Beige or Black Trousers
-  5:  [6, 4],   // Beige Trousers ↔ Black Trousers or Jeans
-  6:  [5, 4],   // Black Trousers ↔ Beige Trousers or Jeans
-  7:  [8],      // White Sneakers ↔ Black Loafers
-  8:  [7, 9],   // Black Loafers ↔ White Sneakers or Black Heels
-  9:  [8],      // Black Heels ↔ Black Loafers
-  10: [2],      // Black T-Shirt ↔ Cream Knit
-  12: [],       // Black Tote — no alternatives
+  1:  [3], 2:  [10], 3:  [1], 4:  [5, 6], 5:  [6, 4],
+  6:  [5, 4], 7:  [8], 8:  [7, 9], 9:  [8], 10: [2], 12: [],
 }
 
-// ─── Home suggestions ────────────────────────────────────────────────────────
-// 2 evergreen gap-fillers shown after 2 "See alternatives" taps.
+// ─── Home suggestions ─────────────────────────────────────────────────────────
 
-type HomeSuggestion = {
-  id:        string
-  name:      string
-  descriptor:string
-  reason:    string
-  unlocks:   number
-  icon:      "shirt" | "package"
-}
+type HomeSuggestion = { id: string; name: string; descriptor: string; reason: string; unlocks: number; icon: "shirt" | "package" }
 
 const HOME_SUGGESTIONS: HomeSuggestion[] = [
-  { id:"hs1", name:"Ankle Boots",        descriptor:"Black leather, block heel",       reason:"The one missing footwear option that works across every occasion", unlocks:6, icon:"package" },
-  { id:"hs2", name:"Wide-Leg Trousers",  descriptor:"Stone or camel, fluid fabric",    reason:"A different silhouette that gives your tops new range",            unlocks:5, icon:"shirt"   },
+  { id:"hs1", name:"Ankle Boots",       descriptor:"Black leather, block heel",      reason:"The one missing footwear option that works across every occasion", unlocks:6, icon:"package" },
+  { id:"hs2", name:"Wide-Leg Trousers", descriptor:"Stone or camel, fluid fabric",   reason:"A different silhouette that gives your tops new range",           unlocks:5, icon:"shirt"   },
 ]
 
-// ─── Occasion badge colours ───────────────────────────────────────────────────
+// ─── Occasion badge colours ────────────────────────────────────────────────────
 
 const OCCASION_STYLE: Record<string, { color: string; bg: string }> = {
   Work:    { color: T.teal,  bg: `${T.teal}18`  },
@@ -109,7 +94,11 @@ const OCCASION_STYLE: Record<string, { color: string; bg: string }> = {
   Weekend: { color: T.gold,  bg: `${T.gold}18`  },
 }
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
+// ─── Shared display item type ──────────────────────────────────────────────────
+
+type DisplayItem = { id: string | number; name: string; image: string }
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
 
 function resolveItems(ids: number[]): WardrobeItem[] {
   return ids.map((id) => wardrobeItems.find((w) => w.id === id)).filter((w): w is WardrobeItem => !!w)
@@ -121,7 +110,7 @@ function daysUntil(dateStr: string): number {
   return Math.round((d.getTime() - t.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-// ─── Swap sheet component ─────────────────────────────────────────────────────
+// ─── Swap sheet (mock wardrobe only) ──────────────────────────────────────────
 
 function SwapSheet({
   itemIds, onSwap, onClose,
@@ -140,7 +129,6 @@ function SwapSheet({
       exit={{ opacity: 0 }}
       style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}
     >
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -148,41 +136,37 @@ function SwapSheet({
         onClick={onClose}
         style={{ position: "absolute", inset: 0, background: "rgba(10,16,24,0.72)", backdropFilter: "blur(4px)" }}
       />
-
-      {/* Sheet */}
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 280 }}
         style={{ position: "relative", background: T.card, borderRadius: "24px 24px 0 0", padding: "0 0 40px", maxHeight: "78vh", overflowY: "auto" }}
+        role="dialog"
+        aria-label="Swap outfit piece"
       >
-        {/* Handle */}
         <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
           <div style={{ width: 36, height: 4, borderRadius: 99, background: T.muted }} />
         </div>
-
         <div style={{ padding: "12px 20px 0" }}>
           <p style={{ fontSize: 17, fontWeight: 800, color: T.text, letterSpacing: "-0.3px", marginBottom: 4 }}>Swap one piece</p>
           <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>Tap an item to see alternatives</p>
-
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {items.map((item) => {
-              const alts = resolveItems(SWAP_ALTS[item.id] ?? [])
+              const alts  = resolveItems(SWAP_ALTS[item.id] ?? [])
               const isOpen = expanding === item.id
-
               return (
                 <div key={item.id}>
-                  {/* Item row */}
                   <button
                     onClick={() => setExpanding(isOpen ? null : item.id)}
+                    aria-expanded={isOpen}
+                    aria-label={`Swap ${item.name}`}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", gap: 12,
                       padding: "10px 12px", borderRadius: 16,
                       background: isOpen ? `${T.teal}14` : T.raised,
                       border: isOpen ? `1px solid ${T.teal}40` : `1px solid ${T.border}`,
-                      cursor: "pointer", textAlign: "left",
-                      transition: "all 0.18s",
+                      cursor: "pointer", textAlign: "left", transition: "all 0.18s",
                     }}
                   >
                     <img src={item.image} alt={item.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
@@ -192,8 +176,6 @@ function SwapSheet({
                     </div>
                     <ArrowLeftRight size={14} style={{ color: isOpen ? T.teal : T.muted, flexShrink: 0 }} />
                   </button>
-
-                  {/* Alternatives */}
                   <AnimatePresence>
                     {isOpen && (
                       <motion.div
@@ -211,6 +193,7 @@ function SwapSheet({
                               <button
                                 key={alt.id}
                                 onClick={() => { onSwap(item.id, alt.id); setExpanding(null); onClose() }}
+                                aria-label={`Swap to ${alt.name}`}
                                 style={{
                                   display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
                                   padding: "8px 10px", borderRadius: 14,
@@ -219,9 +202,7 @@ function SwapSheet({
                                 }}
                               >
                                 <img src={alt.image} alt={alt.name} style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover" }} />
-                                <span style={{ fontSize: 10, fontWeight: 600, color: T.sub, maxWidth: 56, textAlign: "center", lineHeight: 1.25 }}>
-                                  {alt.name}
-                                </span>
+                                <span style={{ fontSize: 10, fontWeight: 600, color: T.sub, maxWidth: 56, textAlign: "center", lineHeight: 1.25 }}>{alt.name}</span>
                               </button>
                             ))}
                           </div>
@@ -253,40 +234,27 @@ function HomeSuggestionCard({ item }: { item: HomeSuggestion }) {
   }
 
   return (
-    <div style={{
-      padding: "14px 16px", borderRadius: 18,
-      background: T.card, border: `1px solid ${T.border}`,
-      display: "flex", alignItems: "flex-start", gap: 12,
-    }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-        background: `${T.teal}14`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
+    <div style={{ padding: "14px 16px", borderRadius: 18, background: T.card, border: `1px solid ${T.border}`, display: "flex", alignItems: "flex-start", gap: 12 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: `${T.teal}14`, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Icon size={20} style={{ color: T.teal }} />
       </div>
-
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: T.text, letterSpacing: "-0.15px" }}>{item.name}</p>
-          <span style={{
-            fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.03em",
-            background: `${T.teal}14`, color: T.teal,
-          }}>GAP FILLER</span>
+          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 99, letterSpacing: "0.03em", background: `${T.teal}14`, color: T.teal }}>GAP FILLER</span>
         </div>
         <p style={{ fontSize: 11, color: T.muted, marginBottom: 5 }}>{item.descriptor}</p>
         <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4 }}>{item.reason}</p>
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 9 }}>
           <Sparkles size={11} style={{ color: T.gold }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: T.gold }}>
-            Unlocks {item.unlocks} new outfit combinations
-          </span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: T.gold }}>Unlocks {item.unlocks} new outfit combinations</span>
         </div>
       </div>
-
       <motion.button
         whileTap={{ scale: 0.88 }}
         onClick={handleBookmark}
+        aria-label={saved ? `Remove ${item.name} from saved` : `Save ${item.name}`}
+        aria-pressed={saved}
         style={{
           width: 34, height: 34, borderRadius: 99, border: "none", cursor: "pointer",
           flexShrink: 0, marginTop: -2,
@@ -298,6 +266,95 @@ function HomeSuggestionCard({ item }: { item: HomeSuggestion }) {
         <Bookmark size={14} style={{ color: saved ? T.teal : T.muted }} fill={saved ? T.teal : "none"} />
       </motion.button>
     </div>
+  )
+}
+
+// ─── Empty wardrobe hero (shown on Home when no items added) ─────────────────
+
+function HomeEmptyState({ onAdd }: { onAdd: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        borderRadius: 24, overflow: "hidden",
+        background: T.card, border: `1px solid ${T.border}`,
+        marginBottom: 16, padding: "28px 20px 24px",
+        textAlign: "center",
+      }}
+    >
+      <div style={{
+        width: 52, height: 52, borderRadius: 16, margin: "0 auto 16px",
+        background: `${T.teal}12`, border: `1px solid ${T.teal}25`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Shirt size={22} style={{ color: T.teal }} />
+      </div>
+      <p style={{ fontSize: 18, fontWeight: 800, color: T.text, letterSpacing: "-0.3px", marginBottom: 8 }}>
+        Your daily outfit starts here.
+      </p>
+      <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.55, marginBottom: 24, maxWidth: 260, margin: "0 auto 24px" }}>
+        Add your first wardrobe item and we'll build outfits from what you actually own.
+      </p>
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onAdd}
+        aria-label="Add your first wardrobe item"
+        style={{
+          width: "100%", height: 52, borderRadius: 16,
+          background: `linear-gradient(to right, ${T.teal}, ${T.coral})`,
+          border: "none", cursor: "pointer",
+          fontSize: 15, fontWeight: 700, color: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          boxShadow: "0 4px 18px rgba(63,111,115,0.28)",
+        }}
+      >
+        <Plus size={16} />
+        Add your first item
+      </motion.button>
+    </motion.div>
+  )
+}
+
+// ─── "Need more items" state ──────────────────────────────────────────────────
+
+function HomeNeedMoreItems({ count, onAdd }: { count: number; onAdd: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        borderRadius: 24, background: T.card, border: `1px solid ${T.border}`,
+        marginBottom: 16, padding: "24px 20px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+        <Sparkles size={13} style={{ color: T.gold }} />
+        <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: "0.07em", textTransform: "uppercase" }}>Today's Outfit</p>
+      </div>
+      <p style={{ fontSize: 17, fontWeight: 800, color: T.text, letterSpacing: "-0.3px", marginBottom: 6 }}>
+        A few more pieces needed.
+      </p>
+      <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.55, marginBottom: 20 }}>
+        You have {count} item{count !== 1 ? "s" : ""} so far. Add a few more — a top, a bottom, and shoes — and we'll start building outfits.
+      </p>
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onAdd}
+        aria-label="Add more wardrobe items"
+        style={{
+          width: "100%", height: 48, borderRadius: 14,
+          background: T.raised, border: `1px solid ${T.border}`,
+          cursor: "pointer", fontSize: 14, fontWeight: 600, color: T.sub,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        }}
+      >
+        <Plus size={15} />
+        Add more items
+      </motion.button>
+    </motion.div>
   )
 }
 
@@ -314,6 +371,8 @@ export default function Home() {
   const today = now.toISOString().slice(0, 10)
   const { items: incoming }  = useIncomingItems()
   const { events }           = usePlannedEvents()
+  const { items: capturedItems } = useWardrobeCapture()
+  const { preferences, recentItemIds } = useStylePreferences()
 
   const nextDelivery = [...incoming]
     .sort((a, b) => new Date(a.deliveryDate).getTime() - new Date(b.deliveryDate).getTime())
@@ -333,20 +392,49 @@ export default function Home() {
     outfitHint,
   } = usePersonalisation()
 
-  // ── Daily outfit state ──────────────────────────────────────────────────────
+  // ── Wardrobe state ─────────────────────────────────────────────────────────
+  const hasRealItems = capturedItems.length > 0
 
+  // Generate outfit from real wardrobe items when available
+  const realOutfit = useMemo(() => {
+    if (!hasRealItems) return null
+    const converted = capturedItems.map(capturedToWardrobeItem)
+    const outfits = generateOutfits(today, converted, incoming, undefined, {
+      preferences,
+      usedItemIds: recentItemIds,
+    })
+    return outfits[0] ?? null
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasRealItems, capturedItems.length, today])
+
+  // ── Mock daily outfit state (demo path) ────────────────────────────────────
   const dailyDef = useMemo(() => DAILY_OUTFITS[now.getDay()], [])
   const weather  = useMemo(() => getMockWeather(), [])
 
   const [currentIds,     setCurrentIds]     = useState<number[]>(dailyDef.itemIds)
   const [wornToday,      setWornToday]      = useState(false)
-  const [wornConfirm,    setWornConfirm]    = useState(false)   // brief flash
+  const [wornConfirm,    setWornConfirm]    = useState(false)
   const [showSwap,       setShowSwap]       = useState(false)
   const [altCount,       setAltCount]       = useState(0)
   const [showTonightMode, setShowTonightMode] = useState(false)
 
   const showSuggestions = altCount >= 2
-  const hint = outfitHint(dailyDef.name)
+
+  // Derive unified display values
+  const activeOutfitName  = hasRealItems && realOutfit ? realOutfit.name       : dailyDef.name
+  const activeOccasionTag = hasRealItems && realOutfit ? (realOutfit.tags[0] ?? "Casual") : dailyDef.occasionTag
+  const activeReason      = hasRealItems && realOutfit ? realOutfit.reason     : dailyDef.reason
+  const activeVibe        = hasRealItems && realOutfit ? (realOutfit.tags[1] ?? realOutfit.tags[0] ?? "—") : dailyDef.vibe
+
+  const mockItems     = useMemo(() => resolveItems(currentIds), [currentIds])
+  const realItems: DisplayItem[] = useMemo(
+    () => realOutfit ? realOutfit.items.map((i) => ({ id: i.id, name: i.name, image: i.image })) : [],
+    [realOutfit]
+  )
+  const displayItems: DisplayItem[] = hasRealItems ? realItems : mockItems
+
+  const occasion = OCCASION_STYLE[activeOccasionTag] ?? OCCASION_STYLE.Casual
+  const hint     = outfitHint(activeOutfitName)
 
   // ── Analytics + personalisation boot ─────────────────────────────────────────
   const suggShownRef = useRef(false)
@@ -363,12 +451,10 @@ export default function Home() {
     }
   }, [showSuggestions])
 
-  const outfitItems     = resolveItems(currentIds)
-  const occasion        = OCCASION_STYLE[dailyDef.occasionTag] ?? OCCASION_STYLE.Casual
-
   function handleWearThis() {
-    track("outfit_accepted", { outfit: dailyDef.name })
-    recordAccept(dailyDef.name, currentIds)
+    track("outfit_accepted", { outfit: activeOutfitName })
+    // For real items pass [] — wear-count tracking requires number IDs (backend will handle later)
+    recordAccept(activeOutfitName, hasRealItems ? [] : currentIds)
     setWornToday(true)
     setWornConfirm(true)
     setTimeout(() => setWornConfirm(false), 3000)
@@ -379,10 +465,9 @@ export default function Home() {
   }
 
   function handleSeeAlternatives() {
-    recordReshuffle(dailyDef.name)
+    recordReshuffle(activeOutfitName)
     setAltCount((n) => n + 1)
-    const d = now.toISOString().split("T")[0]
-    navigate(`/timeline/generate/${d}`)
+    navigate(`/timeline/generate/${today}`)
   }
 
   function handleTonightMode() {
@@ -399,7 +484,7 @@ export default function Home() {
           <div>
             <p className="text-[15px] leading-[22px] text-[#A8B0B8]">{greeting}</p>
             <h1 className="text-[32px] font-extrabold leading-[36px] tracking-[-0.03em] text-[#F5F5F5]">
-              Alex
+              Style Assist
             </h1>
           </div>
           <NotificationBell />
@@ -411,6 +496,7 @@ export default function Home() {
             {nextDelivery && (
               <button
                 onClick={() => navigate("/incoming-items")}
+                aria-label={`Next delivery: ${nextDelivery.name}`}
                 className="rounded-[20px] border border-white/6 bg-[#2A3645] p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,0.14)] transition-[transform] duration-[160ms] active:scale-[0.97]"
               >
                 <Package size={15} className="mb-2 text-[#C8A96A]" />
@@ -424,6 +510,7 @@ export default function Home() {
             {nextEvent && (
               <button
                 onClick={() => navigate("/plan-ahead")}
+                aria-label={`Next event: ${nextEvent.name}`}
                 className="rounded-[20px] border border-white/6 bg-[#2A3645] p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,0.14)] transition-[transform] duration-[160ms] active:scale-[0.97]"
               >
                 <CalendarDays size={15} className="mb-2 text-[#3F6F73]" />
@@ -438,229 +525,208 @@ export default function Home() {
         )}
 
         {/* ── TODAY'S OUTFIT hero ── */}
-        <div style={{
-          borderRadius: 24, overflow: "hidden",
-          background: T.card, border: `1px solid ${T.border}`,
-          marginBottom: 16,
-        }}>
-          <AnimatePresence mode="wait">
-            {wornToday ? (
-              /* ── Worn state ── */
-              <motion.div
-                key="worn"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.32 }}
-                style={{ padding: "20px 18px" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 14,
-                    background: `${T.teal}20`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Check size={22} style={{ color: T.teal }} />
-                  </div>
-                  <div>
-                    <AnimatePresence mode="wait" initial={false}>
-                      {wornConfirm ? (
-                        <motion.p
-                          key="works"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.2 }}
-                          style={{ fontSize: 15, fontWeight: 800, color: T.teal, letterSpacing: "-0.2px" }}
-                        >
-                          This works.
-                        </motion.p>
-                      ) : (
-                        <motion.p
-                          key="set"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.2 }}
-                          style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-0.2px" }}
-                        >
-                          You're set for today.
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-                    <p style={{ fontSize: 13, color: T.muted }}>{dailyDef.name} is locked in</p>
-                  </div>
-                </div>
 
-                {/* Mini outfit strip */}
-                <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
-                  {outfitItems.slice(0, 4).map((item) => (
-                    <div key={item.id} style={{ flex: 1, height: 60, borderRadius: 10, overflow: "hidden" }}>
-                      <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }} />
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => setWornToday(false)}
-                  style={{
-                    marginTop: 14, width: "100%", padding: "10px 0",
-                    borderRadius: 14, border: `1px solid ${T.border}`,
-                    background: "transparent", cursor: "pointer",
-                    fontSize: 13, fontWeight: 600, color: T.muted,
-                  }}
+        {/* State 1: No wardrobe items at all */}
+        {!hasRealItems ? (
+          <HomeEmptyState onAdd={() => navigate("/wardrobe/add")} />
+        ) : realOutfit === null ? (
+          /* State 2: Has items but engine can't form a complete outfit yet */
+          <HomeNeedMoreItems count={capturedItems.length} onAdd={() => navigate("/wardrobe/add")} />
+        ) : (
+          /* State 3: Has items + outfit generated */
+          <div style={{ borderRadius: 24, overflow: "hidden", background: T.card, border: `1px solid ${T.border}`, marginBottom: 16 }}>
+            <AnimatePresence mode="wait">
+              {wornToday ? (
+                <motion.div
+                  key="worn"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.32 }}
+                  style={{ padding: "20px 18px" }}
                 >
-                  Change outfit
-                </button>
-              </motion.div>
-            ) : (
-              /* ── Default outfit card ── */
-              <motion.div
-                key="outfit"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                {/* Label row */}
-                <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <Sparkles size={13} style={{ color: T.gold }} />
-                    <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: "0.07em", textTransform: "uppercase" }}>
-                      Today's Outfit
-                    </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 14, background: `${T.teal}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Check size={22} style={{ color: T.teal }} />
+                    </div>
+                    <div>
+                      <AnimatePresence mode="wait" initial={false}>
+                        {wornConfirm ? (
+                          <motion.p key="works" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }} style={{ fontSize: 15, fontWeight: 800, color: T.teal, letterSpacing: "-0.2px" }}>
+                            This works.
+                          </motion.p>
+                        ) : (
+                          <motion.p key="set" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }} style={{ fontSize: 15, fontWeight: 800, color: T.text, letterSpacing: "-0.2px" }}>
+                            You're set for today.
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                      <p style={{ fontSize: 13, color: T.muted }}>{activeOutfitName} is locked in</p>
+                    </div>
                   </div>
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 5,
-                    padding: "3px 10px", borderRadius: 99,
-                    background: occasion.bg,
-                  }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: occasion.color }}>{dailyDef.occasionTag}</span>
-                  </div>
-                </div>
-
-                {/* Outfit name */}
-                <div style={{ padding: "0 16px 12px" }}>
-                  <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.4px", color: T.text, marginBottom: 1 }}>
-                    {dailyDef.name}
-                  </h2>
-                  <p style={{ fontSize: 13, color: T.muted }}>{dailyDef.vibe}</p>
-                </div>
-
-                {/* Photo grid */}
-                <div style={{ display: "flex", height: 180, gap: 2, margin: "0 0 0 0" }}>
-                  {outfitItems.slice(0, 2).map((item, i) => {
-                    const lbl = getItemLabel(item.id)
-                    return (
-                      <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-                        <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        {lbl && (
-                          <div style={{ position: "absolute", bottom: 5, left: i === 0 ? 6 : "auto", right: i === 1 ? 6 : "auto" }}>
-                            <ItemUsagePill label={lbl} />
+                  <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
+                    {displayItems.slice(0, 4).map((item) => (
+                      <div key={item.id} style={{ flex: 1, height: 60, borderRadius: 10, overflow: "hidden", background: T.raised }}>
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                          />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Shirt size={18} style={{ color: T.muted }} />
                           </div>
                         )}
                       </div>
-                    )
-                  })}
-                  {outfitItems.length > 2 && (
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                      {outfitItems.slice(2, 4).map((item) => {
-                        const lbl = getItemLabel(item.id)
-                        return (
-                          <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-                            <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            {lbl && (
-                              <div style={{ position: "absolute", bottom: 4, right: 5 }}>
-                                <ItemUsagePill label={lbl} />
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* AI reason + weather */}
-                <div style={{ padding: "14px 16px 0" }}>
-                  <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 10 }}>
-                    {dailyDef.reason}
-                  </p>
-                  {/* Weather pill */}
-                  <div style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    padding: "5px 12px", borderRadius: 99,
-                    background: "rgba(255,255,255,0.06)", border: `1px solid ${T.border}`,
-                    marginBottom: 14,
-                  }}>
-                    <weather.Icon size={12} style={{ color: T.coral }} />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: T.sub }}>
-                      {weather.temp} · {weather.desc} — {weather.note}
-                    </span>
+                    ))}
                   </div>
-                </div>
-
-                {/* Personalisation hint — appears only after enough signals */}
-                <AnimatePresence>
-                  {hint && <PersonalisationHint key={hint} type={hint} />}
-                </AnimatePresence>
-
-                {/* Actions */}
-                <div style={{ padding: "0 16px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
-                  {/* Primary: Wear this */}
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleWearThis}
-                    style={{
-                      width: "100%", height: 52, borderRadius: 16,
-                      background: `linear-gradient(to right, ${T.teal}, ${T.coral})`,
-                      border: "none", cursor: "pointer",
-                      fontSize: 15, fontWeight: 700, color: "#fff",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      boxShadow: "0 4px 18px rgba(63,111,115,0.28)",
-                    }}
+                  <button
+                    onClick={() => setWornToday(false)}
+                    aria-label="Change today's outfit"
+                    style={{ marginTop: 14, width: "100%", padding: "10px 0", borderRadius: 14, border: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.muted }}
                   >
-                    <Check size={16} />
-                    Wear this
-                  </motion.button>
-
-                  {/* Secondary row */}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setShowSwap(true)}
-                      style={{
-                        flex: 1, height: 46, borderRadius: 14,
-                        background: T.raised, border: `1px solid ${T.border}`,
-                        cursor: "pointer",
-                        fontSize: 13, fontWeight: 600, color: T.sub,
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                      }}
-                    >
-                      <ArrowLeftRight size={14} />
-                      Swap one thing
-                    </motion.button>
-
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      onClick={handleSeeAlternatives}
-                      style={{
-                        flex: 1, height: 46, borderRadius: 14,
-                        background: T.raised, border: `1px solid ${T.border}`,
-                        cursor: "pointer",
-                        fontSize: 13, fontWeight: 600, color: T.sub,
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                      }}
-                    >
-                      <Compass size={14} />
-                      See alternatives
-                    </motion.button>
+                    Change outfit
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div key="outfit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+                  {/* Label row */}
+                  <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <Sparkles size={13} style={{ color: T.gold }} />
+                      <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: "0.07em", textTransform: "uppercase" }}>Today's Outfit</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 99, background: occasion.bg }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: occasion.color }}>{activeOccasionTag}</span>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+
+                  {/* Outfit name */}
+                  <div style={{ padding: "0 16px 12px" }}>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.4px", color: T.text, marginBottom: 1 }}>{activeOutfitName}</h2>
+                    <p style={{ fontSize: 13, color: T.muted }}>{activeVibe}</p>
+                  </div>
+
+                  {/* Photo grid */}
+                  <div style={{ display: "flex", height: 180, gap: 2 }}>
+                    {displayItems.slice(0, 2).map((item, i) => {
+                      const lbl = !hasRealItems ? getItemLabel(item.id) : null
+                      return (
+                        <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative", background: T.raised }}>
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                            />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Shirt size={28} style={{ color: T.muted, opacity: 0.4 }} />
+                            </div>
+                          )}
+                          {lbl && (
+                            <div style={{ position: "absolute", bottom: 5, left: i === 0 ? 6 : "auto", right: i === 1 ? 6 : "auto" }}>
+                              <ItemUsagePill label={lbl} />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                    {displayItems.length > 2 && (
+                      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+                        {displayItems.slice(2, 4).map((item) => {
+                          const lbl = !hasRealItems ? getItemLabel(item.id) : null
+                          return (
+                            <div key={item.id} style={{ flex: 1, overflow: "hidden", position: "relative", background: T.raised }}>
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
+                                />
+                              ) : (
+                                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <Shirt size={20} style={{ color: T.muted, opacity: 0.4 }} />
+                                </div>
+                              )}
+                              {lbl && (
+                                <div style={{ position: "absolute", bottom: 4, right: 5 }}>
+                                  <ItemUsagePill label={lbl} />
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reason + weather */}
+                  <div style={{ padding: "14px 16px 0" }}>
+                    <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 10 }}>{activeReason}</p>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, background: "rgba(255,255,255,0.06)", border: `1px solid ${T.border}`, marginBottom: 14 }}>
+                      <weather.Icon size={12} style={{ color: T.coral }} />
+                      <span style={{ fontSize: 11, fontWeight: 600, color: T.sub }}>{weather.temp} · {weather.desc} — {weather.note}</span>
+                    </div>
+                  </div>
+
+                  {/* Personalisation hint */}
+                  <AnimatePresence>
+                    {hint && <PersonalisationHint key={hint} type={hint} />}
+                  </AnimatePresence>
+
+                  {/* Actions */}
+                  <div style={{ padding: "0 16px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleWearThis}
+                      aria-label={`Wear ${activeOutfitName} today`}
+                      style={{
+                        width: "100%", height: 52, borderRadius: 16,
+                        background: `linear-gradient(to right, ${T.teal}, ${T.coral})`,
+                        border: "none", cursor: "pointer",
+                        fontSize: 15, fontWeight: 700, color: "#fff",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        boxShadow: "0 4px 18px rgba(63,111,115,0.28)",
+                      }}
+                    >
+                      <Check size={16} />
+                      Wear this
+                    </motion.button>
+
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {/* Swap only available for mock wardrobe */}
+                      {!hasRealItems && (
+                        <motion.button
+                          whileTap={{ scale: 0.96 }}
+                          onClick={() => setShowSwap(true)}
+                          aria-label="Swap one piece in this outfit"
+                          style={{ flex: 1, height: 46, borderRadius: 14, background: T.raised, border: `1px solid ${T.border}`, cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.sub, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                        >
+                          <ArrowLeftRight size={14} />
+                          Swap one thing
+                        </motion.button>
+                      )}
+                      <motion.button
+                        whileTap={{ scale: 0.96 }}
+                        onClick={handleSeeAlternatives}
+                        aria-label="See alternative outfit options"
+                        style={{ flex: 1, height: 46, borderRadius: 14, background: T.raised, border: `1px solid ${T.border}`, cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.sub, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                      >
+                        <Compass size={14} />
+                        See alternatives
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* ── Evening prompt ── */}
         <AnimatePresence>
@@ -675,26 +741,14 @@ export default function Home() {
             >
               <button
                 onClick={handleTonightMode}
-                style={{
-                  width: "100%", padding: "15px 18px",
-                  borderRadius: 20,
-                  background: "rgba(200,169,106,0.08)",
-                  border: "1px solid rgba(200,169,106,0.24)",
-                  cursor: "pointer", textAlign: "left",
-                  display: "flex", alignItems: "center", gap: 14,
-                }}
+                aria-label="Build an evening look for tonight"
+                style={{ width: "100%", padding: "15px 18px", borderRadius: 20, background: "rgba(200,169,106,0.08)", border: "1px solid rgba(200,169,106,0.24)", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14 }}
               >
-                <div style={{
-                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                  background: "rgba(200,169,106,0.14)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: "rgba(200,169,106,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Moon size={18} style={{ color: T.gold }} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: T.gold, marginBottom: 1 }}>
-                    Need something for tonight?
-                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: T.gold, marginBottom: 1 }}>Need something for tonight?</p>
                   <p style={{ fontSize: 12, color: T.muted }}>Build an evening look from what you own</p>
                 </div>
                 <ChevronRight size={16} style={{ color: T.muted, marginLeft: "auto", flexShrink: 0 }} />
@@ -713,20 +767,13 @@ export default function Home() {
               transition={{ duration: 0.42, ease: "easeOut" }}
               style={{ marginBottom: 20 }}
             >
-              {/* Separator */}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <div style={{ flex: 1, height: 1, background: T.border }} />
                 <span style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: "0.1em" }}>SMART PICKS</span>
                 <div style={{ flex: 1, height: 1, background: T.border }} />
               </div>
-
-              <p style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-0.2px", marginBottom: 4 }}>
-                You've explored your best looks
-              </p>
-              <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 14 }}>
-                These would unlock more combinations from what you already own.
-              </p>
-
+              <p style={{ fontSize: 16, fontWeight: 700, color: T.text, letterSpacing: "-0.2px", marginBottom: 4 }}>You've explored your best looks</p>
+              <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.5, marginBottom: 14 }}>These would unlock more combinations from what you already own.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {HOME_SUGGESTIONS.map((item) => (
                   <HomeSuggestionCard key={item.id} item={item} />
@@ -737,12 +784,12 @@ export default function Home() {
         </AnimatePresence>
 
         {/* ── Recent Looks ── */}
-        <section className="mb-5">
+        <section className="mb-5" aria-label="Recent looks">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-[15px] font-bold text-[#F5F5F5]">Recent Looks</p>
-            <button className="text-[13px] font-semibold text-[#7FA9A3]">See all</button>
+            <button className="text-[13px] font-semibold text-[#7FA9A3]" aria-label="See all recent looks">See all</button>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-1">
+          <div className="flex gap-4 overflow-x-auto pb-1" role="list">
             {outfitCards.map((outfit) => (
               <OutfitCard key={outfit.id} title={outfit.title} subtitle={outfit.subtitle} image={outfit.image} compact />
             ))}
@@ -758,7 +805,7 @@ export default function Home() {
                 Try tonal dressing — similar shades together make a look feel intentional without extra effort.
               </p>
             </div>
-            <div className="mt-0.5 text-[#C8A96A]">
+            <div className="mt-0.5 text-[#C8A96A]" aria-hidden="true">
               <Sparkles size={18} />
             </div>
           </div>
@@ -766,7 +813,7 @@ export default function Home() {
 
       </AppShell>
 
-      {/* ── Swap sheet ── */}
+      {/* ── Swap sheet (mock only) ── */}
       <AnimatePresence>
         {showSwap && (
           <SwapSheet key="swap" itemIds={currentIds} onSwap={handleSwap} onClose={() => setShowSwap(false)} />

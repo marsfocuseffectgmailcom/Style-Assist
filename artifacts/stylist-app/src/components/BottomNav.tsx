@@ -58,6 +58,7 @@ export function BottomNav() {
             to={to}
             end={to === "/"}
             tabIndex={panelOpen ? -1 : 0}
+            aria-label={label}
             style={{ flex: 1, minWidth: 0, textDecoration: "none" }}
           >
             {({ isActive }) => (

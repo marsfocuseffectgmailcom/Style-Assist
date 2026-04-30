@@ -24,7 +24,8 @@ import { useIncomingItems } from "../hooks/useIncomingItems"
 import { useStylePreferences } from "../hooks/useStylePreferences"
 import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useWeather } from "../hooks/useWeather"
-import { wardrobeItems } from "../lib/mockData"
+import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
+import { capturedToWardrobeItem } from "../lib/capturedToWardrobe"
 import { generateOutfits } from "../lib/outfitGenerator"
 import type { GeneratedOutfit } from "../lib/outfitGenerator"
 import type { TimelineOutfit } from "../lib/types"
@@ -535,6 +536,14 @@ export default function GenerateOutfitScreen() {
   const { preferences, recentItemIds, signalOutfit, trackItemsUsed } = useStylePreferences()
   const { saveOutfit }                                = useTimelineOutfits()
   const { weather, weatherEnabled, toggleWeather }    = useWeather(date)
+  const { items: capturedItems }                      = useWardrobeCapture()
+
+  // Convert user's captured items to the engine's WardrobeItem format
+  const userWardrobeItems = useMemo(
+    () => capturedItems.map(capturedToWardrobeItem),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [capturedItems.length]
+  )
 
   // ── Seen-outfit tracking refs (mutable, no re-render) ──────────────────────
   const seenSignatures = useRef<Set<string>>(new Set())
@@ -550,12 +559,12 @@ export default function GenerateOutfitScreen() {
   // ── Initial batch ──────────────────────────────────────────────────────────
   const initialBatch = useMemo(
     () =>
-      generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, {
+      generateOutfits(date ?? "", userWardrobeItems, incomingItems, undefined, {
         preferences,
         usedItemIds: recentItemIds,
       }).slice(0, 3),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [date] // Only recompute when the date changes — not on preference updates mid-session
+    [date, userWardrobeItems] // Recompute when date or wardrobe changes
   )
 
   // ── Display state ──────────────────────────────────────────────────────────
@@ -579,7 +588,7 @@ export default function GenerateOutfitScreen() {
       return currentOutfits.map((o) => ({ outfit: o, adaptations: [] as string[], weatherNote: "" }))
     }
     return currentOutfits.map((o) => {
-      const result = applyWeatherAdaptation(o, weather, wardrobeItems)
+      const result = applyWeatherAdaptation(o, weather, userWardrobeItems)
       return { outfit: result.outfit, adaptations: result.adaptations, weatherNote: result.weatherNote }
     })
   }, [currentOutfits, weather, weatherEnabled])
@@ -620,7 +629,7 @@ export default function GenerateOutfitScreen() {
     setIsReshuffling(true)
 
     setTimeout(() => {
-      const candidates = generateOutfits(date ?? "", wardrobeItems, incomingItems, undefined, {
+      const candidates = generateOutfits(date ?? "", userWardrobeItems, incomingItems, undefined, {
         preferences,
         usedItemIds: recentItemIds,
         usedOutfitNames: seenNames.current,

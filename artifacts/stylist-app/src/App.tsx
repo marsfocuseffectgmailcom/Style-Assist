@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { NotificationsProvider } from "./contexts/NotificationsContext"
 import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
 import { BottomNav } from "./components/BottomNav"
+import { ErrorBoundary } from "./components/ErrorBoundary"
+import { OfflineBanner } from "./components/OfflineBanner"
 import {
   WardrobeTransitionProvider,
   useWardrobeTransition,
@@ -33,7 +35,6 @@ import { track } from "./hooks/useAnalytics"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
-// ── Micro trigger — fires once per calendar day after UI settles ──────────────
 function MicroTrigger() {
   const { trigger } = useWardrobeTransition()
   useEffect(() => {
@@ -52,14 +53,12 @@ function AppContent() {
     () => localStorage.getItem(ONBOARDING_KEY) === "true"
   )
 
-  // Track app_open once per session on mount
   useEffect(() => {
     track("app_open")
   }, [])
 
   function handleOnboardingComplete() {
     localStorage.setItem(ONBOARDING_KEY, "true")
-    // Mark today so the micro doesn't fire immediately after onboarding
     localStorage.setItem(WARDROBE_MICRO_DATE_KEY, new Date().toDateString())
     setOnboarded(true)
   }
@@ -100,12 +99,15 @@ function AppContent() {
 
 export default function App() {
   return (
-    <NotificationsProvider>
-      <WardrobePanelProvider>
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
-          <AppContent />
-        </BrowserRouter>
-      </WardrobePanelProvider>
-    </NotificationsProvider>
+    <ErrorBoundary>
+      <NotificationsProvider>
+        <WardrobePanelProvider>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
+            <OfflineBanner />
+            <AppContent />
+          </BrowserRouter>
+        </WardrobePanelProvider>
+      </NotificationsProvider>
+    </ErrorBoundary>
   )
 }
