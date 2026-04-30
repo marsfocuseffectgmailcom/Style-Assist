@@ -42,7 +42,7 @@ function MicroTrigger() {
     const last  = localStorage.getItem(WARDROBE_MICRO_DATE_KEY)
     if (last === today) return
     localStorage.setItem(WARDROBE_MICRO_DATE_KEY, today)
-    const t = setTimeout(() => trigger("micro"), 600)
+    const t = setTimeout(() => trigger("micro"), 200)
     return () => clearTimeout(t)
   }, [trigger])
   return null
@@ -59,7 +59,6 @@ function AppContent() {
 
   function handleOnboardingComplete() {
     localStorage.setItem(ONBOARDING_KEY, "true")
-    localStorage.setItem(WARDROBE_MICRO_DATE_KEY, new Date().toDateString())
     setOnboarded(true)
   }
 
