@@ -1,16 +1,36 @@
 {
-  "name": "Style Assist",
-  "short_name": "Assist",
-  "description": "Smarter outfit decisions powered by your wardrobe",
+  "name": "Drape: AI Fashion Stylist",
+  "short_name": "Drape",
+  "description": "Your AI personal stylist. Outfits built from what you already own.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0F1115",
-  "theme_color": "#FF4D8D",
+  "orientation": "portrait",
+  "background_color": "#1F2A37",
+  "theme_color": "#1F2A37",
+  "categories": ["lifestyle", "fashion"],
+  "lang": "en",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Daily outfit from Drape"
     }
   ]
 }
