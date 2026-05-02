@@ -1,6 +1,6 @@
 {
-  "name": "Drape: AI Fashion Stylist",
-  "short_name": "Drape",
+  "name": "Style Assist: AI Stylist",
+  "short_name": "Style Assist",
   "description": "Your AI personal stylist. Outfits built from what you already own.",
   "start_url": "/",
   "scope": "/",
