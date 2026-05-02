@@ -7,7 +7,6 @@ import { useIncomingItems } from "../hooks/useIncomingItems"
 import { wardrobeItems } from "../lib/mockData"
 import { generateMonthPlan } from "../lib/outfitGenerator"
 import { track } from "../hooks/useAnalytics"
-import { WardrobeMirrorTransition } from "../components/WardrobeMirrorTransition"
 
 // ─── Style chips ─────────────────────────────────────────────────────────────
 
@@ -53,8 +52,8 @@ const FIRST_OUTFIT = {
 
 // ─── Step type ───────────────────────────────────────────────────────────────
 
-type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-//          splash  value  style  add   cat  analyse  outfit  confirm  transition
+type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+//          splash  value  style  add   cat  analyse  outfit  confirm
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
@@ -116,14 +115,13 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [step])
 
-  // ── Step 7: confirmation → advance to wardrobe transition ─────────────────
+  // ── Step 7: confirmation screen → enter app after brief pause ────────────
   useEffect(() => {
     if (step !== 7) return
-    const t = setTimeout(() => advance(8), 1000)
+    const t = setTimeout(() => handleTransitionDone(), 1500)
     return () => clearTimeout(t)
   }, [step])
 
-  // ── Step 8: wardrobe transition complete → enter app ──────────────────────
   function handleTransitionDone() {
     track("onboarding_completed", {
       styles:   [...selectedStyles],
@@ -653,11 +651,6 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
         )}
 
       </AnimatePresence>
-
-      {/* ── Step 8: wardrobe mirror transition ─────────────────────────── */}
-      {step === 8 && (
-        <WardrobeMirrorTransition onComplete={handleTransitionDone} />
-      )}
 
     </div>
   )

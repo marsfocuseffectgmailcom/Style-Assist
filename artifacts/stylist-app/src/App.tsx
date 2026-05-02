@@ -5,11 +5,6 @@ import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
 import { BottomNav } from "./components/BottomNav"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import { OfflineBanner } from "./components/OfflineBanner"
-import {
-  WardrobeTransitionProvider,
-  useWardrobeTransition,
-  WARDROBE_MICRO_DATE_KEY,
-} from "./contexts/WardrobeTransitionContext"
 import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
@@ -35,19 +30,6 @@ import { track } from "./hooks/useAnalytics"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
-function MicroTrigger() {
-  const { trigger } = useWardrobeTransition()
-  useEffect(() => {
-    const today = new Date().toDateString()
-    const last  = localStorage.getItem(WARDROBE_MICRO_DATE_KEY)
-    if (last === today) return
-    localStorage.setItem(WARDROBE_MICRO_DATE_KEY, today)
-    const t = setTimeout(() => trigger("micro"), 200)
-    return () => clearTimeout(t)
-  }, [trigger])
-  return null
-}
-
 function AppContent() {
   const [onboarded, setOnboarded] = useState(
     () => localStorage.getItem(ONBOARDING_KEY) === "true"
@@ -67,8 +49,7 @@ function AppContent() {
   }
 
   return (
-    <WardrobeTransitionProvider>
-      <MicroTrigger />
+    <>
       <Routes>
         <Route path="/"                               element={<Home />} />
         <Route path="/stylist"                        element={<Stylist />} />
@@ -92,7 +73,7 @@ function AppContent() {
         <Route path="/plan-ahead/:eventId/complete"   element={<SavedFutureOutfitScreen />} />
       </Routes>
       <BottomNav />
-    </WardrobeTransitionProvider>
+    </>
   )
 }
 
