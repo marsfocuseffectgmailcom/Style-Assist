@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Camera, Trash2, EyeOff, Check } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { X, Camera, Trash2, EyeOff, Check, TrendingDown } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   REACH_OPTIONS, FEEL_OPTIONS, REACH_COLOR,
   useItemPreferences,
@@ -8,6 +8,8 @@ import {
 import type { ReachPreference, FeelPreference } from "../hooks/useItemPreferences"
 import { useWardrobePanel } from "../contexts/WardrobePanelContext"
 import { useWardrobeRemoval } from "../hooks/useWardrobeRemoval"
+import { loadPersonalisationStore } from "../lib/usePersonalisation"
+import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,12 +33,24 @@ export function ItemPreferenceSheet({ item, onClose, onPermanentDelete }: Props)
   const { getPref, setPref, toggleFeel } = useItemPreferences()
   const { softRemove, permanentRemove } = useWardrobeRemoval()
   const { setPanelOpen } = useWardrobePanel()
+  const { items: capturedItems } = useWardrobeCapture()
   const open = item !== null
   const pref = item ? getPref(item.id) : {}
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [removalDone, setRemovalDone] = useState<"soft" | "permanent" | null>(null)
+
+  // Cost-per-wear calculation
+  const costPerWearData = useMemo(() => {
+    if (!item) return null
+    const captured = capturedItems.find((i) => String(i.id) === String(item.id))
+    if (!captured?.price) return null
+    const store = loadPersonalisationStore()
+    const wears = store.wearLog[String(item.id)]?.count ?? captured.wearCount ?? 0
+    const cpw = wears > 0 ? captured.price / wears : captured.price
+    return { price: captured.price, wears, cpw }
+  }, [item, capturedItems])
 
   // Reset confirm state when a different item opens
   useEffect(() => {
@@ -189,6 +203,39 @@ export function ItemPreferenceSheet({ item, onClose, onPermanentDelete }: Props)
               className="flex-1 overflow-y-auto px-5 pt-5"
               style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}
             >
+
+              {/* ─── Cost-per-wear ─────────────────────────────────────── */}
+              {costPerWearData && (
+                <div className="mb-6 rounded-[18px] border p-4" style={{ borderColor: "rgba(200,169,106,0.22)", backgroundColor: "rgba(200,169,106,0.05)" }}>
+                  <div className="mb-3 flex items-center gap-2">
+                    <TrendingDown size={13} style={{ color: "#C8A96A" }} />
+                    <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: "#C8A96A" }}>
+                      Cost per wear
+                    </p>
+                  </div>
+                  <div className="flex items-end gap-4">
+                    <div>
+                      <p className="text-[28px] font-extrabold leading-none tracking-tight" style={{ color: "#F2F4F5" }}>
+                        ${costPerWearData.cpw.toFixed(2)}
+                      </p>
+                      <p className="mt-1 text-[11px]" style={{ color: "#6B8490" }}>per wear</p>
+                    </div>
+                    <div className="mb-1 flex flex-col gap-0.5">
+                      <p className="text-[12px]" style={{ color: "#AABBC0" }}>
+                        Paid <span className="font-semibold text-[#F2F4F5]">${costPerWearData.price.toFixed(2)}</span>
+                      </p>
+                      <p className="text-[12px]" style={{ color: "#AABBC0" }}>
+                        Worn <span className="font-semibold text-[#F2F4F5]">{costPerWearData.wears}×</span>
+                      </p>
+                    </div>
+                  </div>
+                  {costPerWearData.wears === 0 && (
+                    <p className="mt-2 text-[11px]" style={{ color: "#6B8490" }}>
+                      Wear it once to start tracking value.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* ─── Reach preference ──────────────────────────────────── */}
               <div className="mb-6">

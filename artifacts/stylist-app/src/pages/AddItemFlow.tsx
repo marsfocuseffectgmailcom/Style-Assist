@@ -4,11 +4,12 @@ import { track } from "../hooks/useAnalytics"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowLeft, Camera, Upload, Check, ChevronRight,
-  Sparkles, Sun, Info, Tag, RotateCcw,
+  Sparkles, Sun, Info, Tag, RotateCcw, DollarSign,
 } from "lucide-react"
 import { AppShell } from "../components/AppShell"
 import { useWardrobeCapture, compressImage } from "../hooks/useWardrobeCapture"
 import type { CapturedItem, FitType, ItemStatus, WeatherTag } from "../hooks/useWardrobeCapture"
+import { removeBackground } from "../lib/removeBackground"
 
 // ─── Design tokens (matching existing system) ─────────────────────────────────
 
@@ -71,6 +72,7 @@ type ManualFields = {
   material:string
   weather: WeatherTag[]
   status:  ItemStatus
+  price:   string   // stored as string for input, parsed to number on save
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -576,14 +578,17 @@ function AnalyzingStep({
   detected,
   onEditDetails,
   onSeeOutfits,
+  onBgRemoved,
 }: {
   photoUrl:      string | null
   detected:      Detected | null
   onEditDetails: () => void
   onSeeOutfits:  () => void
+  onBgRemoved:   (url: string) => void
 }) {
   const [stage, setStage]           = useState<"scanning" | "reveal">("scanning")
   const [phraseIndex, setPhraseIndex] = useState(0)
+  const [displayUrl, setDisplayUrl]  = useState(photoUrl)
 
   useEffect(() => {
     const phraseId = setInterval(() => setPhraseIndex((i) => i + 1), 500)
@@ -593,6 +598,15 @@ function AnalyzingStep({
     }, 1500)
     return () => { clearInterval(phraseId); clearTimeout(revealId) }
   }, [])
+
+  // Run bg removal in parallel with the scanning animation
+  useEffect(() => {
+    if (!photoUrl) return
+    removeBackground(photoUrl).then((result) => {
+      setDisplayUrl(result)
+      onBgRemoved(result)
+    })
+  }, [photoUrl, onBgRemoved])
 
   const tags = detected
     ? [detected.category, detected.colour, detected.style, detected.occasion]
@@ -617,17 +631,17 @@ function AnalyzingStep({
       transition={{ duration: 0.28 }}
       style={{ position: "fixed", inset: 0, zIndex: 200, overflow: "hidden", background: "#1F2A37" }}
     >
-      {/* ── Hero photo ── */}
-      {photoUrl && (
+      {/* ── Hero photo (switches to bg-removed version when ready) ── */}
+      {displayUrl && (
         <motion.img
-          src={photoUrl}
+          src={displayUrl}
           alt="Your item"
           animate={{
             filter:     stage === "reveal" ? "brightness(0.72)" : "brightness(0.48)",
             scale:      stage === "reveal" ? 1 : 1.04,
           }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
         />
       )}
 
@@ -962,6 +976,22 @@ function ReviewStep({
             onChange={(v) => setManual({ ...manual, status: v })}
           />
         </FieldRow>
+
+        <FieldRow label="Price paid" hint="(optional — for cost-per-wear)">
+          <div className="relative">
+            <DollarSign size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: TOKEN.muted }} />
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              value={manual.price}
+              onChange={(e) => setManual({ ...manual, price: e.target.value })}
+              placeholder="0.00"
+              className="w-full rounded-[14px] border border-white/8 bg-white/5 py-3 pl-9 pr-4 text-[14px] text-[#F2F4F5] placeholder-[#5E7580] outline-none transition focus:border-[#3F6F73]/40 focus:bg-[#3F6F73]/4"
+            />
+          </div>
+        </FieldRow>
       </div>
 
       <button
@@ -1051,9 +1081,10 @@ export default function AddItemFlow() {
   const [detected, setDetected]   = useState<Detected | null>(null)
   const [saving, setSaving]       = useState(false)
   const [savedPhoto, setSavedPhoto] = useState<string | null>(null)
+  const [bgRemovedUrl, setBgRemovedUrl] = useState<string | null>(null)
 
   const [manual, setManual] = useState<ManualFields>({
-    name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean",
+    name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean", price: "",
   })
 
   // ── Phase transitions ───────────────────────────────────────────────────────
@@ -1068,8 +1099,8 @@ export default function AddItemFlow() {
 
   async function handleQuickSave() {
     if (!detected) return
-    let frontUrl = ""
-    if (photos.front?.file) frontUrl = await compressImage(photos.front.file)
+    let frontUrl = bgRemovedUrl || ""
+    if (!frontUrl && photos.front?.file) frontUrl = await compressImage(photos.front.file)
     let backUrl: string | undefined
     if (photos.back?.file)  backUrl  = await compressImage(photos.back.file)
     let tagUrl: string | undefined
@@ -1122,8 +1153,8 @@ export default function AddItemFlow() {
     if (!detected) return
     setSaving(true)
 
-    let frontUrl = ""
-    if (photos.front?.file) {
+    let frontUrl = bgRemovedUrl || ""
+    if (!frontUrl && photos.front?.file) {
       frontUrl = await compressImage(photos.front.file)
     }
     let backUrl: string | undefined
@@ -1164,6 +1195,7 @@ export default function AddItemFlow() {
       weatherSuitability: manual.weather,
       status:   manual.status,
       addedAt:  new Date().toISOString(),
+      price:    manual.price ? parseFloat(manual.price) : undefined,
     }
 
     addItem(item)
@@ -1175,8 +1207,9 @@ export default function AddItemFlow() {
   function handleAddAnother() {
     setPhotos({ front: null, back: null, tag: null })
     setDetected(null)
-    setManual({ name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean" })
+    setManual({ name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean", price: "" })
     setSavedPhoto(null)
+    setBgRemovedUrl(null)
     setPhase("tips")
   }
 
@@ -1241,6 +1274,7 @@ export default function AddItemFlow() {
               detected={detected}
               onEditDetails={() => setPhase("review")}
               onSeeOutfits={handleQuickSave}
+              onBgRemoved={setBgRemovedUrl}
             />
           )}
 

@@ -1,4 +1,4 @@
-import { ArrowLeft, Box, Sparkles, ShoppingBag, Lock } from "lucide-react"
+import { ArrowLeft, Box, Sparkles, ShoppingBag } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import { AppShell } from "../../components/AppShell"
 import { Card } from "../../components/Card"
@@ -198,20 +198,6 @@ export default function OutfitTimelineScreen() {
         )}
       </section>
 
-      <section className="mt-5">
-        <Card className="flex items-center gap-4 opacity-50">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-white/8">
-            <Lock size={18} className="text-[#AABBC0]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-[#F2F4F5]">3D Try-On</p>
-            <p className="text-xs text-[#6B8490]">Coming later — see your outfit on a virtual model</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-white/8 px-2.5 py-1 text-[10px] font-medium text-[#AABBC0]">
-            Soon
-          </span>
-        </Card>
-      </section>
     </AppShell>
   )
 }

@@ -1,4 +1,4 @@
-import { Plus, Camera } from "lucide-react"
+import { Plus, Camera, Clock } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { AppShell } from "../components/AppShell"
@@ -11,7 +11,7 @@ import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import type { CapturedItem } from "../hooks/useWardrobeCapture"
 import { useItemPreferences, REACH_COLOR } from "../hooks/useItemPreferences"
 import { useWardrobeRemoval } from "../hooks/useWardrobeRemoval"
-import { usePersonalisation } from "../lib/usePersonalisation"
+import { usePersonalisation, loadPersonalisationStore } from "../lib/usePersonalisation"
 import { ItemUsagePill } from "../components/PersonalisationHint"
 
 const categories = ["All", "Tops", "Bottoms", "Shoes", "Outerwear"] as const
@@ -191,6 +191,20 @@ export default function Wardrobe() {
 
   const isEmpty = allItems.length === 0
 
+  // ── Neglected items (unworn 90+ days) ───────────────────────────────────────
+  const neglectedItems = useMemo(() => {
+    const store = loadPersonalisationStore()
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - 90)
+    const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+    return allItems.filter((item) => {
+      const log = store.wearLog[String(item.id)]
+      if (!log) return false  // never worn via outfit confirm — skip
+      return log.lastWorn < cutoffStr
+    })
+  }, [allItems])
+
   return (
     <AppShell>
       <header className="mb-5 pt-4">
@@ -243,6 +257,53 @@ export default function Wardrobe() {
         <EmptyWardrobeGrid onAdd={() => navigate("/wardrobe/add")} />
       ) : (
         <>
+          {/* ── Neglected items banner ────────────────────────────────────────── */}
+          {neglectedItems.length > 0 && (
+            <section className="mt-5">
+              <div
+                className="rounded-[22px] border p-4"
+                style={{ borderColor: "rgba(200,169,106,0.20)", backgroundColor: "rgba(200,169,106,0.05)" }}
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: "rgba(200,169,106,0.15)" }}>
+                    <Clock size={14} style={{ color: "#C8A96A" }} />
+                  </div>
+                  <p className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: "#C8A96A" }}>
+                    Sleeping in your wardrobe
+                  </p>
+                </div>
+                <p className="mb-3 text-[13px] leading-[18px]" style={{ color: "#AABBC0" }}>
+                  {neglectedItems.length === 1
+                    ? "1 item hasn't been worn in over 3 months."
+                    : `${neglectedItems.length} items haven't been worn in over 3 months.`}
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {neglectedItems.slice(0, 5).map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveSheet({
+                        id: item.id, name: item.name, category: item.category,
+                        image: item.image, isCapture: item.isCapture,
+                      })}
+                      className="flex-shrink-0 overflow-hidden rounded-[14px] border transition active:scale-[0.97]"
+                      style={{ width: 64, height: 64, borderColor: "rgba(200,169,106,0.20)", background: "#1C2A37" }}
+                    >
+                      {item.image
+                        ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                        : <div className="flex h-full w-full items-center justify-center"><Camera size={16} className="text-[#4D6A78]" /></div>
+                      }
+                    </button>
+                  ))}
+                  {neglectedItems.length > 5 && (
+                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-[14px] border" style={{ borderColor: "rgba(200,169,106,0.15)", background: "#1C2A37" }}>
+                      <p className="text-[12px] font-semibold" style={{ color: "#C8A96A" }}>+{neglectedItems.length - 5}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className="mt-5">
             <SectionHeader title="Your Items" />
 

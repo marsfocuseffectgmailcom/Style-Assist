@@ -35,6 +35,7 @@ export type CapturedItem = {
   weatherSuitability: WeatherTag[]
   status: ItemStatus
   addedAt: string
+  price?: number        // what the user paid (for cost-per-wear)
 }
 
 // ─── Image compression ────────────────────────────────────────────────────────
