@@ -66,6 +66,12 @@ uri = "file://attached_assets/store/feature_graphic_v8.png"
 type = "image"
 title = "feature graphic peach and black female top"
 
+[[generated]]
+id = "et4JdjivP3_AY40GKnr3Q"
+uri = "file://attached_assets/store/feature_graphic_v9.png"
+type = "image"
+title = "feature graphic v9 two-tone trench coat female top"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
