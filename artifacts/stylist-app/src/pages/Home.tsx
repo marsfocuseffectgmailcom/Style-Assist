@@ -1,7 +1,7 @@
 import {
   Sparkles, Package, CalendarDays, ChevronRight, Moon,
   Check, RefreshCw, Compass, Cloud, Sun, CloudRain,
-  Bookmark, Shirt, ArrowLeftRight, Plus,
+  Bookmark, Shirt, ArrowLeftRight, Plus, Camera,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useMemo, useEffect, useRef } from "react"
@@ -22,6 +22,9 @@ import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import { useStylePreferences } from "../hooks/useStylePreferences"
 import { generateOutfits } from "../lib/outfitGenerator"
 import { capturedToWardrobeItem } from "../lib/capturedToWardrobe"
+import { ReviewNudge, recordWear, shouldShowReview } from "../components/ReviewNudge"
+import { UpgradeSheet } from "../components/UpgradeSheet"
+import { useSubscription } from "../hooks/useSubscription"
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 
@@ -411,12 +414,18 @@ export default function Home() {
   const dailyDef = useMemo(() => DAILY_OUTFITS[now.getDay()], [])
   const weather  = useMemo(() => getMockWeather(), [])
 
-  const [currentIds,     setCurrentIds]     = useState<number[]>(dailyDef.itemIds)
-  const [wornToday,      setWornToday]      = useState(false)
-  const [wornConfirm,    setWornConfirm]    = useState(false)
-  const [showSwap,       setShowSwap]       = useState(false)
-  const [altCount,       setAltCount]       = useState(0)
+  const { canGenerate, recordGenerate, upgradeToPro } = useSubscription()
+
+  const [currentIds,      setCurrentIds]      = useState<number[]>(dailyDef.itemIds)
+  const [wornToday,       setWornToday]       = useState(false)
+  const [wornConfirm,     setWornConfirm]     = useState(false)
+  const [showSwap,        setShowSwap]        = useState(false)
+  const [altCount,        setAltCount]        = useState(0)
   const [showTonightMode, setShowTonightMode] = useState(false)
+  const [showReview,      setShowReview]      = useState(false)
+  const [showUpgrade,     setShowUpgrade]     = useState(false)
+  const [fitPhotoUrl,     setFitPhotoUrl]     = useState<string | null>(null)
+  const fitPhotoRef = useRef<HTMLInputElement>(null)
 
   const showSuggestions = altCount >= 2
 
@@ -453,11 +462,23 @@ export default function Home() {
 
   function handleWearThis() {
     track("outfit_accepted", { outfit: activeOutfitName })
-    // For real items pass [] — wear-count tracking requires number IDs (backend will handle later)
     recordAccept(activeOutfitName, hasRealItems ? [] : currentIds)
     setWornToday(true)
     setWornConfirm(true)
     setTimeout(() => setWornConfirm(false), 3000)
+    const count = recordWear()
+    if (shouldShowReview()) {
+      setTimeout(() => setShowReview(true), 2200)
+    }
+    void count
+  }
+
+  function handleFitPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setFitPhotoUrl(url)
+    track("fit_photo_added")
   }
 
   function handleSwap(oldId: number, newId: number) {
@@ -465,6 +486,11 @@ export default function Home() {
   }
 
   function handleSeeAlternatives() {
+    if (!canGenerate) {
+      setShowUpgrade(true)
+      return
+    }
+    recordGenerate()
     recordReshuffle(activeOutfitName)
     setAltCount((n) => n + 1)
     navigate(`/timeline/generate/${today}`)
@@ -582,13 +608,38 @@ export default function Home() {
                       </div>
                     ))}
                   </div>
-                  <button
-                    onClick={() => setWornToday(false)}
-                    aria-label="Change today's outfit"
-                    style={{ marginTop: 14, width: "100%", padding: "10px 0", borderRadius: 14, border: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.muted }}
-                  >
-                    Change outfit
-                  </button>
+                  {/* Fit photo */}
+                  <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                    {fitPhotoUrl ? (
+                      <div style={{ position: "relative", width: 64, height: 64, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
+                        <img src={fitPhotoUrl} alt="Today's fit" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fitPhotoRef.current?.click()}
+                        aria-label="Capture today's fit photo"
+                        style={{ flex: 1, height: 42, borderRadius: 14, border: `1px dashed ${T.teal}50`, background: `${T.teal}08`, cursor: "pointer", fontSize: 12, fontWeight: 600, color: T.teal, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                      >
+                        <Camera size={13} />
+                        Capture today's fit
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setWornToday(false)}
+                      aria-label="Change today's outfit"
+                      style={{ flex: fitPhotoUrl ? 1 : "none", height: 42, padding: "0 16px", borderRadius: 14, border: `1px solid ${T.border}`, background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: T.muted, whiteSpace: "nowrap" }}
+                    >
+                      Change
+                    </button>
+                  </div>
+                  <input
+                    ref={fitPhotoRef}
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    style={{ display: "none" }}
+                    onChange={handleFitPhoto}
+                  />
                 </motion.div>
               ) : (
                 <motion.div key="outfit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
@@ -826,6 +877,17 @@ export default function Home() {
           <TonightModeSheet onClose={() => setShowTonightMode(false)} />
         )}
       </AnimatePresence>
+
+      {/* ── Upgrade sheet ── */}
+      <UpgradeSheet
+        open={showUpgrade}
+        reason="You've used your 3 free outfit generates today. Go Pro for unlimited access."
+        onClose={() => setShowUpgrade(false)}
+        onUpgrade={upgradeToPro}
+      />
+
+      {/* ── Review nudge ── */}
+      <ReviewNudge open={showReview} onClose={() => setShowReview(false)} />
     </>
   )
 }

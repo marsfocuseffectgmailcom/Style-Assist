@@ -30,6 +30,11 @@ export type TrackableEvent =
   | "item_removed"
   | "purchase_suggestion_shown"
   | "purchase_clicked"
+  | "fit_photo_added"
+  | "upgrade_shown"
+  | "upgrade_tapped"
+  | "review_shown"
+  | "review_submitted"
 
 export function track(event: TrackableEvent, metadata?: Record<string, unknown>): void {
   const body = JSON.stringify({

@@ -63,7 +63,13 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
   - Success: `#5F8F7F`, Warning/Gold: `#C8A96A`, Error: `#B86B6B`
   - Text: primary `#F2F4F5`, sub `#AABBC0`, muted `#6B8490`, dim `#5E7580`
   - Rules: minimal/calm, accent used sparingly, no neon or bright colors
-- **localStorage keys**: `style-assist-onboarded`, `style-assist-timeline`, `style-assist-incoming-items`, `style-assist-planned-events`, `style-assist-notifications`, `style-assist-fte-done`, `style-assist-preferences`, `style-assist-recent-items`
+- **localStorage keys**: `style-assist-onboarded`, `style-assist-timeline`, `style-assist-incoming-items`, `style-assist-planned-events`, `style-assist-notifications`, `style-assist-fte-done`, `style-assist-preferences`, `style-assist-recent-items`, `drape-subscription` (free/pro), `drape-daily-generates` (generate count + date), `drape-wear-count`, `drape-review-done`
+- **Launch features** added (MVP):
+  - **Freemium paywall** — `useSubscription.ts` hook; free tier = 3 AI outfit generates/day; "See alternatives" on Home blocks with `UpgradeSheet` when limit hit; `UpgradeSheet.tsx` is a reusable bottom drawer accepting `onUpgrade` callback
+  - **In-app review nudge** — `ReviewNudge.tsx` bottom sheet; triggers after 3rd "Wear this" confirmation; 5-star rating; one-time (stored in localStorage); shown 2.2s after wear confirm to not interrupt the moment
+  - **Outfit photo diary** — "Capture today's fit" dashed button in the worn-today state; hidden camera file input; photo thumbnail shown once captured; tracked via `fit_photo_added` analytics event
+  - **Privacy policy** — `/privacy` route (`PrivacyPolicy.tsx`); 10 sections (overview, data collection, AI processing, analytics, retention, rights, children, changes, contact); linked from Profile settings list; required for Play Store submission
+  - **Profile plan card** — shows real subscription state (Free vs Pro); Free: upgrade CTA with perk list; Pro: billing grid + cancel button; PRO badge in gold
 - **Australian seasons**: summer=Dec-Feb, autumn=Mar-May, winter=Jun-Aug, spring=Sep-Nov
 - **Confidence thresholds**: ≥82=high (teal), 65-81=safe (gold), 50-64=experimental (coral), <50 excluded
 

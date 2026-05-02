@@ -26,6 +26,7 @@ import FutureOutfitBuilderScreen from "./pages/plan-ahead/FutureOutfitBuilderScr
 import ProductSuggestionsScreen from "./pages/plan-ahead/ProductSuggestionsScreen"
 import SavedFutureOutfitScreen from "./pages/plan-ahead/SavedFutureOutfitScreen"
 import Analytics from "./pages/Analytics"
+import PrivacyPolicy from "./pages/PrivacyPolicy"
 import { track } from "./hooks/useAnalytics"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
@@ -71,6 +72,7 @@ function AppContent() {
         <Route path="/plan-ahead/:eventId/builder"    element={<FutureOutfitBuilderScreen />} />
         <Route path="/plan-ahead/:eventId/suggestions" element={<ProductSuggestionsScreen />} />
         <Route path="/plan-ahead/:eventId/complete"   element={<SavedFutureOutfitScreen />} />
+        <Route path="/privacy"                        element={<PrivacyPolicy />} />
       </Routes>
       <BottomNav />
     </>

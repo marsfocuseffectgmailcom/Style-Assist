@@ -1,4 +1,4 @@
-import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw, Sparkles } from "lucide-react"
+import { User, Ruler, Shirt, CreditCard, ChevronRight, Heart, Archive, BarChart2, RotateCcw, Sparkles, Shield, Zap } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { AppShell } from "../components/AppShell"
@@ -7,6 +7,8 @@ import { Card } from "../components/Card"
 import { usePersonalisation } from "../lib/usePersonalisation"
 import type { StyleDirection } from "../lib/usePersonalisation"
 import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
+import { useSubscription } from "../hooks/useSubscription"
+import { UpgradeSheet } from "../components/UpgradeSheet"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
@@ -120,36 +122,38 @@ const profileSections = [
   },
   {
     id: 3,
-    icon: <CreditCard size={18} className="text-[#C8A96A]" />,
-    title: "Subscription",
-    subtitle: "Your plan and payment",
-    href: "/profile/subscription",
-  },
-  {
-    id: 4,
     icon: <Heart size={18} className="text-[#C8A96A]" />,
     title: "Saved Products",
     subtitle: "Saved picks",
     href: "/saved-products",
   },
   {
-    id: 5,
+    id: 4,
     icon: <Archive size={18} className="text-[#A8B0B8]" />,
     title: "Removed Items",
     subtitle: "Items you've put aside",
     href: "/profile/removed-items",
   },
   {
-    id: 6,
+    id: 5,
     icon: <BarChart2 size={18} className="text-[#3F6F73]" />,
     title: "Usage Stats",
     subtitle: "How you're using the app",
     href: "/profile/analytics",
   },
+  {
+    id: 6,
+    icon: <Shield size={18} className="text-[#6B8490]" />,
+    title: "Privacy Policy",
+    subtitle: "How we handle your data",
+    href: "/privacy",
+  },
 ]
 
 export default function Profile() {
   const { items: capturedItems } = useWardrobeCapture()
+  const { isPro, generatesLeft, upgradeToPro, downgradeToFree } = useSubscription()
+  const [showUpgrade, setShowUpgrade] = useState(false)
 
   const itemCount   = capturedItems.length
   const outfitCount = (() => {
@@ -280,24 +284,69 @@ export default function Profile() {
 
       {/* ── Current plan ── */}
       <Card>
-        <h3 className="text-[17px] font-bold leading-[22px]">Current Plan</h3>
-        <p className="mt-2 text-[15px] leading-[22px] text-[#A8B0B8]">
-          Every feature. No limits.
-        </p>
-
-        <div className="my-4 grid grid-cols-2 gap-4">
-          <div className="rounded-[18px] bg-white/5 p-3">
-            <p className="text-[12px] leading-[16px] font-medium text-[#9CA3AF]">Plan</p>
-            <p className="mt-1 text-[15px] font-bold leading-[22px] text-[#F5F5F5]">Drape Pro</p>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-[17px] font-bold leading-[22px]">
+              {isPro ? "Drape Pro" : "Free Plan"}
+            </h3>
+            <p className="mt-1 text-[13px] leading-[18px] text-[#6B8490]">
+              {isPro ? "Every feature. No limits." : `${generatesLeft} outfit generate${generatesLeft !== 1 ? "s" : ""} left today`}
+            </p>
           </div>
-          <div className="rounded-[18px] bg-white/5 p-3">
-            <p className="text-[12px] leading-[16px] font-medium text-[#9CA3AF]">Billing</p>
-            <p className="mt-1 text-[15px] font-bold leading-[22px] text-[#F5F5F5]">$4.99 / month</p>
-          </div>
+          {isPro && (
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1" style={{ background: "rgba(200,169,106,0.12)", border: "1px solid rgba(200,169,106,0.25)" }}>
+              <Sparkles size={10} className="text-[#C8A96A]" />
+              <span className="text-[10px] font-bold tracking-widest text-[#C8A96A]">PRO</span>
+            </div>
+          )}
         </div>
 
-        <PrimaryButton>Manage Subscription</PrimaryButton>
+        {isPro ? (
+          <>
+            <div className="my-4 grid grid-cols-2 gap-3">
+              <div className="rounded-[16px] bg-white/5 p-3">
+                <p className="text-[11px] font-medium text-[#9CA3AF]">Billing</p>
+                <p className="mt-1 text-[14px] font-bold text-[#F5F5F5]">$4.99 / mo</p>
+              </div>
+              <div className="rounded-[16px] bg-white/5 p-3">
+                <p className="text-[11px] font-medium text-[#9CA3AF]">Generates</p>
+                <p className="mt-1 text-[14px] font-bold text-[#F5F5F5]">Unlimited</p>
+              </div>
+            </div>
+            <button
+              onClick={downgradeToFree}
+              className="w-full rounded-[14px] border border-white/8 bg-white/4 py-3 text-[13px] font-semibold text-[#6B8490] transition-[transform] duration-[160ms] active:scale-[0.97]"
+            >
+              Cancel subscription
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="my-4 rounded-[16px] p-4" style={{ background: "linear-gradient(135deg, rgba(63,111,115,0.08), rgba(200,169,106,0.06))", border: "1px solid rgba(63,111,115,0.18)" }}>
+              <p className="text-[13px] font-semibold text-[#AABBC0] mb-2">Go Pro to unlock:</p>
+              <ul className="space-y-1.5">
+                {["Unlimited daily outfit generates", "AI stylist chat", "Plan Ahead — unlimited events"].map((perk) => (
+                  <li key={perk} className="flex items-center gap-2">
+                    <div className="h-4 w-4 shrink-0 rounded-full flex items-center justify-center" style={{ background: "rgba(63,111,115,0.15)" }}>
+                      <Zap size={9} className="text-[#3F6F73]" />
+                    </div>
+                    <span className="text-[12px] text-[#AABBC0]">{perk}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button
+              onClick={() => setShowUpgrade(true)}
+              className="w-full h-[52px] rounded-[16px] border-none cursor-pointer text-[15px] font-extrabold text-white transition-[transform] duration-[160ms] active:scale-[0.97]"
+              style={{ background: "linear-gradient(135deg, #3F6F73, #7FA9A3)", boxShadow: "0 6px 22px rgba(63,111,115,0.32)" }}
+            >
+              Upgrade to Pro — $4.99/mo
+            </button>
+          </>
+        )}
       </Card>
+
+      <UpgradeSheet open={showUpgrade} onClose={() => setShowUpgrade(false)} onUpgrade={upgradeToPro} />
     </AppShell>
   )
 }
