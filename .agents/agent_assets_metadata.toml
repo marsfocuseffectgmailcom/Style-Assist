@@ -72,6 +72,12 @@ uri = "file://attached_assets/store/feature_graphic_v9.png"
 type = "image"
 title = "feature graphic v9 two-tone trench coat female top"
 
+[[generated]]
+id = "vdlMFHE1IVAtn-XuQT1Cy"
+uri = "file://attached_assets/store/feature_graphic_v10.png"
+type = "image"
+title = "feature graphic v10 no black shoe on female card"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
@@ -125,3 +131,9 @@ id = "LUaueaVEg4ORGHHi1wTCO"
 uri = "file://attached_assets/store/feature_graphic_v8.png"
 type = "image"
 title = "Feature Graphic v8 — Peach & Black top"
+
+[[outputs]]
+id = "1qoRhmYHfH1ro_a4QC_OS"
+uri = "file://attached_assets/store/feature_graphic_v10.png"
+type = "image"
+title = "Feature Graphic v10 — Final"
