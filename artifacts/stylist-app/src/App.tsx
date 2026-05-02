@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom"
 import { NotificationsProvider } from "./contexts/NotificationsContext"
 import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
 import { BottomNav } from "./components/BottomNav"
@@ -27,11 +27,16 @@ import ProductSuggestionsScreen from "./pages/plan-ahead/ProductSuggestionsScree
 import SavedFutureOutfitScreen from "./pages/plan-ahead/SavedFutureOutfitScreen"
 import Analytics from "./pages/Analytics"
 import PrivacyPolicy from "./pages/PrivacyPolicy"
+import StoreScreenshots from "./pages/StoreScreenshots"
 import { track } from "./hooks/useAnalytics"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
+// Routes that bypass the onboarding gate entirely
+const PUBLIC_PATHS = ["/privacy", "/store-assets"]
+
 function AppContent() {
+  const location = useLocation()
   const [onboarded, setOnboarded] = useState(
     () => localStorage.getItem(ONBOARDING_KEY) === "true"
   )
@@ -43,6 +48,16 @@ function AppContent() {
   function handleOnboardingComplete() {
     localStorage.setItem(ONBOARDING_KEY, "true")
     setOnboarded(true)
+  }
+
+  // Public routes — no onboarding gate
+  if (PUBLIC_PATHS.some((p) => location.pathname.startsWith(p))) {
+    return (
+      <Routes>
+        <Route path="/privacy"      element={<PrivacyPolicy />} />
+        <Route path="/store-assets" element={<StoreScreenshots />} />
+      </Routes>
+    )
   }
 
   if (!onboarded) {
@@ -73,6 +88,7 @@ function AppContent() {
         <Route path="/plan-ahead/:eventId/suggestions" element={<ProductSuggestionsScreen />} />
         <Route path="/plan-ahead/:eventId/complete"   element={<SavedFutureOutfitScreen />} />
         <Route path="/privacy"                        element={<PrivacyPolicy />} />
+        <Route path="/store-assets"                   element={<StoreScreenshots />} />
       </Routes>
       <BottomNav />
     </>

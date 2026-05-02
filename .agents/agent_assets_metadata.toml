@@ -1,0 +1,37 @@
+uploads = []
+
+[[generated]]
+id = "hIB3PGGnrXrtYy0klkzI9"
+uri = "file://attached_assets/store/icon_1024.png"
+type = "image"
+title = "drape app icon"
+
+[[generated]]
+id = "Jy_2RauHQ91BePsfHw6Tx"
+uri = "file://attached_assets/store/feature_graphic.png"
+type = "image"
+title = "drape feature graphic"
+
+[[generated]]
+id = "6M55Zna4JvHg8ZA4Ua1hU"
+uri = "file://attached_assets/store/icon_1024_v2.png"
+type = "image"
+title = "drape icon no text"
+
+[[outputs]]
+id = "K8KwYOTZfetsfSYPMYoUA"
+uri = "file://attached_assets/store/icon_1024_v2.png"
+type = "image"
+title = "App Icon — 1024×1024 (Play Store & App Store)"
+
+[[outputs]]
+id = "b0DGUW9DWVQ3c4QPxmndv"
+uri = "file://attached_assets/store/feature_graphic.png"
+type = "image"
+title = "Feature Graphic — 1024×500 (Play Store banner)"
+
+[[outputs]]
+id = "ePqSksKRnUhWLqK9duarx"
+uri = "file://attached_assets/store/store_listing_copy.md"
+type = "text"
+title = "Store Listing Copy — title, description, keywords"
