@@ -371,7 +371,7 @@ export default function StoreScreenshots() {
   return (
     <div style={{ background: "#0D1117", minHeight: "100dvh", padding: "40px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
       <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F2F4F5", letterSpacing: "-0.03em" }}>Drape — Store Screenshots</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F2F4F5", letterSpacing: "-0.03em" }}>Style Assist — Store Screenshots</h1>
         <p style={{ fontSize: 13, color: "#6B8490", marginTop: 4 }}>5 screenshots · 400×711px each (9:16) · Screenshot and crop individually</p>
       </div>
       <Screen1 />

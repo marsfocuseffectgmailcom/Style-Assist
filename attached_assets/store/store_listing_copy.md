@@ -1,20 +1,20 @@
-# Drape — Store Listing Copy
+# Style Assist — Store Listing Copy
 
 ## App Name
-Drape: AI Fashion Stylist
+Style Assist: AI Fashion Stylist
 
 ## Short Description (80 chars max)
 Your AI personal stylist. Outfits built from what you actually own.
 
 ## Full Description
 
-Stop staring at your wardrobe wondering what to wear. Drape is your AI personal stylist — it builds your best outfit every morning from the clothes you already own.
+Stop staring at your wardrobe wondering what to wear. Style Assist is your AI personal stylist — it builds your best outfit every morning from the clothes you already own.
 
 **How it works:**
-Photograph your wardrobe once. Drape's AI reads every item — category, colour, style, fabric, season, occasion — and stores it locally on your device. Then every morning, your daily outfit is ready: scored, explained, and tailored to your taste.
+Photograph your wardrobe once. Style Assist's AI reads every item — category, colour, style, fabric, season, occasion — and stores it locally on your device. Then every morning, your daily outfit is ready: scored, explained, and tailored to your taste.
 
-**What makes Drape different:**
-Unlike other wardrobe apps that just organise your clothes, Drape's AI actually makes decisions. It scores each outfit across colour harmony, style consistency, season suitability, and your personal preferences. You see why it works, not just what it is.
+**What makes Style Assist different:**
+Unlike other wardrobe apps that just organise your clothes, Style Assist's AI actually makes decisions. It scores each outfit across colour harmony, style consistency, season suitability, and your personal preferences. You see why it works, not just what it is.
 
 **Key features:**
 • Daily outfit — your best look, ready every morning
@@ -31,7 +31,7 @@ Unlike other wardrobe apps that just organise your clothes, Drape's AI actually 
 Every photo and wardrobe item stays on your device. We never upload your personal clothing data to our servers.
 
 **Free & Pro:**
-The core experience is free. Drape Pro ($4.99/month) unlocks unlimited daily outfit generates, the AI stylist chat, and unlimited Plan Ahead events.
+The core experience is free. Style Assist Pro ($4.99/month) unlocks unlimited daily outfit generates, the AI stylist chat, and unlimited Plan Ahead events.
 
 ---
 
@@ -45,10 +45,10 @@ Lifestyle
 Everyone
 
 ## Contact Email
-hello@drape.app
+hello@styleassist.app
 
 ## Privacy Policy URL
-https://[your-domain]/privacy
+https://[your-deployed-domain]/privacy
 
 ---
 
@@ -67,4 +67,4 @@ Initial release. Build outfits from your wardrobe with AI.
 ---
 
 ## Promo Text (App Store, 170 chars)
-Your AI personal stylist. Built daily outfits from what you own, scored for colour harmony, style, and season. Know your wardrobe better than ever before.
+Your AI personal stylist. Daily outfits built from what you own, scored for colour harmony, style, and season. Know your wardrobe better than ever before.
