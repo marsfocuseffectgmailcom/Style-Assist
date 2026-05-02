@@ -48,6 +48,18 @@ uri = "file://attached_assets/store/feature_graphic_v5.png"
 type = "image"
 title = "feature graphic with heels added"
 
+[[generated]]
+id = "wY2NGcyAyvbKQoHzG4RIr"
+uri = "file://attached_assets/store/feature_graphic_v6.png"
+type = "image"
+title = "feature graphic four cards centered"
+
+[[generated]]
+id = "FYZkYtnHshPS6zn0WYZYz"
+uri = "file://attached_assets/store/feature_graphic_v7.png"
+type = "image"
+title = "feature graphic v7 four clean separate cards"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
@@ -89,3 +101,9 @@ id = "UkfhKBuZKmI6L6GZ9oV00"
 uri = "file://attached_assets/store/feature_graphic_v5.png"
 type = "image"
 title = "Feature Graphic v5 — with high heels added"
+
+[[outputs]]
+id = "byMWI3-7u93MQRbpDxLc_"
+uri = "file://attached_assets/store/feature_graphic_v7.png"
+type = "image"
+title = "Feature Graphic v7 — Final"
