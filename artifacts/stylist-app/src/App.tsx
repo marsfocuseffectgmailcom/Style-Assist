@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom"
 import { NotificationsProvider } from "./contexts/NotificationsContext"
 import { WardrobePanelProvider } from "./contexts/WardrobePanelContext"
 import { BottomNav } from "./components/BottomNav"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import { OfflineBanner } from "./components/OfflineBanner"
+import SplashScreen from "./components/SplashScreen"
 import Home from "./pages/Home"
 import Stylist from "./pages/Stylist"
 import Wardrobe from "./pages/Wardrobe"
@@ -32,11 +33,12 @@ import { track } from "./hooks/useAnalytics"
 
 const ONBOARDING_KEY = "style-assist-onboarded"
 
-// Routes that bypass the onboarding gate entirely
+// Routes that bypass the splash + onboarding gate entirely
 const PUBLIC_PATHS = ["/privacy", "/store-assets"]
 
 function AppContent() {
   const location = useLocation()
+  const [splashDone, setSplashDone] = useState(false)
   const [onboarded, setOnboarded] = useState(
     () => localStorage.getItem(ONBOARDING_KEY) === "true"
   )
@@ -45,12 +47,14 @@ function AppContent() {
     track("app_open")
   }, [])
 
+  const handleSplashComplete = useCallback(() => setSplashDone(true), [])
+
   function handleOnboardingComplete() {
     localStorage.setItem(ONBOARDING_KEY, "true")
     setOnboarded(true)
   }
 
-  // Public routes — no onboarding gate
+  // Public routes — no splash or onboarding gate
   if (PUBLIC_PATHS.some((p) => location.pathname.startsWith(p))) {
     return (
       <Routes>
@@ -58,6 +62,11 @@ function AppContent() {
         <Route path="/store-assets" element={<StoreScreenshots />} />
       </Routes>
     )
+  }
+
+  // Show splash on every app open
+  if (!splashDone) {
+    return <SplashScreen onComplete={handleSplashComplete} />
   }
 
   if (!onboarded) {
