@@ -60,6 +60,12 @@ uri = "file://attached_assets/store/feature_graphic_v7.png"
 type = "image"
 title = "feature graphic v7 four clean separate cards"
 
+[[generated]]
+id = "kHIBjpDTTlH8k4Po0lEGe"
+uri = "file://attached_assets/store/feature_graphic_v8.png"
+type = "image"
+title = "feature graphic peach and black female top"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
@@ -107,3 +113,9 @@ id = "byMWI3-7u93MQRbpDxLc_"
 uri = "file://attached_assets/store/feature_graphic_v7.png"
 type = "image"
 title = "Feature Graphic v7 — Final"
+
+[[outputs]]
+id = "LUaueaVEg4ORGHHi1wTCO"
+uri = "file://attached_assets/store/feature_graphic_v8.png"
+type = "image"
+title = "Feature Graphic v8 — Peach & Black top"
