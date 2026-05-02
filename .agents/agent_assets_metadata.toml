@@ -30,6 +30,18 @@ uri = "file://attached_assets/store/feature_graphic_v3.png"
 type = "image"
 title = "Style Assist feature graphic clean"
 
+[[generated]]
+id = "qvXQvbkUFk_cYCaUausyo"
+uri = "file://attached_assets/store/icon_1024_v3.png"
+type = "image"
+title = "icon ivory hanger with clothes"
+
+[[generated]]
+id = "Gji68GBNbMOAc3j7IYfmQ"
+uri = "file://attached_assets/store/feature_graphic_v4.png"
+type = "image"
+title = "feature graphic male and female items"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
@@ -53,3 +65,15 @@ id = "8917SqpEHUPrgfQajYi_S"
 uri = "file://attached_assets/store/feature_graphic_v3.png"
 type = "image"
 title = "Feature Graphic — 1024×500 (Play Store banner)"
+
+[[outputs]]
+id = "u1MS2KP6hoBBWO5yaeVHN"
+uri = "file://attached_assets/store/icon_1024_v3.png"
+type = "image"
+title = "App Icon v3 — Ivory hangers, male + female items"
+
+[[outputs]]
+id = "KDkJYn1Bt9R8eKa2Rt7U3"
+uri = "file://attached_assets/store/feature_graphic_v4.png"
+type = "image"
+title = "Feature Graphic v4 — Style Assist, male + female items"
