@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 110" fill="none">
+  <!-- Gold 4-pointed star -->
+  <path d="M22 30 L24.2 24.2 L30 22 L24.2 19.8 L22 14 L19.8 19.8 L14 22 L19.8 24.2 Z" fill="#C8A96A"/>
+  <!-- STYLE -->
+  <text
+    x="44"
+    y="48"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="38"
+    font-weight="300"
+    letter-spacing="6"
+    fill="#F2F4F5"
+  >STYLE</text>
+  <!-- ASSIST -->
+  <text
+    x="44"
+    y="92"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="38"
+    font-weight="400"
+    letter-spacing="4"
+    fill="#F2F4F5"
+  >ASSIST</text>
+</svg>
