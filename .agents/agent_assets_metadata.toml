@@ -96,6 +96,12 @@ uri = "file://attached_assets/store/wordmark_v1.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "rNg-jA395Bf50yq6cqXho"
+uri = "file://attached_assets/store/wordmark_v2.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
@@ -161,3 +167,9 @@ id = "pCZSUN3wep-f3ivfUYoNV"
 uri = "file://attached_assets/store/wordmark_v1.png"
 type = "image"
 title = "Style Assist — Wordmark (light preview)"
+
+[[outputs]]
+id = "_elV9KgHAOBk3-fMT9pxf"
+uri = "file://attached_assets/store/wordmark_v2.png"
+type = "image"
+title = "Style Assist — Wordmark (splash background)"
