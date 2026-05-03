@@ -1137,16 +1137,10 @@ export default function AddItemFlow() {
     }
     addItem(item)
     track("item_added", { category: detected.category, colour: detected.colour })
-    navigate("/first-outfit", {
-      state: {
-        photo:    photos.front?.url ?? null,
-        name:     autoName,
-        category: detected.category,
-        colour:   detected.colour,
-        style:    detected.style,
-        occasion: detected.occasion,
-      },
-    })
+    setSavedPhoto(frontUrl || photos.front?.url || null)
+    setManual((prev) => ({ ...prev, name: autoName }))
+    setSaving(false)
+    setPhase("done")
   }
 
   async function handleSave() {

@@ -7,9 +7,10 @@ import { SectionHeader } from "../components/SectionHeader"
 import { ProductCard } from "../components/ProductCard"
 import { WardrobeGapCard } from "../components/WardrobeGapCard"
 import { CategoryPill } from "../components/CategoryPill"
+import { ProductDetailsModal } from "../components/ProductDetailsModal"
 import { useShopRecommendations } from "../hooks/useShopRecommendations"
 import { useProductsByGap } from "../hooks/useProductsByGap"
-import type { Merchant, WardrobeGap } from "../lib/types"
+import type { Merchant, RecommendedProduct, WardrobeGap } from "../lib/types"
 
 const merchantFilters: Array<Merchant | "All"> = [
   "All",
@@ -22,6 +23,7 @@ const merchantFilters: Array<Merchant | "All"> = [
 export default function Shop() {
   const [merchant, setMerchant] = useState<Merchant | "All">("All")
   const [selectedGap, setSelectedGap] = useState<WardrobeGap | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<RecommendedProduct | null>(null)
 
   const {
     wardrobeGaps,
@@ -135,11 +137,19 @@ export default function Shop() {
                 key={product.id}
                 product={product}
                 sourceScreen={selectedGap ? "gap-analysis" : "shop"}
+                onProductClick={(p) => setSelectedProduct(p)}
               />
             ))
           )}
         </div>
       </section>
+
+      {selectedProduct && (
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </AppShell>
   )
 }
