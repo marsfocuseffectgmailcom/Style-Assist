@@ -78,6 +78,18 @@ uri = "file://attached_assets/store/feature_graphic_v10.png"
 type = "image"
 title = "feature graphic v10 no black shoe on female card"
 
+[[generated]]
+id = "6syilWiwOz_u7O3gkVINQ"
+uri = "file://attached_assets/store/icon_1024_v4.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "azqGSos0jKl741jKmStI3"
+uri = "file://attached_assets/store/icon_1024_v4b.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "K8KwYOTZfetsfSYPMYoUA"
 uri = "file://attached_assets/store/icon_1024_v2.png"
