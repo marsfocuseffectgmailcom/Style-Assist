@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import recognitionRouter from "./recognition";
 import healthRouter from "./health";
 import wardrobeRouter from "./wardrobe";
 import profileRouter from "./profile";
@@ -9,6 +10,7 @@ import analyticsRouter from "./analytics";
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(recognitionRouter);
 router.use(wardrobeRouter);
 router.use(profileRouter);
 router.use(stylistRouter);
@@ -16,3 +18,4 @@ router.use("/shop", shopRouter);
 router.use(analyticsRouter);
 
 export default router;
+

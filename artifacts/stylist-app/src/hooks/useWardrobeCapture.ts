@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 const STORAGE_KEY = "style-assist-captured-items"
 
@@ -11,7 +11,7 @@ export type ItemStatus = "Clean" | "In wash" | "On loan"
 export type CapturedItem = {
   id: string
   name: string
-  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear" | "Dress"
+  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear" | "Dress" | "Bags" | "Accessories"
   image: string           // compressed front photo data URL
   backPhoto?: string
   tagPhoto?: string
@@ -27,6 +27,8 @@ export type CapturedItem = {
   aiMaterialGuess: string // clearly labelled guess
   aiSeason: string
   aiOccasion: string
+  materialSource?: "label" | "user" | "unknown"
+  recognitionReviewed?: boolean
   // Manual
   brand?: string
   size?: string
@@ -41,18 +43,22 @@ export type CapturedItem = {
 // ─── Image compression ────────────────────────────────────────────────────────
 
 export async function compressImage(file: File, maxDim = 480): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader()
+    reader.onerror = () => reject(new Error("Could not read photo"))
     reader.onload = (e) => {
       const img = new Image()
+      img.onerror = () => reject(new Error("Unsupported photo. Try JPEG or PNG."))
       img.onload = () => {
+        try {
         const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1)
         const canvas = document.createElement("canvas")
         canvas.width  = Math.round(img.width  * ratio)
         canvas.height = Math.round(img.height * ratio)
         const ctx = canvas.getContext("2d")!
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        resolve(canvas.toDataURL("image/jpeg", 0.75))
+        resolve(canvas.toDataURL("image/jpeg", 0.85))
+        } catch (error) { reject(error) }
       }
       img.src = e.target!.result as string
     }
@@ -78,21 +84,24 @@ function save(items: CapturedItem[]) {
 export function useWardrobeCapture() {
   const [items, setItems] = useState<CapturedItem[]>(load)
 
+  useEffect(() => {
+    const sync = () => setItems(load())
+    window.addEventListener("style-assist-wardrobe-changed", sync)
+    window.addEventListener("storage", sync)
+    return () => { window.removeEventListener("style-assist-wardrobe-changed", sync); window.removeEventListener("storage", sync) }
+  }, [])
+
   const addItem = useCallback((item: CapturedItem) => {
-    setItems((prev) => {
-      const next = [item, ...prev]
-      save(next)
-      return next
-    })
+    const next = [item, ...load().filter(i => i.id !== item.id)]
+    save(next) // Throw before success UI when browser storage is full.
+    setItems(next)
+    window.dispatchEvent(new Event("style-assist-wardrobe-changed"))
   }, [])
-
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => {
-      const next = prev.filter((i) => i.id !== id)
-      save(next)
-      return next
-    })
+    const next = load().filter(i => i.id !== id)
+    save(next)
+    setItems(next)
+    window.dispatchEvent(new Event("style-assist-wardrobe-changed"))
   }, [])
-
   return { items, addItem, removeItem }
 }

@@ -33,6 +33,7 @@ export type GeneratedOutfit = {
 function wardrobeToScored(item: WardrobeItem): ScoredItem {
   const catMap: Record<string, NormCategory> = {
     Tops: "top",
+    Dress: "dress",
     Bottoms: "bottom",
     Shoes: "shoes",
     Outerwear: "outerwear",
@@ -123,6 +124,9 @@ export function generateOutfits(
     preferences?: StylePreferences
     usedItemIds?: Set<string>
     usedOutfitNames?: Set<string>
+    excludedSignatures?: Set<string>
+    maxResults?: number
+    minScore?: number
   }
 ): GeneratedOutfit[] {
   const today = new Date()
@@ -153,7 +157,9 @@ export function generateOutfits(
     usedItemIds,
     usedOutfitNames: options?.usedOutfitNames,
     dateStr: date,
-    maxResults: 5,
+    maxResults: options?.maxResults ?? 5,
+    excludedSignatures: options?.excludedSignatures,
+    minScore: options?.minScore,
     itemPreferences,
   })
 
@@ -415,3 +421,4 @@ export function matchIncomingItem(
 
   return { matches, shoeStatus, bestShoes }
 }
+

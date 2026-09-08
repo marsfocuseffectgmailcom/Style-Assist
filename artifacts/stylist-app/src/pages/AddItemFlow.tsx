@@ -9,7 +9,7 @@ import {
 import { AppShell } from "../components/AppShell"
 import { useWardrobeCapture, compressImage } from "../hooks/useWardrobeCapture"
 import type { CapturedItem, FitType, ItemStatus, WeatherTag } from "../hooks/useWardrobeCapture"
-import { removeBackground } from "../lib/removeBackground"
+import { recognizeClothing, emptyDetection, seasonTags, type Detection } from "../lib/clothingRecognition"
 
 // ─── Design tokens (matching existing system) ─────────────────────────────────
 
@@ -26,32 +26,6 @@ const TOKEN = {
   muted:   "#6B8490",
 }
 
-// ─── AI simulation pools ──────────────────────────────────────────────────────
-
-const AI_CATEGORIES = ["Tops", "Bottoms", "Shoes", "Outerwear", "Dress"] as const
-const AI_COLOURS    = ["black", "white", "cream", "navy", "grey", "camel", "brown", "beige", "olive", "red", "blue"]
-const AI_PATTERNS   = ["Solid", "Striped", "Check", "Floral", "Print", "Textured", "Plain"]
-const AI_STYLES     = ["Casual", "Professional", "Elegant", "Sporty", "Smart casual"]
-const AI_MATERIALS  = ["Cotton", "Linen", "Polyester", "Wool", "Silk", "Denim", "Leather", "Knit"]
-const AI_SEASONS    = ["All season", "Summer", "Autumn/Winter", "Spring/Summer"]
-const AI_OCCASIONS  = ["Casual", "Work", "Evening", "Weekend", "Sport", "Formal"]
-
-function pickRandom<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
-
-function simulateDetection() {
-  return {
-    category:      pickRandom(AI_CATEGORIES),
-    colour:        pickRandom(AI_COLOURS),
-    pattern:       pickRandom(AI_PATTERNS),
-    style:         pickRandom(AI_STYLES),
-    materialGuess: pickRandom(AI_MATERIALS),
-    season:        pickRandom(AI_SEASONS),
-    occasion:      pickRandom(AI_OCCASIONS),
-  }
-}
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Phase = "tips" | "capture" | "analyzing" | "review" | "done"
@@ -62,7 +36,7 @@ type Photos = {
   tag:   { file: File; url: string } | null
 }
 
-type Detected = ReturnType<typeof simulateDetection>
+type Detected = Detection
 
 type ManualFields = {
   name:    string
@@ -533,14 +507,8 @@ function CaptureStep({
 }
 
 function AnalyseButton({ canContinue, onNext }: { canContinue: boolean; onNext: () => void }) {
-  const [loading, setLoading] = useState(false)
-
-  async function handleTap() {
-    if (!canContinue || loading) return
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 420))
-    onNext()
-  }
+  const loading = false
+  function handleTap() { if (canContinue) onNext() }
 
   return (
     <motion.button
@@ -567,218 +535,17 @@ function AnalyseButton({ canContinue, onNext }: { canContinue: boolean; onNext: 
 
 // ─── STEP: Analyzing ─────────────────────────────────────────────────────────
 
-const SCANNING_PHRASES = [
-  "Identifying shape…",
-  "Reading fabric…",
-  "Understanding how it fits…",
-]
-
-function AnalyzingStep({
-  photoUrl,
-  detected,
-  onEditDetails,
-  onSeeOutfits,
-  onBgRemoved,
-}: {
-  photoUrl:      string | null
-  detected:      Detected | null
-  onEditDetails: () => void
-  onSeeOutfits:  () => void
-  onBgRemoved:   (url: string) => void
-}) {
-  const [stage, setStage]           = useState<"scanning" | "reveal">("scanning")
-  const [phraseIndex, setPhraseIndex] = useState(0)
-  const [displayUrl, setDisplayUrl]  = useState(photoUrl)
-
-  useEffect(() => {
-    const phraseId = setInterval(() => setPhraseIndex((i) => i + 1), 500)
-    const revealId = setTimeout(() => {
-      clearInterval(phraseId)
-      setStage("reveal")
-    }, 1500)
-    return () => { clearInterval(phraseId); clearTimeout(revealId) }
-  }, [])
-
-  // Run bg removal in parallel with the scanning animation
-  useEffect(() => {
-    if (!photoUrl) return
-    removeBackground(photoUrl).then((result) => {
-      setDisplayUrl(result)
-      onBgRemoved(result)
-    })
-  }, [photoUrl, onBgRemoved])
-
-  const tags = detected
-    ? [detected.category, detected.colour, detected.style, detected.occasion]
-    : []
-
-  const pillStyle: CSSProperties = {
-    fontSize: 13, fontWeight: 600,
-    padding: "5px 13px", borderRadius: 999,
-    background: "rgba(255,255,255,0.13)",
-    color: "#F2F4F5",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    border: "1px solid rgba(255,255,255,0.15)",
-  }
-
-  return (
-    /* Full-screen fixed takeover */
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.28 }}
-      style={{ position: "fixed", inset: 0, zIndex: 200, overflow: "hidden", background: "#1F2A37" }}
-    >
-      {/* ── Hero photo (switches to bg-removed version when ready) ── */}
-      {displayUrl && (
-        <motion.img
-          src={displayUrl}
-          alt="Your item"
-          animate={{
-            filter:     stage === "reveal" ? "brightness(0.72)" : "brightness(0.48)",
-            scale:      stage === "reveal" ? 1 : 1.04,
-          }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" }}
-        />
-      )}
-
-      {/* Gradient vignette — always present, deepens toward bottom */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "linear-gradient(to bottom, rgba(31,42,55,0.15) 0%, rgba(31,42,55,0.55) 45%, rgba(31,42,55,0.96) 75%, #1F2A37 100%)",
-      }} />
-
-      {/* ── SCANNING stage ── */}
-      <AnimatePresence>
-        {stage === "scanning" && (
-          <motion.div
-            key="scanning"
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
-          >
-            {/* Light sweep */}
-            <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-              <motion.div
-                animate={{ x: ["-115%", "115%", "-115%", "115%"] }}
-                transition={{ duration: 1.45, times: [0, 0.42, 0.43, 0.88], ease: "easeInOut" }}
-                style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(108deg, transparent 28%, rgba(255,255,255,0.08) 50%, transparent 72%)",
-                }}
-              />
-            </div>
-
-            {/* Cycling phrase — centred on screen */}
-            <div style={{ height: 30, overflow: "hidden", padding: "0 32px" }}>
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={phraseIndex}
-                  initial={{ opacity: 0, y: 11 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -11 }}
-                  transition={{ duration: 0.21 }}
-                  style={{ fontSize: 20, fontWeight: 700, color: "#F2F4F5", textAlign: "center", letterSpacing: "-0.3px" }}
-                >
-                  {SCANNING_PHRASES[Math.min(phraseIndex, SCANNING_PHRASES.length - 1)]}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── REVEAL stage ── */}
-      <AnimatePresence>
-        {stage === "reveal" && (
-          <motion.div
-            key="reveal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.45 }}
-            style={{
-              position: "absolute", bottom: 0, left: 0, right: 0,
-              padding: "0 22px 48px",
-              display: "flex", flexDirection: "column", alignItems: "flex-start",
-            }}
-          >
-            {/* Detected tags */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {tags.map((tag, i) => (
-                <motion.span
-                  key={tag}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.075, duration: 0.34, ease: "easeOut" }}
-                  style={pillStyle}
-                >
-                  {tag}
-                </motion.span>
-              ))}
-            </div>
-
-            {/* Confidence message */}
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.32, duration: 0.4 }}
-              style={{ fontSize: 18, fontWeight: 800, color: "#F2F4F5", marginBottom: 6, letterSpacing: "-0.3px", lineHeight: 1.25 }}
-            >
-              This will work well with items in your wardrobe
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.46, duration: 0.35 }}
-              style={{ fontSize: 13, color: TOKEN.sub, marginBottom: 28 }}
-            >
-              We found some great matches for you
-            </motion.p>
-
-            {/* Action buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.52, duration: 0.4 }}
-              style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}
-            >
-              <button
-                onClick={onSeeOutfits}
-                style={{
-                  width: "100%", padding: "16px",
-                  borderRadius: 20, border: "none", cursor: "pointer",
-                  background: `linear-gradient(to right, ${TOKEN.pink}, ${TOKEN.coral})`,
-                  boxShadow: "0 4px 24px rgba(63,111,115,0.38)",
-                  fontSize: 15, fontWeight: 700, color: "#fff", letterSpacing: "-0.1px",
-                }}
-              >
-                See outfits
-              </button>
-              <button
-                onClick={onEditDetails}
-                style={{
-                  width: "100%", padding: "15px",
-                  borderRadius: 20, border: "1px solid rgba(255,255,255,0.11)", cursor: "pointer",
-                  background: "rgba(255,255,255,0.05)",
-                  fontSize: 15, fontWeight: 600, color: TOKEN.sub,
-                }}
-              >
-                Edit details
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
+function AnalyzingStep() {
+  return <div className="py-16 text-center" role="status" aria-live="polite">
+    <Sparkles className="mx-auto mb-4 animate-pulse" />
+    <h2 className="text-xl font-semibold">Analysing your photos…</h2>
+    <p className="mt-3 text-sm text-[#AABBC0]">Checking the garment and reading any visible label. This may take up to a minute.</p>
+  </div>
 }
 
 // ─── STEP: Review & edit ──────────────────────────────────────────────────────
 
-const CATEGORIES: CapturedItem["category"][] = ["Tops", "Bottoms", "Shoes", "Outerwear", "Dress"]
+const CATEGORIES: CapturedItem["category"][] = ["Tops", "Bottoms", "Shoes", "Outerwear", "Dress", "Bags", "Accessories"]
 const FIT_OPTIONS: FitType[]   = ["Slim", "Regular", "Relaxed", "Oversized"]
 const WEATHER_OPTIONS: WeatherTag[] = ["All weather", "Hot", "Mild", "Cold"]
 const STATUS_OPTIONS: ItemStatus[]  = ["Clean", "In wash", "On loan"]
@@ -798,7 +565,7 @@ function ReviewStep({
   onSave: () => void
   saving: boolean
 }) {
-  const canSave = manual.name.trim().length > 0
+  const canSave = manual.name.trim().length > 0 && CATEGORIES.includes(detected.category as CapturedItem["category"])
 
   function toggleWeather(w: WeatherTag) {
     const next = manual.weather.includes(w)
@@ -813,7 +580,7 @@ function ReviewStep({
       <div className="mb-1 flex items-center gap-2">
         <Sparkles size={13} style={{ color: TOKEN.pink }} />
         <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: TOKEN.pink }}>
-          AI Detected — tap to edit
+          Check item details — tap to edit
         </p>
       </div>
 
@@ -821,7 +588,10 @@ function ReviewStep({
         className="mb-5 space-y-4 rounded-[22px] border p-4"
         style={{ borderColor: "rgba(63,111,115,0.15)", backgroundColor: "rgba(63,111,115,0.04)" }}
       >
-        <FieldRow label="Category">
+        <p className="text-sm text-[#AABBC0]">{detected.notes || "Please check the category and details before saving."}</p>
+        {detected.materialFromLabel && <p className="text-sm text-[#AABBC0]">Label reads: {detected.materialFromLabel}</p>}
+        {detected.materialGuess && <p className="text-sm text-[#AABBC0]">Appearance: {detected.materialGuess}. Fibre content requires a readable label.</p>}
+        <FieldRow label="Category *">
           <PillSelector
             options={CATEGORIES}
             value={detected.category as CapturedItem["category"]}
@@ -853,7 +623,7 @@ function ReviewStep({
           />
         </FieldRow>
 
-        <FieldRow label="Material" hint="(AI guess — confirm below)">
+        <FieldRow label="Material" hint="(select only if you know)">
           <div className="flex flex-wrap gap-2">
             {["Cotton","Linen","Polyester","Wool","Silk","Denim","Leather","Knit"].map((m) => {
               const active = detected.materialGuess === m
@@ -861,7 +631,7 @@ function ReviewStep({
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setDetected({ ...detected, materialGuess: m })}
+                  onClick={() => { setDetected({ ...detected, materialGuess: m }); setManual({ ...manual, material: m }) }}
                   className="rounded-full border px-3 py-1.5 text-[12px] font-medium transition active:scale-[0.96]"
                   style={{
                     borderColor: active ? TOKEN.gold : TOKEN.border,
@@ -938,11 +708,11 @@ function ReviewStep({
           />
         </FieldRow>
 
-        <FieldRow label="Material" hint="(confirm or override AI guess)">
+        <FieldRow label="Material" hint="(from label or your own knowledge)">
           <TextInput
             value={manual.material}
             onChange={(v) => setManual({ ...manual, material: v })}
-            placeholder={`AI detected: ${detected.materialGuess}`}
+            placeholder="e.g. 80% cotton, 20% polyester — or leave blank"
           />
         </FieldRow>
 
@@ -1081,7 +851,10 @@ export default function AddItemFlow() {
   const [detected, setDetected]   = useState<Detected | null>(null)
   const [saving, setSaving]       = useState(false)
   const [savedPhoto, setSavedPhoto] = useState<string | null>(null)
-  const [bgRemovedUrl, setBgRemovedUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const request = useRef<AbortController | null>(null)
+  const savingRef = useRef(false)
+  useEffect(() => () => { request.current?.abort(); request.current = null }, [])
 
   const [manual, setManual] = useState<ManualFields>({
     name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean", price: "",
@@ -1091,63 +864,43 @@ export default function AddItemFlow() {
 
   function goCapture() { setPhase("capture") }
 
-  function goAnalyzing() {
-    const det = simulateDetection()
-    setDetected(det)
+  async function goAnalyzing() {
+    if (!photos.front) return
+    request.current?.abort()
+    const controller = new AbortController()
+    request.current = controller
+    setError(null)
+    setDetected(null)
     setPhase("analyzing")
+    const timeout = setTimeout(() => controller.abort(), 60_000)
+    try {
+      const det = await recognizeClothing({ front: photos.front.file, back: photos.back?.file, tag: photos.tag?.file }, controller.signal)
+      if (controller.signal.aborted) return
+      if (!det.isClothing) throw new Error("We couldn't identify a clothing item. Try a clear photo of one garment, or enter its details.")
+      setDetected(det)
+      setManual(prev => ({ ...prev, name: [det.colour, det.garmentType].filter(Boolean).join(" "), brand: det.brand, size: det.size, material: det.materialFromLabel }))
+      setPhase("review")
+    } catch (e) {
+      if (request.current !== controller) return
+      setError(controller.signal.aborted ? "Recognition timed out. Try again or enter details yourself." : e instanceof Error ? e.message : "Recognition failed. Please try again.")
+      setPhase("capture")
+    } finally { clearTimeout(timeout) }
   }
 
-  async function handleQuickSave() {
-    if (!detected) return
-    let frontUrl = bgRemovedUrl || ""
-    if (!frontUrl && photos.front?.file) frontUrl = await compressImage(photos.front.file)
-    let backUrl: string | undefined
-    if (photos.back?.file)  backUrl  = await compressImage(photos.back.file)
-    let tagUrl: string | undefined
-    if (photos.tag?.file)   tagUrl   = await compressImage(photos.tag.file, 300)
-
-    const categoryMap: Record<string, CapturedItem["category"]> = {
-      Tops: "Tops", Bottoms: "Bottoms", Shoes: "Shoes", Outerwear: "Outerwear", Dress: "Dress",
-    }
-    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-    const autoName = `${cap(detected.colour)} ${detected.category}`
-
-    const item: CapturedItem = {
-      id:              `captured-${Date.now()}`,
-      name:            autoName,
-      category:        categoryMap[detected.category] ?? "Tops",
-      image:           frontUrl || photos.front?.url || "",
-      backPhoto:       backUrl,
-      tagPhoto:        tagUrl,
-      colors:          [detected.colour],
-      styleTags:       [detected.style.toLowerCase(), detected.occasion.toLowerCase()],
-      seasonTags:      detected.season === "All season" ? ["all-season"] : [detected.season.toLowerCase()],
-      wearCount:       0,
-      aiCategory:      detected.category,
-      aiColour:        detected.colour,
-      aiPattern:       detected.pattern,
-      aiStyle:         detected.style,
-      aiMaterialGuess: detected.materialGuess,
-      aiSeason:        detected.season,
-      aiOccasion:      detected.occasion,
-      material:        detected.materialGuess,
-      weatherSuitability: ["All weather"],
-      status:          "Clean",
-      addedAt:         new Date().toISOString(),
-    }
-    addItem(item)
-    track("item_added", { category: detected.category, colour: detected.colour })
-    setSavedPhoto(frontUrl || photos.front?.url || null)
-    setManual((prev) => ({ ...prev, name: autoName }))
-    setSaving(false)
-    setPhase("done")
+  function enterManually() {
+    setDetected({ ...emptyDetection })
+    setError(null)
+    setPhase("review")
   }
 
   async function handleSave() {
-    if (!detected) return
+    if (!detected || !manual.name.trim() || !CATEGORIES.includes(detected.category as CapturedItem["category"]) || savingRef.current) return
+    savingRef.current = true
+    setError(null)
     setSaving(true)
+    try {
 
-    let frontUrl = bgRemovedUrl || ""
+    let frontUrl = ""
     if (!frontUrl && photos.front?.file) {
       frontUrl = await compressImage(photos.front.file)
     }
@@ -1161,7 +914,7 @@ export default function AddItemFlow() {
     }
 
     const categoryMap: Record<string, CapturedItem["category"]> = {
-      Tops: "Tops", Bottoms: "Bottoms", Shoes: "Shoes", Outerwear: "Outerwear", Dress: "Dress",
+      Tops: "Tops", Bottoms: "Bottoms", Shoes: "Shoes", Outerwear: "Outerwear", Dress: "Dress", Bags: "Bags", Accessories: "Accessories",
     }
 
     const item: CapturedItem = {
@@ -1171,9 +924,9 @@ export default function AddItemFlow() {
       image:    frontUrl || photos.front?.url || "",
       backPhoto: backUrl,
       tagPhoto:  tagUrl,
-      colors:   [detected.colour],
-      styleTags: [detected.style.toLowerCase(), detected.occasion.toLowerCase()],
-      seasonTags: detected.season === "All season" ? ["all-season"] : [detected.season.toLowerCase()],
+      colors:   [detected.colour].filter(Boolean),
+      styleTags: [detected.style.toLowerCase(), detected.occasion.toLowerCase()].filter(Boolean),
+      seasonTags: seasonTags(detected.season),
       wearCount: 0,
       aiCategory:     detected.category,
       aiColour:       detected.colour,
@@ -1185,7 +938,9 @@ export default function AddItemFlow() {
       brand:    manual.brand.trim() || undefined,
       size:     manual.size.trim()  || undefined,
       fit:      manual.fit          || undefined,
-      material: manual.material.trim() || detected.materialGuess,
+      material: manual.material.trim() || undefined,
+      materialSource: manual.material.trim() ? (manual.material.trim() === detected.materialFromLabel ? "label" : "user") : "unknown",
+      recognitionReviewed: true,
       weatherSuitability: manual.weather,
       status:   manual.status,
       addedAt:  new Date().toISOString(),
@@ -1196,6 +951,9 @@ export default function AddItemFlow() {
     setSavedPhoto(frontUrl || photos.front?.url || null)
     setSaving(false)
     setPhase("done")
+    } catch {
+      setError("Your item could not be saved. Device storage may be full. Free some space and try again.")
+    } finally { setSaving(false); savingRef.current = false }
   }
 
   function handleAddAnother() {
@@ -1203,7 +961,7 @@ export default function AddItemFlow() {
     setDetected(null)
     setManual({ name: "", brand: "", size: "", fit: "", material: "", weather: ["All weather"], status: "Clean", price: "" })
     setSavedPhoto(null)
-    setBgRemovedUrl(null)
+    setError(null)
     setPhase("tips")
   }
 
@@ -1246,6 +1004,10 @@ export default function AddItemFlow() {
         </header>
       )}
 
+      {error && <div role="alert" className="mb-4 rounded-xl bg-white/5 p-4 text-sm">
+        <p>{error}</p>
+        {phase === "capture" && <button onClick={enterManually} className="mt-3 underline">Enter details myself</button>}
+      </div>}
       {/* Step content */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -1259,18 +1021,12 @@ export default function AddItemFlow() {
           {phase === "tips" && <TipsStep onNext={goCapture} />}
 
           {phase === "capture" && (
-            <CaptureStep photos={photos} setPhotos={setPhotos} onNext={goAnalyzing} />
+            <><CaptureStep photos={photos} setPhotos={setPhotos} onNext={goAnalyzing} />
+            <p className="mt-3 text-xs text-[#AABBC0]">Analyse photos sends your garment and label photos to our AI provider to suggest details. You can enter them yourself instead.</p>
+            {photos.front && <button className="mt-3 text-sm underline" onClick={enterManually}>Enter details myself</button>}</>
           )}
 
-          {phase === "analyzing" && detected && (
-            <AnalyzingStep
-              photoUrl={photos.front?.url ?? null}
-              detected={detected}
-              onEditDetails={() => setPhase("review")}
-              onSeeOutfits={handleQuickSave}
-              onBgRemoved={setBgRemovedUrl}
-            />
-          )}
+          {phase === "analyzing" && <AnalyzingStep />}
 
           {phase === "review" && detected && (
             <ReviewStep
@@ -1296,3 +1052,4 @@ export default function AddItemFlow() {
     </AppShell>
   )
 }
+

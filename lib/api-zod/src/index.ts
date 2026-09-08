@@ -1,2 +1,4 @@
 export * from "./generated/api";
-export * from "./generated/types";
+export type { HealthStatus, Outfit, OutfitItems, OutfitSuggestions, StyleProfile,
+  StylistSession, WardrobeItem, WardrobeStats, WardrobeStatsByCategory,
+  WardrobeStatsBySeason } from "./generated/types";

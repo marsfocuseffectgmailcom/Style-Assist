@@ -11,7 +11,7 @@ export type OutfitCard = {
 export type WardrobeItem = {
   id: number
   name: string
-  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear" | "Bags" | "Accessories"
+  category: "Tops" | "Bottoms" | "Shoes" | "Outerwear" | "Dress" | "Bags" | "Accessories"
   image: string
   color?: string
   colors: string[]
@@ -270,3 +270,4 @@ export const wardrobeItems: WardrobeItem[] = [
     wearCount: 3,
   },
 ]
+

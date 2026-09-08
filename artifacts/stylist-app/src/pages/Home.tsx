@@ -401,14 +401,14 @@ export default function Home() {
   // Generate outfit from real wardrobe items when available
   const realOutfit = useMemo(() => {
     if (!hasRealItems) return null
-    const converted = capturedItems.map(capturedToWardrobeItem)
+    const converted = capturedItems.filter(i => i.status === "Clean").map(capturedToWardrobeItem)
     const outfits = generateOutfits(today, converted, incoming, undefined, {
       preferences,
       usedItemIds: recentItemIds,
     })
     return outfits[0] ?? null
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasRealItems, capturedItems.length, today])
+  }, [hasRealItems, capturedItems, incoming, today])
 
   // ── Mock daily outfit state (demo path) ────────────────────────────────────
   const dailyDef = useMemo(() => DAILY_OUTFITS[now.getDay()], [])
@@ -891,3 +891,4 @@ export default function Home() {
     </>
   )
 }
+

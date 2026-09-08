@@ -855,38 +855,36 @@ export function scoreOutfit(
 
 // ─── Combination builder ──────────────────────────────────────────────────────
 
-function buildCombinations(pool: ScoredItem[]): ScoredItem[][] {
+function* buildCombinations(pool: ScoredItem[]): Generator<ScoredItem[]> {
   const tops      = pool.filter((i) => i.normCategory === "top")
   const bottoms   = pool.filter((i) => i.normCategory === "bottom")
   const dresses   = pool.filter((i) => i.normCategory === "dress")
   const shoes     = pool.filter((i) => i.normCategory === "shoes")
   const outerwear = pool.filter((i) => i.normCategory === "outerwear")
 
-  const combos: ScoredItem[][] = []
 
   // top + bottom + shoes (± outerwear)
-  for (const top of tops.slice(0, 5)) {
-    for (const bottom of bottoms.slice(0, 5)) {
-      for (const shoe of shoes.slice(0, 4)) {
-        combos.push([top, bottom, shoe])
-        for (const ow of outerwear.slice(0, 2)) {
-          combos.push([top, bottom, shoe, ow])
+  for (const top of tops) {
+    for (const bottom of bottoms) {
+      for (const shoe of shoes) {
+        yield [top, bottom, shoe]
+        for (const ow of outerwear) {
+          yield [top, bottom, shoe, ow]
         }
       }
     }
   }
 
   // dress + shoes (± outerwear)
-  for (const dress of dresses.slice(0, 4)) {
-    for (const shoe of shoes.slice(0, 4)) {
-      combos.push([dress, shoe])
-      for (const ow of outerwear.slice(0, 2)) {
-        combos.push([dress, shoe, ow])
+  for (const dress of dresses) {
+    for (const shoe of shoes) {
+      yield [dress, shoe]
+      for (const ow of outerwear) {
+        yield [dress, shoe, ow]
       }
     }
   }
 
-  return combos
 }
 
 // ─── Main ranking function ────────────────────────────────────────────────────
@@ -955,6 +953,8 @@ export function rankOutfits(
     usedOutfitNames?: Set<string>
     dateStr?: string
     maxResults?: number
+    excludedSignatures?: Set<string>
+    minScore?: number
     itemPreferences?: ItemPreferences
   }
 ): RankedOutfit[] {
@@ -962,17 +962,16 @@ export function rankOutfits(
   const clothingPool   = pool.filter((i) => i.normCategory !== "bag" && i.normCategory !== "accessory")
   const accessoryPool  = pool.filter((i) => i.normCategory === "bag" || i.normCategory === "accessory")
 
+  const maxResults = Math.max(1, Math.min(50, opts.maxResults ?? 5))
   const combos = buildCombinations(clothingPool)
-  const seen   = new Set<string>()
   const scored: ScoredCombo[] = []
 
   for (const combo of combos) {
     const key = combo.map((i) => i.id).sort().join("|")
-    if (seen.has(key)) continue
-    seen.add(key)
+    if (opts.excludedSignatures?.has(key)) continue
 
     const result = scoreOutfit(combo, opts)
-    if (!result || result.total < 50) continue
+    if (!result || result.total < (opts.minScore ?? 50)) continue
 
     const { total, breakdown, dominantFamily, colorProfile } = result
     const confidence: RankedOutfit["confidence"] =
@@ -984,7 +983,7 @@ export function rankOutfits(
 
     scored.push({
       _key: key,
-      id: Math.random().toString(36).slice(2, 10),
+      id: key,
       items: combo,
       score: total,
       confidence,
@@ -995,25 +994,17 @@ export function rankOutfits(
       colorProfile,
       breakdown,
     })
+    // Keep only the best next page in memory; enumerate the full wardrobe lazily.
+    // Exact signatures (rather than item overlap) preserve valid shoe/layer swaps.
+    scored.sort((a, b) => b.score - a.score || a._key.localeCompare(b._key))
+    if (scored.length > maxResults) scored.pop()
   }
-
-  scored.sort((a, b) => b.score - a.score)
-
-  // ── Pass 1: deduplicate by item overlap ────────────────────────────────────
-  const candidates: ScoredCombo[] = []
-  for (const outfit of scored) {
-    const isNearDuplicate = candidates.some((c) => {
-      const overlap = outfit.items.filter((i) => c.items.some((ci) => ci.id === i.id)).length
-      return overlap >= outfit.items.length - 1
-    })
-    if (!isNearDuplicate) candidates.push(outfit)
-  }
+  const candidates = scored
 
   // ── Pass 2: shoe-variety selection ────────────────────────────────────────
   // Outfit 1: always best overall. For outfits 2+: prefer a different shoe
   // within SHOE_VARIETY_THRESHOLD score points of the "would-be-best" option.
   const SHOE_VARIETY_THRESHOLD = 8
-  const maxResults = opts.maxResults ?? 5
   const usedShoeIds = new Set<string>()
   const deduplicated: ScoredCombo[] = []
 
@@ -1108,32 +1099,6 @@ export function rankOutfits(
     }
   })
 
-  // Gap suggestion when wardrobe is thin
-  if (final.length === 0) {
-    const missing = getMissingPiece(clothingPool)
-    if (missing) {
-      const gapSuggestion = `Add ${missing} to unlock better outfit combinations.`
-      if (clothingPool.length > 0) {
-        final.push({
-          id: Math.random().toString(36).slice(2, 10),
-          name: "Best Available",
-          items: clothingPool.slice(0, 3),
-          score: 40,
-          confidence: "experimental",
-          tags: ["minimal"],
-          reason: "Limited wardrobe — add more pieces for better suggestions.",
-          tips: ["Add more pieces to get full styling insights"],
-          gapSuggestion,
-          breakdown: {},
-          shoeAlternatives: [],
-          shoeIsShared: false,
-          accessories: [],
-          accessoryReasons: {},
-          accessoryScores: {},
-        })
-      }
-    }
-  }
-
   return final
 }
+

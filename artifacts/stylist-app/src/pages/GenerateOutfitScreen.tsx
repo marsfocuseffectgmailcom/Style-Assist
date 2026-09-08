@@ -26,6 +26,7 @@ import { useTimelineOutfits } from "../hooks/useTimelineOutfits"
 import { useWeather } from "../hooks/useWeather"
 import { useWardrobeCapture } from "../hooks/useWardrobeCapture"
 import { capturedToWardrobeItem } from "../lib/capturedToWardrobe"
+import { loadPreferencesWithDirection } from "../lib/stylePreferences"
 import { generateOutfits } from "../lib/outfitGenerator"
 import type { GeneratedOutfit } from "../lib/outfitGenerator"
 import type { TimelineOutfit } from "../lib/types"
@@ -540,14 +541,16 @@ export default function GenerateOutfitScreen() {
 
   // Convert user's captured items to the engine's WardrobeItem format
   const userWardrobeItems = useMemo(
-    () => capturedItems.map(capturedToWardrobeItem),
+    () => capturedItems.filter(i => i.status === "Clean").map(capturedToWardrobeItem),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [capturedItems.length]
+    [capturedItems]
   )
 
   // ── Seen-outfit tracking refs (mutable, no re-render) ──────────────────────
   const seenSignatures = useRef<Set<string>>(new Set())
   const seenNames      = useRef<Set<string>>(new Set())
+  const shuffleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (shuffleTimer.current) clearTimeout(shuffleTimer.current) }, [])
 
   function addToSeen(outfits: GeneratedOutfit[]) {
     outfits.forEach((o) => {
@@ -562,13 +565,16 @@ export default function GenerateOutfitScreen() {
       generateOutfits(date ?? "", userWardrobeItems, incomingItems, undefined, {
         preferences,
         usedItemIds: recentItemIds,
+        minScore: 65,
+        maxResults: 3,
       }).slice(0, 3),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [date, userWardrobeItems] // Recompute when date or wardrobe changes
+    [date, userWardrobeItems, incomingItems] // Recompute when wardrobe availability changes
   )
 
   // ── Display state ──────────────────────────────────────────────────────────
   const [currentOutfits,    setCurrentOutfits]    = useState<GeneratedOutfit[]>(initialBatch)
+  const [history, setHistory] = useState<GeneratedOutfit[][]>([])
   const [batchKey,          setBatchKey]           = useState(0)
   const [isReshuffling,     setIsReshuffling]      = useState(false)
   const [isReshuffledBatch, setIsReshuffledBatch]  = useState(false)
@@ -601,19 +607,22 @@ export default function GenerateOutfitScreen() {
 
   // Reset everything when date changes (navigating to a different day)
   useEffect(() => {
+    if (shuffleTimer.current) clearTimeout(shuffleTimer.current)
+    setIsReshuffling(false)
     seenSignatures.current = new Set()
     seenNames.current      = new Set()
     const fresh = initialBatch
     addToSeen(fresh)
     setCurrentOutfits(fresh)
     setSelected(fresh[0]?.id ?? null)
+    setHistory([])
     setIsEmpty(false)
     setIsReshuffledBatch(false)
     setBatchKey((k) => k + 1)
     setSaved(false)
     setSaving(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date])
+  }, [date, userWardrobeItems, incomingItems])
 
   // ── Reshuffle ──────────────────────────────────────────────────────────────
 
@@ -628,13 +637,17 @@ export default function GenerateOutfitScreen() {
 
     setIsReshuffling(true)
 
-    setTimeout(() => {
+    shuffleTimer.current = setTimeout(() => {
       const candidates = generateOutfits(date ?? "", userWardrobeItems, incomingItems, undefined, {
-        preferences,
+        preferences: loadPreferencesWithDirection(),
         usedItemIds: recentItemIds,
         usedOutfitNames: seenNames.current,
+        excludedSignatures: seenSignatures.current,
+        minScore: 65,
+        maxResults: 3,
       })
 
+      // The engine excludes seen signatures BEFORE selecting the next page.
       // Filter out exact item-combination repeats
       const fresh = candidates
         .filter((o) => !seenSignatures.current.has(outfitSignature(o)))
@@ -647,6 +660,7 @@ export default function GenerateOutfitScreen() {
       }
 
       addToSeen(fresh)
+      setHistory(prev => [...prev, currentOutfits])
       setCurrentOutfits(fresh)
       setSelected(fresh[0].id)
       setIsReshuffledBatch(true)
@@ -744,12 +758,23 @@ export default function GenerateOutfitScreen() {
         )}
       </header>
 
+      {(isEmpty || currentOutfits.length === 0) && <div className="mb-4 rounded-xl bg-white/5 p-4 text-sm">
+        <button className="underline" onClick={() => navigate("/shop")}>Explore pieces that add outfit options</button>
+        <p className="mt-2 text-[#AABBC0]">Shopping is optional. You can also add more clothes you already own.</p>
+      </div>}
+      {history.length > 0 && <details className="mb-4 rounded-xl bg-white/5 p-4">
+        <summary className="cursor-pointer text-sm">Earlier looks ({history.flat().length})</summary>
+        {history.flat().map(outfit => <button key={outfit.id} className="mt-3 block text-left text-sm underline" onClick={() => {
+          setHistory(prev => [...prev.map(batch => batch.filter(o => o.id !== outfit.id)).filter(batch => batch.length), currentOutfits])
+          setCurrentOutfits([outfit]); setSelected(outfit.id)
+        }}>{outfit.name} — {outfit.items.map(i => i.name).join(", ")}</button>)}
+      </details>}
       {currentOutfits.length === 0 && !isReshuffling ? (
         <Card className="py-10 text-center">
           <Sparkles size={28} className="mx-auto mb-3 text-[#6B8490]" />
-          <p className="text-sm font-medium text-[#AABBC0]">Add your first item</p>
+          <p className="text-sm font-medium text-[#AABBC0]">No complete outfits yet</p>
           <p className="mt-1 text-xs text-[#6B8490]">
-            We'll start once you have a few pieces to work with.
+            Add a top and bottom (or a dress), plus shoes. Items in the wash or on loan are excluded.
           </p>
         </Card>
       ) : (
@@ -898,7 +923,7 @@ export default function GenerateOutfitScreen() {
                 >
                   <p className="text-[13px] font-semibold text-[#AABBC0]">You've seen your strongest options</p>
                   <p className="mt-1 text-[12px] leading-[18px] text-[#5E7580]">
-                    These are the best combinations from your wardrobe.
+                    No more suitable combinations for this selection. You can review earlier looks or explore pieces that add variety.
                   </p>
                 </motion.div>
               ) : (
@@ -915,7 +940,7 @@ export default function GenerateOutfitScreen() {
                   >
                     <RefreshCw size={14} className="text-[#7FA9A3]" />
                   </motion.span>
-                  Reshuffle looks
+                  Show next 3 looks
                 </motion.button>
               )}
             </AnimatePresence>
@@ -976,3 +1001,4 @@ export default function GenerateOutfitScreen() {
     </AppShell>
   )
 }
+

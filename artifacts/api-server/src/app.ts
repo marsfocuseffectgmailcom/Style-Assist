@@ -26,9 +26,11 @@ app.use(
   }),
 );
 app.use(cors());
+app.use("/api/wardrobe/recognize", express.json({ limit: "9mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
 export default app;
+

@@ -17,12 +17,12 @@ export function capturedToWardrobeItem(item: CapturedItem): WardrobeItem {
       : extractColorsFromName(item.name)
 
   const seasonTags =
-    item.seasonTags.length > 0 ? item.seasonTags : ["all-season"]
+    item.seasonTags.length > 0 ? item.seasonTags.flatMap(s => s.toLowerCase().replace("all season", "all-season").split("/")) : ["all-season"]
 
   return {
     id:          item.id as unknown as number,
     name:        item.name,
-    category:    (item.category === "Dress" ? "Tops" : item.category) as WardrobeItem["category"],
+    category:    item.category as WardrobeItem["category"],
     image:       item.image,
     colors,
     styleTags,
@@ -30,3 +30,4 @@ export function capturedToWardrobeItem(item: CapturedItem): WardrobeItem {
     wearCount:   item.wearCount,
   }
 }
+

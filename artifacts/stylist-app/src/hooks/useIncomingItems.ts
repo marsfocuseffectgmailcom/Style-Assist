@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react"
 import type { IncomingItem } from "../lib/types"
-import { mockIncomingItems } from "../lib/mockIncomingItems"
 
 const STORAGE_KEY = "style-assist-incoming-items"
 
@@ -8,12 +7,11 @@ function load(): IncomingItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockIncomingItems))
-      return mockIncomingItems
+      return []
     }
     return JSON.parse(raw) as IncomingItem[]
   } catch {
-    return mockIncomingItems
+    return []
   }
 }
 
@@ -61,3 +59,4 @@ export function useIncomingItems() {
 
   return { items, addItem, removeItem, getItemsAvailableBy, daysUntilDelivery }
 }
+
